@@ -1,4 +1,5 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import LocationMap from '@/components/LocationMap';
 
 const Footer = () => {
   return (
@@ -21,7 +22,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center text-sm">
                 <MapPin className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" />
-                <span className="font-inter">ur zaleak pasaia/pasaje, 002ACC,SM</span>
+                <span className="font-inter">Pje. Ur Zaleak de, 2, 20012 Donostia-San Sebastián</span>
               </div>
               <div className="flex items-center text-sm">
                 <Phone className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" />
@@ -49,12 +50,9 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Mapa embebido placeholder */}
+          {/* Mapa con ubicación real */}
           <div>
-            <h4 className="font-oswald font-semibold text-lg mb-4">Ubicación</h4>
-            <div className="bg-boxing-grey/20 h-32 rounded-lg flex items-center justify-center text-sm text-boxing-grey">
-              <MapPin className="h-6 w-6 text-boxing-red" />
-            </div>
+            <LocationMap />
           </div>
         </div>
 
