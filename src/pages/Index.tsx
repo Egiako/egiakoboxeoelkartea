@@ -47,7 +47,7 @@ const Index = () => {
 
   const entrenadores = [
     {
-      nombre: 'Carlos Mendoza',
+      nombre: 'James Willian Dering',
       especialidad: 'Entrenador Principal',
       credenciales: [
         '15 años de experiencia',
