@@ -62,15 +62,14 @@ const PoliticaPrivacidad = () => {
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
                     5. Contacto
                   </h2>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed mb-4">
                     Para cualquier consulta sobre esta política de privacidad, puede contactarnos en:
-                    <br />
-                    Email: egiaK.O.@gmail.com
-                    <br />
-                    Teléfono: 000 000 000
-                    <br />
-                    Dirección: Calle Ejemplo 123, Donostia
                   </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-2">
+                    <p><strong>Email:</strong> egiako@gmail.com</p>
+                    <p><strong>Teléfono:</strong> 669 339 812</p>
+                    <p><strong>Dirección:</strong> Pje. Ur Zaleak de, 2, 20012 Donostia-San Sebastián</p>
+                  </div>
                 </section>
 
                 <section className="pt-4 border-t border-border">
