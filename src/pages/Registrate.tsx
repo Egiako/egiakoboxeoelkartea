@@ -53,7 +53,7 @@ const Registrate = () => {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-oswald font-bold text-4xl mb-4">
-                Únete a <span className="text-boxing-white">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-white"> Boxeo Elkartea</span>
+                Únete a <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>
               </h1>
               <p className="font-inter text-muted-foreground">
                 Crea tu cuenta para acceder al horario de clases y comenzar tu transformación
