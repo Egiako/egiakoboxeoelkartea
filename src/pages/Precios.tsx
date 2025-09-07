@@ -106,7 +106,7 @@ const Precios = () => {
               ¿Listo para empezar?
             </h2>
             <p className="font-inter text-xl text-boxing-white/90 mb-8 max-w-2xl mx-auto">
-              Regístrate hoy y comienza tu transformación. Primera clase incluida.
+              Regístrate hoy y comienza tu transformación.
             </p>
             <Button asChild variant="hero" size="lg" className="font-oswald font-semibold text-lg px-8 py-4">
               <Link to="/registrate">Regístrate ahora</Link>
