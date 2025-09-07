@@ -1,17 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import heroImage from '@/assets/hero-boxing.jpg';
-
 const Hero = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-        }}
-      >
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+      backgroundImage: `url(${heroImage})`
+    }}>
         <div className="absolute inset-0 bg-gradient-hero opacity-80"></div>
       </div>
 
@@ -25,7 +20,7 @@ const Hero = () => {
           
           <p className="font-inter text-xl md:text-2xl text-boxing-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
             Entrena técnica, fuerza y disciplina en Donostia. 
-            <span className="block mt-2">Eventos para todos los niveles.</span>
+            
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -48,8 +43,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
