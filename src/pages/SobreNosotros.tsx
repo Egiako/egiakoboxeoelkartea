@@ -34,21 +34,11 @@ const SobreNosotros = () => {
   const equipo = [
     {
       nombre: 'Xabi Burgueño',
-      especialidad: 'Entrenador',
-      credenciales: [
-        '15 años de experiencia',
-        'Campeón regional amateur',
-        'Especialista en técnica'
-      ]
+      especialidad: 'Entrenador'
     },
     {
       nombre: 'James William',
-      especialidad: 'Entrenador',
-      credenciales: [
-        '12 años de experiencia',
-        'Especialista en boxeo técnico',
-        'Formación deportiva certificada'
-      ]
+      especialidad: 'Entrenador'
     }
   ];
 
@@ -115,15 +105,7 @@ const SobreNosotros = () => {
                     </div>
                     
                     <h3 className="font-oswald font-bold text-xl mb-2">{miembro.nombre}</h3>
-                    <p className="font-inter text-boxing-red font-semibold mb-4">{miembro.especialidad}</p>
-                    
-                    <ul className="space-y-2">
-                      {miembro.credenciales.map((credencial, credIndex) => (
-                        <li key={credIndex} className="font-inter text-sm text-muted-foreground">
-                          • {credencial}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="font-inter text-boxing-red font-semibold">{miembro.especialidad}</p>
                   </CardContent>
                 </Card>
               ))}
