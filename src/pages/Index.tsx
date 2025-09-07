@@ -46,21 +46,11 @@ const Index = () => {
     {
       nombre: 'Xabi Burgueño',
       especialidad: 'Entrenador',
-      credenciales: [
-        '15 años de experiencia',
-        'Campeón regional amateur',
-        'Especialista en técnica'
-      ],
       imagen: coachTraining
     },
     {
       nombre: 'James William',
       especialidad: 'Entrenador',
-      credenciales: [
-        '12 años de experiencia',
-        'Especialista en boxeo técnico',
-        'Formación deportiva certificada'
-      ],
       imagen: coachTraining
     }
   ];
@@ -167,15 +157,7 @@ const Index = () => {
                     </div>
                     
                     <h3 className="font-oswald font-bold text-xl mb-2">{entrenador.nombre}</h3>
-                    <p className="font-inter text-boxing-red font-semibold mb-4">{entrenador.especialidad}</p>
-                    
-                    <ul className="space-y-2">
-                      {entrenador.credenciales.map((credencial, credIndex) => (
-                        <li key={credIndex} className="font-inter text-sm text-muted-foreground">
-                          • {credencial}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="font-inter text-boxing-red font-semibold">{entrenador.especialidad}</p>
                   </CardContent>
                 </Card>
               ))}
