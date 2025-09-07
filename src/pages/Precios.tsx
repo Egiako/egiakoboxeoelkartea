@@ -91,8 +91,7 @@ const Precios = () => {
                   <h3 className="font-oswald font-bold text-xl mb-4">Información importante</h3>
                   <p className="font-inter text-muted-foreground">
                     Los precios se muestran solo a título informativo. La inscripción y gestión de pagos 
-                    se realizan en recepción tras completar el registro web. Todos los planes incluyen 
-                    material básico y asesoramiento personalizado.
+                    se realizan en recepción tras completar el registro web.
                   </p>
                 </CardContent>
               </Card>
