@@ -13,6 +13,12 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'oswald': ['Oswald', 'sans-serif'],
+        'inter': ['Inter', 'sans-serif'],
+        'sans': ['Inter', 'sans-serif'],
+        'heading': ['Oswald', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +53,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        boxing: {
+          black: "hsl(var(--boxing-black))",
+          red: "hsl(var(--boxing-red))",
+          white: "hsl(var(--boxing-white))",
+          grey: "hsl(var(--boxing-grey))",
+          gold: "hsl(var(--boxing-gold))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +70,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-cta': 'var(--gradient-cta)',
+        'gradient-accent': 'var(--gradient-accent)',
+      },
+      boxShadow: {
+        'boxing': 'var(--shadow-boxing)',
+        'hero': 'var(--shadow-hero)',
+        'glow': 'var(--shadow-glow)',
+      },
+      transitionTimingFunction: {
+        'smooth': 'var(--transition-smooth)',
+        'bounce': 'var(--transition-bounce)',
       },
       borderRadius: {
         lg: "var(--radius)",
