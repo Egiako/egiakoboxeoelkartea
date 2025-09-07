@@ -63,7 +63,21 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    5. Responsabilidad
+                    5. Contacto
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    Para cualquier consulta sobre esta política de privacidad, puede contactarnos en:
+                  </p>
+                  <div className="text-muted-foreground leading-relaxed space-y-2">
+                    <p><strong>Email:</strong> egiako@gmail.com</p>
+                    <p><strong>Teléfono:</strong> 669 339 812</p>
+                    <p><strong>Dirección:</strong> Pje. Ur Zaleak de, 2, 20012 Donostia-San Sebastián</p>
+                  </div>
+                </section>
+
+                <section>
+                  <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
+                    6. Responsabilidad
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     EgiaK.O. Boxeo elkartea no se hace responsable de los daños y perjuicios que pudieran derivarse 
@@ -74,7 +88,7 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    6. Propiedad intelectual
+                    7. Propiedad intelectual
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Todos los contenidos de este sitio web, incluyendo textos, imágenes, marcas y diseños, 
@@ -85,7 +99,7 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    7. Modificaciones
+                    8. Modificaciones
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     EgiaK.O. Boxeo elkartea se reserva el derecho de modificar el presente aviso legal 
