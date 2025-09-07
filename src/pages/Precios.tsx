@@ -98,50 +98,6 @@ const Precios = () => {
           </div>
         </section>
 
-        {/* FAQ rápido sobre precios */}
-        <section className="py-20 bg-boxing-grey/30">
-          <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Preguntas frecuentes</h2>
-            
-            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card className="shadow-boxing">
-                <CardContent className="p-6">
-                  <h3 className="font-oswald font-bold text-lg mb-4">¿Hay matrícula?</h3>
-                  <p className="font-inter text-muted-foreground">
-                    No cobramos matrícula. Solo pagas la mensualidad del plan que elijas.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-boxing">
-                <CardContent className="p-6">
-                  <h3 className="font-oswald font-bold text-lg mb-4">¿Puedo cambiar de plan?</h3>
-                  <p className="font-inter text-muted-foreground">
-                    Sí, puedes cambiar tu plan en cualquier momento hablando con recepción.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-boxing">
-                <CardContent className="p-6">
-                  <h3 className="font-oswald font-bold text-lg mb-4">¿Qué incluye el material?</h3>
-                  <p className="font-inter text-muted-foreground">
-                    Guantes, vendas, protector bucal básico. Solo trae ropa deportiva y toalla.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-boxing">
-                <CardContent className="p-6">
-                  <h3 className="font-oswald font-bold text-lg mb-4">¿Hay descuentos?</h3>
-                  <p className="font-inter text-muted-foreground">
-                    Ofrecemos descuentos para estudiantes, familias y pagos trimestrales.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
 
         {/* CTA Final */}
         <section className="py-20 bg-gradient-hero">
