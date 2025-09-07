@@ -48,7 +48,7 @@ const Index = () => {
   const entrenadores = [
     {
       nombre: 'James Willian Dering',
-      especialidad: 'Entrenador Principal',
+      especialidad: 'Entrenador',
       credenciales: [
         '15 años de experiencia',
         'Campeón regional amateur',
