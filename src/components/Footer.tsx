@@ -8,8 +8,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Información del gimnasio */}
           <div>
-            <h3 className="font-oswald font-bold text-xl text-boxing-red mb-4">
-              EgiaK.O. Boxeo elkartea
+            <h3 className="font-oswald font-bold text-xl mb-4">
+              <span className="text-boxing-white">Egia</span>
+              <span className="text-boxing-red">K.O.</span>
+              <span className="text-boxing-white"> Boxeo Elkartea</span>
             </h3>
             <p className="font-inter text-boxing-grey text-sm mb-4">
               Boxeo real. Resultados reales. Tu gimnasio de confianza en Donostia.
@@ -59,7 +61,7 @@ const Footer = () => {
         {/* Separador */}
         <div className="border-t border-boxing-red/20 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm font-inter text-boxing-grey">
-            <p>&copy; 2025 EgiaK.O. Boxeo elkartea. Todos los derechos reservados.</p>
+            <p>&copy; 2025 <span className="text-boxing-white">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-white"> Boxeo Elkartea</span>. Todos los derechos reservados.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="/politica-privacidad" className="hover:text-boxing-red transition-colors">
                 Política de privacidad

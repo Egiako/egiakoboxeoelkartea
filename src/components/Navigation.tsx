@@ -21,8 +21,10 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="font-oswald font-bold text-2xl text-boxing-white hover:text-boxing-red transition-colors">
-            EgiaK.O. <span className="text-boxing-red">Boxeo</span>
+          <Link to="/" className="font-oswald font-bold text-2xl hover:opacity-80 transition-opacity">
+            <span className="text-boxing-white">Egia</span>
+            <span className="text-boxing-red">K.O.</span>
+            <span className="text-boxing-white"> Boxeo Elkartea</span>
           </Link>
 
           {/* Desktop Navigation */}

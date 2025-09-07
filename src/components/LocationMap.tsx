@@ -35,7 +35,7 @@ const LocationMap = () => {
       new mapboxgl.Popup({ offset: 25 })
         .setHTML(`
           <div class="p-2">
-            <h3 class="font-bold text-sm mb-1">EgiaK.O. Boxeo elkartea</h3>
+            <h3 class="font-bold text-sm mb-1"><span style="color: white;">Egia</span><span style="color: #D7263D;">K.O.</span><span style="color: white;"> Boxeo Elkartea</span></h3>
             <p class="text-xs text-gray-600">Pje. Ur Zaleak de, 2<br>20012 Donostia-San Sebastián</p>
           </div>
         `)
