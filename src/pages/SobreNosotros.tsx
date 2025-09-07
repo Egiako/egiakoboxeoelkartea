@@ -7,12 +7,6 @@ import Footer from '@/components/Footer';
 import coachImage from '@/assets/coach-training.jpg';
 
 const SobreNosotros = () => {
-  const timeline = [
-    { year: '2018', event: 'Nacimos como club de barrio' },
-    { year: '2020', event: 'Ampliamos ring y zona de sacos' },
-    { year: '2023', event: 'Programas para iniciación, técnica y fuerza' },
-    { year: '2025', event: 'Más clases, más horarios, misma esencia' },
-  ];
 
   const valores = [
     {
@@ -39,30 +33,21 @@ const SobreNosotros = () => {
 
   const equipo = [
     {
-      nombre: 'Carlos Mendoza',
-      especialidad: 'Entrenador Principal',
+      nombre: 'Xabi Burgueño',
+      especialidad: 'Entrenador',
       credenciales: [
-        '15 años de experiencia profesional',
-        'Campeón regional de boxeo amateur',
-        'Certificado en entrenamiento deportivo'
+        '15 años de experiencia',
+        'Campeón regional amateur',
+        'Especialista en técnica'
       ]
     },
     {
-      nombre: 'Ana García',
-      especialidad: 'Técnica y Acondicionamiento',
+      nombre: 'James William',
+      especialidad: 'Entrenador',
       credenciales: [
-        'Especialista en boxeo femenino',
-        '8 años formando boxeadores',
-        'Licenciada en Ciencias del Deporte'
-      ]
-    },
-    {
-      nombre: 'Miguel Ruiz',
-      especialidad: 'Iniciación y Kids',
-      credenciales: [
-        'Especialista en formación juvenil',
-        'Monitor certificado de boxeo',
-        '5 años trabajando con menores'
+        '12 años de experiencia',
+        'Especialista en boxeo técnico',
+        'Formación deportiva certificada'
       ]
     }
   ];
@@ -85,37 +70,6 @@ const SobreNosotros = () => {
           </div>
         </section>
 
-        {/* Historia Timeline */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Nuestra Historia</h2>
-            
-            <div className="max-w-4xl mx-auto">
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-boxing-red"></div>
-                
-                {timeline.map((item, index) => (
-                  <div key={item.year} className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <div className={`flex-1 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
-                      <Card className="shadow-boxing">
-                        <CardContent className="p-6">
-                          <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">{item.year}</h3>
-                          <p className="font-inter text-foreground">{item.event}</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    
-                    {/* Timeline dot */}
-                    <div className="w-6 h-6 bg-boxing-red rounded-full border-4 border-background relative z-10"></div>
-                    
-                    <div className="flex-1"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Misión y Valores */}
         <section className="py-20 bg-boxing-grey/30">

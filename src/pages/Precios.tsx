@@ -8,13 +8,13 @@ import Footer from '@/components/Footer';
 const Precios = () => {
   const planes = [
     {
-      nombre: 'Plan Libre Mensual',
-      precio: '59',
-      descripcion: 'Acceso completo al gimnasio',
+      nombre: '12 Clases al Mes',
+      precio: '50',
+      descripcion: '12 clases al mes a elegir',
       caracteristicas: [
-        'Acceso a todas las franjas horarias',
-        'Todas las clases según tu nivel',
-        'Uso libre del gimnasio',
+        'Acceso a clases de una hora',
+        '12 clases mensuales a elegir',
+        'Flexibilidad de horarios',
         'Asesoramiento personalizado',
         'Material incluido (guantes, vendas)'
       ],

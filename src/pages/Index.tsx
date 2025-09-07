@@ -39,15 +39,12 @@ const Index = () => {
   const instalaciones = [
     { nombre: 'Ring profesional', imagen: boxingRing },
     { nombre: 'Zona de sacos', imagen: gymInterior },
-    { nombre: 'Área de fuerza', imagen: coachTraining },
-    { nombre: 'Vestuarios', imagen: gymInterior },
-    { nombre: 'Taquillas', imagen: gymInterior },
-    { nombre: 'Recepción', imagen: gymInterior }
+    { nombre: 'Área de fuerza', imagen: coachTraining }
   ];
 
   const entrenadores = [
     {
-      nombre: 'Xabier Burgueño',
+      nombre: 'Xabi Burgueño',
       especialidad: 'Entrenador',
       credenciales: [
         '15 años de experiencia',
@@ -57,62 +54,37 @@ const Index = () => {
       imagen: coachTraining
     },
     {
-      nombre: 'Ana García',
-      especialidad: 'Técnica y Acondicionamiento',
+      nombre: 'James William',
+      especialidad: 'Entrenador',
       credenciales: [
-        'Especialista boxeo femenino',
-        '8 años formando boxeadores',
-        'Licenciada en Deporte'
-      ],
-      imagen: coachTraining
-    },
-    {
-      nombre: 'Miguel Ruiz',
-      especialidad: 'Iniciación y Kids',
-      credenciales: [
-        'Especialista en juventud',
-        'Monitor certificado',
-        '5 años con menores'
+        '12 años de experiencia',
+        'Especialista en boxeo técnico',
+        'Formación deportiva certificada'
       ],
       imagen: coachTraining
     }
   ];
 
   const miniHorario = [
-    { dia: 'Lunes', hora: '18:00', clase: 'Técnica', entrenador: 'Ana García' },
-    { dia: 'Martes', hora: '19:00', clase: 'Iniciación', entrenador: 'Carlos Mendoza' },
-    { dia: 'Miércoles', hora: '18:00', clase: 'Técnica', entrenador: 'Ana García' },
-    { dia: 'Jueves', hora: '20:00', clase: 'Sparring controlado', entrenador: 'Carlos Mendoza' },
-    { dia: 'Viernes', hora: '17:00', clase: 'Kids', entrenador: 'Miguel Ruiz' },
-    { dia: 'Sábado', hora: '11:00', clase: 'Open Gym guiado', entrenador: 'Carlos Mendoza' }
+    { dia: 'Lunes', hora: '9:00-10:00', clase: 'Técnica mañana', entrenador: 'Xabi Burgueño' },
+    { dia: 'Lunes', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'James William' },
+    { dia: 'Martes', hora: '9:30-10:30', clase: 'Técnica mañana', entrenador: 'James William' },
+    { dia: 'Martes', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'Xabi Burgueño' },
+    { dia: 'Miércoles', hora: '9:00-10:00', clase: 'Técnica mañana', entrenador: 'James William' },
+    { dia: 'Miércoles', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'Xabi Burgueño' },
+    { dia: 'Jueves', hora: '9:30-10:30', clase: 'Técnica mañana', entrenador: 'Xabi Burgueño' },
+    { dia: 'Jueves', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'James William' }
   ];
 
-  const testimonios = [
-    {
-      texto: "Empecé sin experiencia y ahora hago 3 rounds de sparring controlado. El ambiente es increíble.",
-      autor: "Laura M.",
-      estrellas: 5
-    },
-    {
-      texto: "Los entrenadores son excepcionales. Me ayudaron a superar mis miedos y ganar confianza.",
-      autor: "David R.",
-      estrellas: 5
-    },
-    {
-      texto: "Mejor gimnasio de boxeo de Donostia. Técnica, respeto y resultados reales.",
-      autor: "Carmen L.",
-      estrellas: 5
-    }
-  ];
 
   const faq = [
     {
       pregunta: "¿Necesito experiencia previa?",
-      respuesta: "No, tenemos grupos específicos por niveles. Nuestras clases de iniciación están diseñadas para personas que nunca han practicado boxeo."
+      respuesta: "No, estamos preparados para acoger a cualquier tipo de nivel."
     },
     {
       pregunta: "¿Qué necesito llevar?",
-      respuesta: "Solo camiseta deportiva, pantalón cómodo, agua y toalla. Los guantes y vendas están disponibles para principiantes."
+      respuesta: "Solo vendas de boxeo, bucal y guantes."
     },
     {
       pregunta: "¿Hay sparring obligatorio?",
@@ -120,7 +92,7 @@ const Index = () => {
     },
     {
       pregunta: "¿Cuál es la edad mínima?",
-      respuesta: "Aceptamos desde los 12 años. Tenemos un grupo Kids especial con metodología adaptada y autorización parental."
+      respuesta: "Aceptamos desde los 16 años."
     }
   ];
 
@@ -246,32 +218,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Testimonios */}
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Lo que dicen nuestros miembros</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonios.map((testimonio, index) => (
-                <Card key={index} className="shadow-boxing hover:shadow-glow transition-all duration-300">
-                  <CardContent className="p-8">
-                    <div className="flex mb-4">
-                      {[...Array(testimonio.estrellas)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 text-boxing-gold fill-current" />
-                      ))}
-                    </div>
-                    <blockquote className="font-inter text-muted-foreground mb-4 italic">
-                      "{testimonio.texto}"
-                    </blockquote>
-                    <cite className="font-oswald font-semibold text-boxing-red">
-                      — {testimonio.autor}
-                    </cite>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* FAQ */}
         <section className="py-20 bg-boxing-grey/30">
