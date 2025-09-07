@@ -16,7 +16,6 @@ const Precios = () => {
         'Eliges día y hora',
         'Acceso a clases de una hora',
         'Flexibilidad total de horarios',
-        'Material incluido (guantes, vendas)',
         'Asesoramiento personalizado'
       ],
       popular: true
