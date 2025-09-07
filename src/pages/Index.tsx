@@ -56,14 +56,14 @@ const Index = () => {
   ];
 
   const miniHorario = [
-    { dia: 'Lunes', hora: '9:00-10:00', clase: 'Técnica mañana', entrenador: 'Xabi Burgueño' },
-    { dia: 'Lunes', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'James William' },
-    { dia: 'Martes', hora: '9:30-10:30', clase: 'Técnica mañana', entrenador: 'James William' },
-    { dia: 'Martes', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'Xabi Burgueño' },
-    { dia: 'Miércoles', hora: '9:00-10:00', clase: 'Técnica mañana', entrenador: 'James William' },
-    { dia: 'Miércoles', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'Xabi Burgueño' },
-    { dia: 'Jueves', hora: '9:30-10:30', clase: 'Técnica mañana', entrenador: 'Xabi Burgueño' },
-    { dia: 'Jueves', hora: '18:00-19:00', clase: 'Técnica tarde', entrenador: 'James William' }
+    { dia: 'Lunes', hora: '9:00-10:00', clase: 'Técnica mañana' },
+    { dia: 'Lunes', hora: '18:00-19:00', clase: 'Técnica tarde' },
+    { dia: 'Martes', hora: '9:30-10:30', clase: 'Técnica mañana' },
+    { dia: 'Martes', hora: '18:00-19:00', clase: 'Técnica tarde' },
+    { dia: 'Miércoles', hora: '9:00-10:00', clase: 'Técnica mañana' },
+    { dia: 'Miércoles', hora: '18:00-19:00', clase: 'Técnica tarde' },
+    { dia: 'Jueves', hora: '9:30-10:30', clase: 'Técnica mañana' },
+    { dia: 'Jueves', hora: '18:00-19:00', clase: 'Técnica tarde' }
   ];
 
 
@@ -181,8 +181,7 @@ const Index = () => {
                           {clase.hora}
                         </Badge>
                       </div>
-                      <h4 className="font-inter font-semibold text-boxing-red mb-1">{clase.clase}</h4>
-                      <p className="font-inter text-sm text-muted-foreground">{clase.entrenador}</p>
+                      <h4 className="font-inter font-semibold text-boxing-red">{clase.clase}</h4>
                     </div>
                   ))}
                 </div>
