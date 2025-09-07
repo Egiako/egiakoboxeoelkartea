@@ -47,7 +47,7 @@ const Index = () => {
 
   const entrenadores = [
     {
-      nombre: 'James Willian Dering',
+      nombre: 'Xabier Burgueño',
       especialidad: 'Entrenador',
       credenciales: [
         '15 años de experiencia',
