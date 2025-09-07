@@ -8,82 +8,18 @@ import Footer from '@/components/Footer';
 const Precios = () => {
   const planes = [
     {
-      nombre: '12 Clases al Mes',
+      nombre: 'Plan Mensual',
       precio: '50',
-      descripcion: '12 clases al mes a elegir',
+      descripcion: '12 clases al mes - Día y hora a elegir',
       caracteristicas: [
+        '12 clases mensuales',
+        'Eliges día y hora',
         'Acceso a clases de una hora',
-        '12 clases mensuales a elegir',
-        'Flexibilidad de horarios',
-        'Asesoramiento personalizado',
-        'Material incluido (guantes, vendas)'
+        'Flexibilidad total de horarios',
+        'Material incluido (guantes, vendas)',
+        'Asesoramiento personalizado'
       ],
       popular: true
-    },
-    {
-      nombre: 'Plan Tardes',
-      precio: '49',
-      descripcion: 'Perfecto para después del trabajo',
-      caracteristicas: [
-        'Acceso L–V a partir de las 17:00',
-        'Todas las clases de tarde',
-        'Uso del gimnasio en horario',
-        'Material incluido',
-        'Ambiente menos masificado'
-      ],
-      popular: false
-    },
-    {
-      nombre: 'Plan Mañanas',
-      precio: '39',
-      descripcion: 'Ideal para madrugadores',
-      caracteristicas: [
-        'Acceso L–V hasta las 16:00',
-        'Clases matinales',
-        'Gimnasio más tranquilo',
-        'Material incluido',
-        'Horario flexible mañanas'
-      ],
-      popular: false
-    },
-    {
-      nombre: 'Bono 10 clases',
-      precio: '75',
-      descripcion: 'Flexibilidad total',
-      caracteristicas: [
-        'Caducidad 3 meses',
-        'Ideal para horarios irregulares',
-        'Eliges cuándo venir',
-        'Material incluido',
-        'Sin compromiso mensual'
-      ],
-      popular: false
-    },
-    {
-      nombre: 'Clase suelta',
-      precio: '10',
-      descripcion: 'Prueba sin compromiso',
-      caracteristicas: [
-        'Una clase completa',
-        'Material incluido',
-        'Asesoramiento básico',
-        'Conoce el gimnasio',
-        'Sin permanencia'
-      ],
-      popular: false
-    },
-    {
-      nombre: 'Kids/Teens',
-      precio: '35',
-      descripcion: 'Especial para menores',
-      caracteristicas: [
-        'Grupo técnico adaptado',
-        'Enfoque en seguridad',
-        'Desarrollo de coordinación',
-        'Ambiente controlado',
-        'Material adaptado incluido'
-      ],
-      popular: false
     }
   ];
 
@@ -107,52 +43,45 @@ const Precios = () => {
         {/* Planes de precio */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {planes.map((plan, index) => (
-                <Card 
-                  key={index} 
-                  className={`relative shadow-boxing hover:shadow-glow transition-all duration-300 ${
-                    plan.popular ? 'border-boxing-red border-2 scale-105' : ''
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-boxing-red text-boxing-white px-4 py-2 rounded-full flex items-center gap-2">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="font-oswald font-semibold text-sm">MÁS POPULAR</span>
-                      </div>
-                    </div>
-                  )}
+            <div className="flex justify-center">
+              <Card 
+                className="relative shadow-boxing hover:shadow-glow transition-all duration-300 border-boxing-red border-2 scale-105 max-w-md"
+              >
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-boxing-red text-boxing-white px-4 py-2 rounded-full flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span className="font-oswald font-semibold text-sm">PLAN ÚNICO</span>
+                  </div>
+                </div>
+                
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="font-oswald font-bold text-2xl mb-2">{planes[0].nombre}</CardTitle>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="font-oswald font-bold text-4xl text-boxing-red">{planes[0].precio}</span>
+                    <span className="font-inter text-muted-foreground">€/mes</span>
+                  </div>
+                  <p className="font-inter text-sm text-muted-foreground mt-2">{planes[0].descripcion}</p>
+                </CardHeader>
+                
+                <CardContent className="pt-4">
+                  <ul className="space-y-3 mb-8">
+                    {planes[0].caracteristicas.map((caracteristica, charIndex) => (
+                      <li key={charIndex} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-boxing-red flex-shrink-0 mt-0.5" />
+                        <span className="font-inter text-sm">{caracteristica}</span>
+                      </li>
+                    ))}
+                  </ul>
                   
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="font-oswald font-bold text-2xl mb-2">{plan.nombre}</CardTitle>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="font-oswald font-bold text-4xl text-boxing-red">{plan.precio}</span>
-                      <span className="font-inter text-muted-foreground">€/mes</span>
-                    </div>
-                    <p className="font-inter text-sm text-muted-foreground mt-2">{plan.descripcion}</p>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-4">
-                    <ul className="space-y-3 mb-8">
-                      {plan.caracteristicas.map((caracteristica, charIndex) => (
-                        <li key={charIndex} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-boxing-red flex-shrink-0 mt-0.5" />
-                          <span className="font-inter text-sm">{caracteristica}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <Button 
-                      asChild 
-                      variant={plan.popular ? "hero" : "outline"} 
-                      className="w-full font-oswald font-semibold"
-                    >
-                      <Link to="/registrate">Regístrate ahora</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                  <Button 
+                    asChild 
+                    variant="hero"
+                    className="w-full font-oswald font-semibold"
+                  >
+                    <Link to="/registrate">Regístrate ahora</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Nota informativa */}
