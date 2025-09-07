@@ -21,11 +21,11 @@ const AvisoLegal = () => {
                     1. Datos identificativos
                   </h2>
                   <div className="text-muted-foreground leading-relaxed space-y-2">
-                    <p><strong>Denominación:</strong> EgiaK.O. Boxeo elkartea</p>
-                    <p><strong>Dirección:</strong> Calle Ejemplo 123, Donostia</p>
-                    <p><strong>Email:</strong> egiaK.O.@gmail.com</p>
-                    <p><strong>Teléfono:</strong> 000 000 000</p>
-                    <p><strong>Actividad:</strong> Gimnasio y club de boxeo</p>
+                    <p><strong>Denominación:</strong> EgiaK.O. Boxeo Elkartea</p>
+                    <p><strong>Dirección:</strong> Pje. Ur Zaleak de, 2, 20012 Donostia-San Sebastián</p>
+                    <p><strong>Email:</strong> egiako@gmail.com</p>
+                    <p><strong>Teléfono:</strong> 669 339 812</p>
+                    <p><strong>Actividad:</strong> Asociación sin ánimo de lucro</p>
                   </div>
                 </section>
 
