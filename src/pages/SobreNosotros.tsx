@@ -87,6 +87,21 @@ const SobreNosotros = () => {
           </div>
         </section>
 
+        {/* Asociación sin ánimo de lucro */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="font-oswald font-bold text-4xl mb-8">Asociación sin ánimo de lucro</h2>
+              <p className="font-inter text-lg text-muted-foreground leading-relaxed">
+                Nuestra entidad está constituida como una asociación deportiva sin ánimo de lucro. 
+                Esto significa que todos los recursos y aportaciones que recibimos se destinan 
+                íntegramente a la promoción del boxeo, al desarrollo de actividades deportivas y 
+                formativas, y al fomento de valores como el respeto, la disciplina y la superación personal.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Equipo */}
         <section className="py-20">
           <div className="container mx-auto px-4">
