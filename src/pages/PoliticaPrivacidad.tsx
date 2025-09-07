@@ -52,7 +52,9 @@ const PoliticaPrivacidad = () => {
                     4. Sus derechos
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Tiene derecho a acceder, rectificar, suprimir o solicitar la portabilidad de sus datos personales. También puede oponerse al tratamiento u solicitar su limitación. Para ejercer estos derechos, contacte con nosotros en egiaK.O.@gmail.com.
+                    Tiene derecho a acceder, rectificar, suprimir o solicitar la portabilidad de sus datos personales. 
+                    También puede oponerse al tratamiento u solicitar su limitación. Para ejercer estos derechos, 
+                    contacte con nosotros en egiako@gmail.com.
                   </p>
                 </section>
 
