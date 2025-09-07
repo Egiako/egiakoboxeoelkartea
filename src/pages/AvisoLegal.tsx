@@ -52,7 +52,18 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    4. Responsabilidad
+                    4. Sus derechos
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Tiene derecho a acceder, rectificar, suprimir o solicitar la portabilidad de sus datos personales. 
+                    También puede oponerse al tratamiento u solicitar su limitación. Para ejercer estos derechos, 
+                    contacte con nosotros en egiako@gmail.com.
+                  </p>
+                </section>
+
+                <section>
+                  <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
+                    5. Responsabilidad
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     EgiaK.O. Boxeo elkartea no se hace responsable de los daños y perjuicios que pudieran derivarse 
@@ -63,7 +74,7 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    5. Propiedad intelectual
+                    6. Propiedad intelectual
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Todos los contenidos de este sitio web, incluyendo textos, imágenes, marcas y diseños, 
@@ -74,7 +85,7 @@ const AvisoLegal = () => {
 
                 <section>
                   <h2 className="font-oswald font-bold text-2xl text-boxing-red mb-4">
-                    6. Modificaciones
+                    7. Modificaciones
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     EgiaK.O. Boxeo elkartea se reserva el derecho de modificar el presente aviso legal 
