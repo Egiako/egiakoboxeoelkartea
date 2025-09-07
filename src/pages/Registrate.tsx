@@ -151,7 +151,6 @@ const Registrate = () => {
                               <SelectItem value="forma">Ponerme en forma</SelectItem>
                               <SelectItem value="competir">Competir</SelectItem>
                               <SelectItem value="tecnica">Aprender técnica</SelectItem>
-                              <SelectItem value="defensa">Auto-defensa</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
