@@ -10,11 +10,11 @@ const Precios = () => {
     {
       nombre: 'Plan Mensual',
       precio: '50',
-      descripcion: '12 clases al mes - Día y hora a elegir',
+      descripcion: '12 eventos al mes - Día y hora a elegir',
       caracteristicas: [
-        '12 clases mensuales',
+        '12 eventos mensuales',
         'Eliges día y hora',
-        'Acceso a clases de una hora',
+        'Acceso a eventos de una hora',
         'Flexibilidad total de horarios',
         'Asesoramiento personalizado'
       ],
