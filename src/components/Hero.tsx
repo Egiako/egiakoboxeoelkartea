@@ -25,7 +25,7 @@ const Hero = () => {
           
           <p className="font-inter text-xl md:text-2xl text-boxing-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
             Entrena técnica, fuerza y disciplina en Donostia. 
-            <span className="block mt-2">Clases para todos los niveles.</span>
+            <span className="block mt-2">Eventos para todos los niveles.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">

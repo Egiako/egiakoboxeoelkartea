@@ -191,7 +191,7 @@ const Index = () => {
                     Ver horario completo requiere registro
                   </p>
                   <Button asChild variant="hero" className="font-oswald font-semibold">
-                    <Link to="/registrate">Ver todas las clases</Link>
+                    <Link to="/registrate">Ver todos los eventos</Link>
                   </Button>
                 </div>
               </CardContent>

@@ -56,7 +56,7 @@ const Registrate = () => {
                 Únete a <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>
               </h1>
               <p className="font-inter text-muted-foreground">
-                Crea tu cuenta para acceder al horario de clases y comenzar tu transformación
+                Crea tu cuenta para acceder al horario de eventos y comenzar tu transformación
               </p>
             </div>
 
@@ -234,7 +234,7 @@ const Registrate = () => {
               <CardContent className="p-6 text-center">
                 <h3 className="font-oswald font-bold text-lg mb-2">¡Bienvenido/a a la familia!</h3>
                 <p className="font-inter text-sm text-muted-foreground">
-                  Una vez registrado, tendrás acceso al horario completo de clases 
+                  Una vez registrado, tendrás acceso al horario completo de eventos 
                   y podrás empezar tu entrenamiento inmediatamente.
                 </p>
               </CardContent>

@@ -21,7 +21,7 @@ const PoliticaPrivacidad = () => {
                     1. Información que recopilamos
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    En EgiaK.O. Boxeo elkartea recopilamos la información que nos proporciona voluntariamente cuando se registra en nuestro servicio, incluyendo nombre, apellidos, email, teléfono y objetivos de entrenamiento. Esta información nos permite proporcionarle un servicio personalizado y mantenerle informado sobre nuestras clases y actividades.
+                    En EgiaK.O. Boxeo elkartea recopilamos la información que nos proporciona voluntariamente cuando se registra en nuestro servicio, incluyendo nombre, apellidos, email, teléfono y objetivos de entrenamiento. Esta información nos permite proporcionarle un servicio personalizado y mantenerle informado sobre nuestros eventos y actividades.
                   </p>
                 </section>
 
@@ -30,7 +30,7 @@ const PoliticaPrivacidad = () => {
                     2. Cómo utilizamos su información
                   </h2>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• Gestionar su membresía y acceso a las clases</li>
+                    <li>• Gestionar su membresía y acceso a los eventos</li>
                     <li>• Comunicar cambios en horarios y servicios</li>
                     <li>• Proporcionar asesoramiento personalizado de entrenamiento</li>
                     <li>• Mejorar nuestros servicios basándose en sus preferencias</li>

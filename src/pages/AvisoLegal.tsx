@@ -45,7 +45,7 @@ const AvisoLegal = () => {
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     A través de este sitio web ofrecemos información sobre nuestros servicios de entrenamiento de boxeo, 
-                    incluyendo clases grupales e individuales, horarios, precios y proceso de registro. 
+                    incluyendo eventos grupales e individuales, horarios, precios y proceso de registro. 
                     La formalización de la inscripción se realiza presencialmente en nuestras instalaciones.
                   </p>
                 </section>
@@ -82,7 +82,7 @@ const AvisoLegal = () => {
                   <p className="text-muted-foreground leading-relaxed">
                     EgiaK.O. Boxeo elkartea no se hace responsable de los daños y perjuicios que pudieran derivarse 
                     del uso inadecuado de este sitio web. Los precios mostrados son orientativos y pueden sufrir modificaciones. 
-                    Los horarios de clases pueden variar según disponibilidad y circunstancias especiales.
+                    Los horarios de eventos pueden variar según disponibilidad y circunstancias especiales.
                   </p>
                 </section>
 
