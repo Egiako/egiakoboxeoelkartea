@@ -97,7 +97,7 @@ const Index = () => {
         {/* Beneficios */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">¿Por qué <span className="text-boxing-white">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-white"> Boxeo Elkartea</span>?</h2>
+            <h2 className="font-oswald font-bold text-4xl text-center mb-16">¿Por qué <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>?</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {beneficios.map((beneficio, index) => (
