@@ -210,26 +210,7 @@ const BookingManagement = () => {
               </div>
               
               {/* Day Statistics */}
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                <Card>
-                  <CardContent className="p-3">
-                    <div className="text-lg font-bold text-green-600">{day.attendedCount}</div>
-                    <p className="text-xs text-muted-foreground">Asistieron</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-3">
-                    <div className="text-lg font-bold text-red-600">{day.notAttendedCount}</div>
-                    <p className="text-xs text-muted-foreground">No Asistieron</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-3">
-                    <div className="text-lg font-bold text-muted-foreground">{day.pendingCount}</div>
-                    <p className="text-xs text-muted-foreground">Pendientes</p>
-                  </CardContent>
-                </Card>
-              </div>
+              
             </CardHeader>
             
             <CardContent className="p-0">
