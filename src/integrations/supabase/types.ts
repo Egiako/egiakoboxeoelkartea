@@ -222,6 +222,14 @@ export type Database = {
           year: number
         }
       }
+      get_booking_counts: {
+        Args: { _dates: string[] }
+        Returns: {
+          booking_date: string
+          class_id: string
+          count: number
+        }[]
+      }
       get_or_create_monthly_classes: {
         Args: { user_uuid: string }
         Returns: {
