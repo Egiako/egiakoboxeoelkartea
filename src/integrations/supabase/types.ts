@@ -144,6 +144,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          max_monthly_classes: number
           month: number
           remaining_classes: number
           updated_at: string
@@ -153,6 +154,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          max_monthly_classes?: number
           month: number
           remaining_classes?: number
           updated_at?: string
@@ -162,6 +164,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          max_monthly_classes?: number
           month?: number
           remaining_classes?: number
           updated_at?: string
@@ -221,6 +224,7 @@ export type Database = {
         Returns: {
           created_at: string
           id: string
+          max_monthly_classes: number
           month: number
           remaining_classes: number
           updated_at: string
@@ -247,6 +251,24 @@ export type Database = {
         Returns: {
           created_at: string
           id: string
+          max_monthly_classes: number
+          month: number
+          remaining_classes: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+      }
+      admin_update_user_monthly_limits: {
+        Args: {
+          new_max?: number
+          new_remaining?: number
+          target_user_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          max_monthly_classes: number
           month: number
           remaining_classes: number
           updated_at: string
@@ -267,6 +289,7 @@ export type Database = {
         Returns: {
           created_at: string
           id: string
+          max_monthly_classes: number
           month: number
           remaining_classes: number
           updated_at: string

@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Minus, Users, RefreshCw, Calendar, BarChart3, ArrowRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Plus, Minus, Users, RefreshCw, Edit } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -22,17 +23,9 @@ interface MonthlyClasses {
   id: string;
   user_id: string;
   remaining_classes: number;
+  max_monthly_classes: number;
   month: number;
   year: number;
-}
-
-interface MonthlyStats {
-  total_users: number;
-  users_with_classes: number;
-  users_without_classes: number;
-  average_remaining: number;
-  current_month: number;
-  current_year: number;
 }
 
 interface UserWithClasses extends UserProfile {
@@ -41,27 +34,16 @@ interface UserWithClasses extends UserProfile {
 
 const ClassManagement = () => {
   const [users, setUsers] = useState<UserWithClasses[]>([]);
-  const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingUser, setEditingUser] = useState<UserWithClasses | null>(null);
+  const [newRemaining, setNewRemaining] = useState<number>(0);
+  const [newMax, setNewMax] = useState<number>(12);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchUsersWithClasses();
-    fetchMonthlyStats();
   }, []);
-
-  const fetchMonthlyStats = async () => {
-    try {
-      const { data, error } = await supabase.rpc('admin_get_monthly_stats');
-      if (error) throw error;
-      if (data && data.length > 0) {
-        setMonthlyStats(data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching monthly stats:', error);
-    }
-  };
 
   const fetchUsersWithClasses = async () => {
     try {
@@ -121,7 +103,6 @@ const ClassManagement = () => {
       });
 
       fetchUsersWithClasses();
-      fetchMonthlyStats();
     } catch (error: any) {
       console.error('Error updating classes:', error);
       toast({
@@ -132,53 +113,39 @@ const ClassManagement = () => {
     }
   };
 
-  const handleResetUserMonthly = async (userId: string, newAmount: number = 12) => {
+  const handleUpdateLimits = async () => {
+    if (!editingUser) return;
+
     try {
-      const { data, error } = await supabase.rpc('admin_reset_user_monthly_classes', {
-        target_user_id: userId,
-        new_remaining: newAmount
+      const { data, error } = await supabase.rpc('admin_update_user_monthly_limits', {
+        target_user_id: editingUser.user_id,
+        new_remaining: newRemaining,
+        new_max: newMax
       });
 
       if (error) throw error;
 
       toast({
-        title: "Clases mensuales reseteadas",
-        description: `Se han configurado ${newAmount} clases para el usuario`,
+        title: "Límites actualizados",
+        description: `Se han configurado ${newRemaining}/${newMax} clases para el usuario`,
       });
 
+      setEditingUser(null);
       fetchUsersWithClasses();
-      fetchMonthlyStats();
     } catch (error: any) {
-      console.error('Error resetting monthly classes:', error);
+      console.error('Error updating limits:', error);
       toast({
         title: "Error",
-        description: error.message || "No se pudieron resetear las clases mensuales",
+        description: error.message || "No se pudieron actualizar los límites",
         variant: "destructive"
       });
     }
   };
 
-  const handleAdvanceToNextMonth = async () => {
-    try {
-      const { data, error } = await supabase.rpc('admin_advance_all_to_next_month');
-
-      if (error) throw error;
-
-      toast({
-        title: "Mes avanzado",
-        description: `Todos los usuarios han sido configurados para el próximo mes con 12 clases`,
-      });
-
-      fetchUsersWithClasses();
-      fetchMonthlyStats();
-    } catch (error: any) {
-      console.error('Error advancing month:', error);
-      toast({
-        title: "Error", 
-        description: error.message || "No se pudo avanzar el mes",
-        variant: "destructive"
-      });
-    }
+  const openEditDialog = (user: UserWithClasses) => {
+    setEditingUser(user);
+    setNewRemaining(user.monthly_classes?.remaining_classes ?? 12);
+    setNewMax(user.monthly_classes?.max_monthly_classes ?? 12);
   };
 
   const filteredUsers = users.filter(user =>
@@ -196,69 +163,6 @@ const ClassManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Monthly Statistics Card */}
-      {monthlyStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Estadísticas Mensuales - {monthlyStats.current_month}/{monthlyStats.current_year}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{monthlyStats.total_users}</div>
-                <div className="text-sm text-muted-foreground">Total Usuarios</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{monthlyStats.users_with_classes}</div>
-                <div className="text-sm text-muted-foreground">Con Clases</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{monthlyStats.users_without_classes}</div>
-                <div className="text-sm text-muted-foreground">Sin Clases</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent">{Number(monthlyStats.average_remaining).toFixed(1)}</div>
-                <div className="text-sm text-muted-foreground">Promedio Restante</div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <ArrowRight className="h-4 w-4" />
-                    Avanzar a Próximo Mes
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Avanzar a próximo mes?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción creará registros de 12 clases para todos los usuarios en el próximo mes.
-                      Los usuarios que ya tengan registro para el próximo mes no se verán afectados.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleAdvanceToNextMonth}>
-                      Confirmar Avance
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <Button variant="outline" onClick={() => { fetchUsersWithClasses(); fetchMonthlyStats(); }}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Actualizar Datos
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -274,6 +178,10 @@ const ClassManagement = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
             />
+            <Button variant="outline" onClick={fetchUsersWithClasses}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
           </div>
 
           <div className="border rounded-lg">
@@ -282,15 +190,16 @@ const ClassManagement = () => {
                 <TableRow>
                   <TableHead>Usuario</TableHead>
                   <TableHead>Teléfono</TableHead>
-                  <TableHead>Clases Restantes</TableHead>
+                  <TableHead>Clases Restantes/Tope</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Gestión Individual</TableHead>
-                  <TableHead>Gestión Mensual</TableHead>
+                  <TableHead>Ajustes Rápidos</TableHead>
+                  <TableHead>Configuración</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => {
                   const remainingClasses = user.monthly_classes?.remaining_classes ?? 12;
+                  const maxClasses = user.monthly_classes?.max_monthly_classes ?? 12;
                   const hasClasses = remainingClasses > 0;
                   
                   return (
@@ -305,7 +214,7 @@ const ClassManagement = () => {
                       <TableCell>{user.phone}</TableCell>
                       <TableCell>
                         <div className="text-xl font-bold">
-                          {remainingClasses}/12
+                          {remainingClasses}/{maxClasses}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -327,15 +236,6 @@ const ClassManagement = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleUpdateClasses(user.user_id, 5)}
-                            className="flex items-center gap-1"
-                          >
-                            <Plus className="h-3 w-3" />
-                            +5
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => handleUpdateClasses(user.user_id, -1)}
                             disabled={remainingClasses === 0}
                             className="flex items-center gap-1"
@@ -343,48 +243,63 @@ const ClassManagement = () => {
                             <Minus className="h-3 w-3" />
                             -1
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpdateClasses(user.user_id, -5)}
-                            disabled={remainingClasses < 5}
-                            className="flex items-center gap-1"
-                          >
-                            <Minus className="h-3 w-3" />
-                            -5
-                          </Button>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleResetUserMonthly(user.user_id, 12)}
-                            className="flex items-center gap-1"
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                            12/12
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleResetUserMonthly(user.user_id, 13)}
-                            className="flex items-center gap-1"
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                            13/13
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleResetUserMonthly(user.user_id, 0)}
-                            className="flex items-center gap-1 text-red-600"
-                          >
-                            <Minus className="h-3 w-3" />
-                            0/12
-                          </Button>
-                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => openEditDialog(user)}
+                              className="flex items-center gap-1"
+                            >
+                              <Edit className="h-3 w-3" />
+                              Configurar
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Configurar Clases - {user.first_name} {user.last_name}</DialogTitle>
+                              <DialogDescription>
+                                Ajusta las clases restantes y el tope mensual para este usuario.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="remaining" className="text-right">
+                                  Clases Restantes
+                                </Label>
+                                <Input
+                                  id="remaining"
+                                  type="number"
+                                  min="0"
+                                  max="50"
+                                  value={newRemaining}
+                                  onChange={(e) => setNewRemaining(parseInt(e.target.value) || 0)}
+                                  className="col-span-3"
+                                />
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="maxClasses" className="text-right">
+                                  Tope Mensual
+                                </Label>
+                                <Input
+                                  id="maxClasses"
+                                  type="number"
+                                  min="1"
+                                  max="50"
+                                  value={newMax}
+                                  onChange={(e) => setNewMax(parseInt(e.target.value) || 12)}
+                                  className="col-span-3"
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button onClick={handleUpdateLimits}>Guardar Cambios</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   );
