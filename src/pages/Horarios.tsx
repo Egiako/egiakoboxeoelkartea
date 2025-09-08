@@ -58,6 +58,30 @@ const Horarios = () => {
     fetchBookingCounts();
   }, [selectedDate]);
 
+  // Real-time updates for booking changes
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up real-time subscription for booking changes
+    const bookingsChannel = supabase
+      .channel('bookings-realtime')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'bookings' 
+      }, () => {
+        // Refresh both booking counts and user bookings when any booking changes
+        fetchBookingCounts();
+        fetchUserBookings();
+        refreshMonthlyClasses();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(bookingsChannel);
+    };
+  }, [user, selectedDate]);
+
   // Obtener clases disponibles
   const fetchClasses = async () => {
     const { data, error } = await supabase
