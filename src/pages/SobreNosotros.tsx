@@ -48,15 +48,17 @@ const SobreNosotros = () => {
       
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative py-24 bg-gradient-hero">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="font-oswald font-bold text-5xl md:text-6xl text-boxing-white mb-6">
-              Somos boxeo.
-              <span className="block text-boxing-red">Somos comunidad.</span>
-            </h1>
-            <p className="font-inter text-xl text-boxing-white/90 max-w-2xl mx-auto">
-              Más que un gimnasio, somos una familia unida por la pasión del boxeo
-            </p>
+        <section className="relative py-24">
+          <div className="container mx-auto px-4">
+            <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing">
+              <h1 className="font-oswald font-bold text-5xl md:text-6xl text-white mb-6">
+                Somos boxeo.
+                <span className="block text-white">Somos comunidad.</span>
+              </h1>
+              <p className="font-inter text-xl text-white/90 max-w-2xl mx-auto">
+                Más que un gimnasio, somos una familia unida por la pasión del boxeo
+              </p>
+            </div>
           </div>
         </section>
 
