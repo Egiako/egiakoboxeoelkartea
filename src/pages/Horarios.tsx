@@ -368,10 +368,10 @@ const Horarios = () => {
 
               {/* CTA hint for non-authenticated users */}
               {!user && (
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground/70 animate-fade-in">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <div className="flex items-center justify-center gap-2 text-sm text-white/90 animate-fade-in">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                   <span>¿Listo para entrenar? Regístrate ahora</span>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 </div>
               )}
             </div>
