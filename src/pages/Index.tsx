@@ -11,83 +11,90 @@ import heroImage from '@/assets/hero-boxing.jpg';
 import gymInterior from '@/assets/gym-interior.jpg';
 import boxingRing from '@/assets/boxing-ring.jpg';
 import coachTraining from '@/assets/coach-training.jpg';
-
 const Index = () => {
-  const beneficios = [
-    {
-      icon: <Target className="h-8 w-8" />,
-      title: 'Técnica desde cero',
-      description: 'Aprende base sólida sin miedo con nuestro programa de iniciación'
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: 'Entrenadores titulados',
-      description: 'Seguimiento real y correcciones de profesionales certificados'
-    },
-    {
-      icon: <Shield className="h-8 w-8" />,
-      title: 'Ambiente seguro',
-      description: 'Sparring controlado, respeto y progreso en un entorno protegido'
-    },
-    {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: 'Resultados medibles',
-      description: 'Resistencia, potencia y confianza que puedes ver y sentir'
-    }
-  ];
-
-  const instalaciones = [
-    { nombre: 'Ring profesional', imagen: boxingRing },
-    { nombre: 'Zona de sacos', imagen: gymInterior },
-    { nombre: 'Área de fuerza', imagen: coachTraining }
-  ];
-
-  const entrenadores = [
-    {
-      nombre: 'Xabi Burgueño',
-      especialidad: 'Entrenador',
-      imagen: coachTraining
-    },
-    {
-      nombre: 'James William',
-      especialidad: 'Entrenador',
-      imagen: coachTraining
-    }
-  ];
-
-  const miniHorario = [
-    { dia: 'Lunes', hora: '9:00-10:00', clase: 'Técnica mañana' },
-    { dia: 'Lunes', hora: '18:00-19:00', clase: 'Técnica tarde' },
-    { dia: 'Martes', hora: '9:00-10:00', clase: 'Técnica mañana' },
-    { dia: 'Martes', hora: '18:00-19:00', clase: 'Técnica tarde' },
-    { dia: 'Miércoles', hora: '9:00-10:00', clase: 'Técnica mañana' },
-    { dia: 'Miércoles', hora: '18:00-19:00', clase: 'Técnica tarde' },
-    { dia: 'Jueves', hora: '9:00-10:00', clase: 'Técnica mañana' },
-    { dia: 'Jueves', hora: '18:00-19:00', clase: 'Técnica tarde' }
-  ];
-
-
-  const faq = [
-    {
-      pregunta: "¿Necesito experiencia previa?",
-      respuesta: "No, estamos preparados para acoger a cualquier tipo de nivel."
-    },
-    {
-      pregunta: "¿Qué necesito llevar?",
-      respuesta: "Solo vendas de boxeo, bucal y guantes."
-    },
-    {
-      pregunta: "¿Hay sparring obligatorio?",
-      respuesta: "No, el sparring es completamente opcional y siempre supervisado. Priorizamos el aprendizaje técnico y la seguridad."
-    },
-    {
-      pregunta: "¿Cuál es la edad mínima?",
-      respuesta: "Aceptamos desde los 16 años."
-    }
-  ];
-
-  return (
-    <>
+  const beneficios = [{
+    icon: <Target className="h-8 w-8" />,
+    title: 'Técnica desde cero',
+    description: 'Aprende base sólida sin miedo con nuestro programa de iniciación'
+  }, {
+    icon: <Users className="h-8 w-8" />,
+    title: 'Entrenadores titulados',
+    description: 'Seguimiento real y correcciones de profesionales certificados'
+  }, {
+    icon: <Shield className="h-8 w-8" />,
+    title: 'Ambiente seguro',
+    description: 'Sparring controlado, respeto y progreso en un entorno protegido'
+  }, {
+    icon: <TrendingUp className="h-8 w-8" />,
+    title: 'Resultados medibles',
+    description: 'Resistencia, potencia y confianza que puedes ver y sentir'
+  }];
+  const instalaciones = [{
+    nombre: 'Ring profesional',
+    imagen: boxingRing
+  }, {
+    nombre: 'Zona de sacos',
+    imagen: gymInterior
+  }, {
+    nombre: 'Área de fuerza',
+    imagen: coachTraining
+  }];
+  const entrenadores = [{
+    nombre: 'Xabi Burgueño',
+    especialidad: 'Entrenador',
+    imagen: coachTraining
+  }, {
+    nombre: 'James William',
+    especialidad: 'Entrenador',
+    imagen: coachTraining
+  }];
+  const miniHorario = [{
+    dia: 'Lunes',
+    hora: '9:00-10:00',
+    clase: 'Técnica mañana'
+  }, {
+    dia: 'Lunes',
+    hora: '18:00-19:00',
+    clase: 'Técnica tarde'
+  }, {
+    dia: 'Martes',
+    hora: '9:00-10:00',
+    clase: 'Técnica mañana'
+  }, {
+    dia: 'Martes',
+    hora: '18:00-19:00',
+    clase: 'Técnica tarde'
+  }, {
+    dia: 'Miércoles',
+    hora: '9:00-10:00',
+    clase: 'Técnica mañana'
+  }, {
+    dia: 'Miércoles',
+    hora: '18:00-19:00',
+    clase: 'Técnica tarde'
+  }, {
+    dia: 'Jueves',
+    hora: '9:00-10:00',
+    clase: 'Técnica mañana'
+  }, {
+    dia: 'Jueves',
+    hora: '18:00-19:00',
+    clase: 'Técnica tarde'
+  }];
+  const faq = [{
+    pregunta: "¿Necesito experiencia previa?",
+    respuesta: "No, estamos preparados para acoger a cualquier tipo de nivel."
+  }, {
+    pregunta: "¿Qué necesito llevar?",
+    respuesta: "Solo vendas de boxeo, bucal y guantes."
+  }, {
+    pregunta: "¿Hay sparring obligatorio?",
+    respuesta: "No, el sparring es completamente opcional y siempre supervisado. Priorizamos el aprendizaje técnico y la seguridad."
+  }, {
+    pregunta: "¿Cuál es la edad mínima?",
+    respuesta: "Aceptamos desde los 16 años."
+  }];
+  return <>
       <Navigation />
       
       <main>
@@ -100,8 +107,7 @@ const Index = () => {
             <h2 className="font-oswald font-bold text-4xl text-center mb-16">¿Por qué <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>?</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {beneficios.map((beneficio, index) => (
-                <Card key={index} className="text-center shadow-boxing hover:shadow-glow transition-all duration-300">
+              {beneficios.map((beneficio, index) => <Card key={index} className="text-center shadow-boxing hover:shadow-glow transition-all duration-300">
                   <CardContent className="p-8">
                     <div className="text-boxing-red mb-4 flex justify-center">
                       {beneficio.icon}
@@ -109,8 +115,7 @@ const Index = () => {
                     <h3 className="font-oswald font-bold text-xl mb-4">{beneficio.title}</h3>
                     <p className="font-inter text-muted-foreground">{beneficio.description}</p>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </section>
@@ -121,20 +126,14 @@ const Index = () => {
             <h2 className="font-oswald font-bold text-4xl text-center mb-16">Nuestras Instalaciones</h2>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {instalaciones.map((instalacion, index) => (
-                <Card key={index} className="overflow-hidden shadow-boxing hover:shadow-glow transition-all duration-300">
+              {instalaciones.map((instalacion, index) => <Card key={index} className="overflow-hidden shadow-boxing hover:shadow-glow transition-all duration-300">
                   <div className="aspect-video bg-boxing-grey/20 overflow-hidden">
-                    <img 
-                      src={instalacion.imagen} 
-                      alt={instalacion.nombre}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
+                    <img src={instalacion.imagen} alt={instalacion.nombre} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                   </div>
                   <CardContent className="p-4">
                     <h3 className="font-oswald font-semibold text-center">{instalacion.nombre}</h3>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </section>
@@ -145,22 +144,16 @@ const Index = () => {
             <h2 className="font-oswald font-bold text-4xl text-center mb-16">Nuestro Equipo</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {entrenadores.map((entrenador, index) => (
-                <Card key={index} className="shadow-boxing hover:shadow-glow transition-all duration-300">
+              {entrenadores.map((entrenador, index) => <Card key={index} className="shadow-boxing hover:shadow-glow transition-all duration-300">
                   <CardContent className="p-8 text-center">
                     <div className="w-32 h-32 mx-auto mb-6 bg-boxing-grey rounded-full overflow-hidden">
-                      <img 
-                        src={entrenador.imagen} 
-                        alt={entrenador.nombre}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={entrenador.imagen} alt={entrenador.nombre} className="w-full h-full object-cover" />
                     </div>
                     
                     <h3 className="font-oswald font-bold text-xl mb-2">{entrenador.nombre}</h3>
                     <p className="font-inter text-boxing-red font-semibold">{entrenador.especialidad}</p>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </section>
@@ -168,7 +161,7 @@ const Index = () => {
         {/* Mini-horario */}
         <section className="py-20 bg-boxing-grey/30">
           <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horarios Destacados</h2>
+            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horarios </h2>
             
             <Card className="max-w-5xl mx-auto shadow-boxing">
               <CardContent className="p-8">
@@ -179,8 +172,7 @@ const Index = () => {
                     <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
@@ -189,8 +181,7 @@ const Index = () => {
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
                         </CardContent>
-                      </Card>
-                    ))}
+                      </Card>)}
                   </div>
                 </div>
 
@@ -201,8 +192,7 @@ const Index = () => {
                     <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
@@ -211,8 +201,7 @@ const Index = () => {
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
                         </CardContent>
-                      </Card>
-                    ))}
+                      </Card>)}
                   </div>
                 </div>
 
@@ -242,16 +231,14 @@ const Index = () => {
             
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="w-full">
-                {faq.map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
+                {faq.map((item, index) => <AccordionItem key={index} value={`item-${index}`}>
                     <AccordionTrigger className="font-oswald font-semibold text-left">
                       {item.pregunta}
                     </AccordionTrigger>
                     <AccordionContent className="font-inter text-muted-foreground">
                       {item.respuesta}
                     </AccordionContent>
-                  </AccordionItem>
-                ))}
+                  </AccordionItem>)}
               </Accordion>
             </div>
           </div>
@@ -279,8 +266,6 @@ const Index = () => {
       </main>
 
       <Footer />
-    </>
-  );
+    </>;
 };
-
 export default Index;
