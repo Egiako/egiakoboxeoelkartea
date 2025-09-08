@@ -320,7 +320,6 @@ const AdminPanel = () => {
                               Fecha de Registro
                             </div>
                           </TableHead>
-                          <TableHead>Acciones</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -339,75 +338,9 @@ const AdminPanel = () => {
                                 day: 'numeric'
                               })}
                             </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                      <UserX className="h-4 w-4 mr-1" />
-                                      Desactivar
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>¿Seguro que quieres desactivar esta cuenta?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        El usuario <strong>{user.first_name} {user.last_name}</strong> no podrá acceder hasta que lo reactives.
-                                        <br /><br />
-                                        Sus datos se mantendrán en el sistema y podrás reactivarlo en cualquier momento.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
-                                        className="bg-orange-600 text-white hover:bg-orange-700"
-                                      >
-                                        Desactivar
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                                
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm">
-                                      <Trash2 className="h-4 w-4 mr-1" />
-                                      Expulsar
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>¿Seguro que quieres expulsar a este usuario?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        <strong>ATENCIÓN:</strong> Su cuenta y datos se eliminarán por completo. 
-                                        <br /><br />
-                                        El usuario <strong>{user.first_name} {user.last_name}</strong> perderá:
-                                        <br />• Toda su información de perfil
-                                        <br />• Historial de reservas
-                                        <br />• Acceso inmediato al sistema
-                                        <br /><br />
-                                        <strong>Solo podrá volver a entrar si se registra de nuevo y apruebas su solicitud.</strong>
-                                        <br /><br />
-                                        Esta acción NO se puede deshacer.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => expelUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Sí, expulsar usuario
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </TableCell>
                           </TableRow>)}
                         {filteredActiveUsers.length === 0 && <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                               {activeUsers.length === 0 
                                 ? "No hay usuarios activos en el sistema"
                                 : "No se encontraron usuarios activos que coincidan con la búsqueda"
