@@ -144,9 +144,9 @@ const AdminPanel = () => {
 
       if (error) throw error;
 
-      toast({
+              toast({
         title: "Usuario desactivado",
-        description: `${userName} ha sido desactivado del sistema. No podrá acceder a ninguna sección.`,
+        description: `${userName} ha sido desactivado. Ya no podrá acceder al sistema.`,
       });
       
       fetchData(); // Refresh data
@@ -168,9 +168,9 @@ const AdminPanel = () => {
 
       if (error) throw error;
 
-      toast({
+              toast({
         title: "Usuario reactivado",
-        description: `${userName} ha sido reactivado y puede acceder nuevamente al sistema.`,
+        description: `${userName} vuelve a estar activo y puede acceder al sistema.`,
       });
       
       fetchData(); // Refresh data
@@ -190,6 +190,21 @@ const AdminPanel = () => {
   );
 
   const approvedUsers = users.filter(user => user.approval_status === 'approved');
+  const activeUsers = approvedUsers.filter(user => user.is_active);
+  const inactiveUsers = approvedUsers.filter(user => !user.is_active);
+  
+  const filteredActiveUsers = activeUsers.filter(user => 
+    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.phone.includes(searchTerm)
+  );
+  
+  const filteredInactiveUsers = inactiveUsers.filter(user => 
+    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.phone.includes(searchTerm)
+  );
+  
   const filteredApprovedUsers = approvedUsers.filter(user => 
     user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -212,10 +227,14 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Lista de Inscritos
+                Usuarios Activos
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Usuarios Inactivos
               </TabsTrigger>
               <TabsTrigger value="requests" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -231,7 +250,7 @@ const AdminPanel = () => {
               </TabsTrigger>
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
-                Gestión de Bajas
+                Gestión de Estado
               </TabsTrigger>
             </TabsList>
 
@@ -240,10 +259,10 @@ const AdminPanel = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    Usuarios Registrados en Clases
+                    Usuarios Activos
                   </CardTitle>
                   <CardDescription>
-                    Lista completa de todos los usuarios que se han registrado en las clases de boxeo
+                    Lista de usuarios activos que pueden acceder al sistema y reservar clases
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -270,31 +289,72 @@ const AdminPanel = () => {
                               Teléfono
                             </div>
                           </TableHead>
+                          <TableHead>Estado</TableHead>
                           <TableHead>
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
                               Fecha de Registro
                             </div>
                           </TableHead>
+                          <TableHead>Acciones</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map(user => <TableRow key={user.id}>
+                        {filteredActiveUsers.map(user => <TableRow key={user.id}>
                             <TableCell className="font-medium">
                               {user.first_name} {user.last_name}
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
                             <TableCell>
+                              <Badge variant="default">Activo</Badge>
+                            </TableCell>
+                            <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="destructive" size="sm">
+                                    Desactivar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Seguro que quieres desactivar esta cuenta?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      El usuario <strong>{user.first_name} {user.last_name}</strong> ya no podrá acceder al sistema.
+                                      <br /><br />
+                                      <strong>Consecuencias:</strong>
+                                      <br />• No podrá iniciar sesión
+                                      <br />• Sus reservas futuras serán canceladas
+                                      <br />• No tendrá acceso a ninguna sección
+                                      <br /><br />
+                                      Podrás reactivarlo más tarde si es necesario.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Sí, desactivar cuenta
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </TableCell>
                           </TableRow>)}
-                        {filteredUsers.length === 0 && <TableRow>
-                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                              No se encontraron usuarios
+                        {filteredActiveUsers.length === 0 && <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              {activeUsers.length === 0 
+                                ? "No hay usuarios activos en el sistema"
+                                : "No se encontraron usuarios activos que coincidan con la búsqueda"
+                              }
                             </TableCell>
                           </TableRow>}
                       </TableBody>
@@ -302,13 +362,128 @@ const AdminPanel = () => {
                   </div>
 
                   <div className="mt-4 text-sm text-muted-foreground">
-                    Total de usuarios: {filteredUsers.length}
+                    Total de usuarios activos: {filteredActiveUsers.length}
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              
-              </TabsContent>
+            <TabsContent value="inactive" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <Users className="h-5 w-5" />
+                    Usuarios Inactivos
+                  </CardTitle>
+                  <CardDescription>
+                    Lista de usuarios desactivados que no pueden acceder al sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Buscar por nombre, apellido o teléfono..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Nombre
+                            </div>
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4" />
+                              Correo
+                            </div>
+                          </TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4" />
+                              Teléfono
+                            </div>
+                          </TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              Fecha de Registro
+                            </div>
+                          </TableHead>
+                          <TableHead>Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredInactiveUsers.map(user => <TableRow key={user.id}>
+                            <TableCell className="font-medium">
+                              {user.first_name} {user.last_name}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {user.email || 'No disponible'}
+                            </TableCell>
+                            <TableCell>{user.phone}</TableCell>
+                            <TableCell>
+                              <Badge variant="destructive">Inactivo</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(user.created_at).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    Reactivar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Reactivar usuario</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      El usuario <strong>{user.first_name} {user.last_name}</strong> vuelve a estar activo y puede acceder al sistema.
+                                      <br /><br />
+                                      Podrá iniciar sesión y reservar clases normalmente.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
+                                    >
+                                      Reactivar Usuario
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>)}
+                        {filteredInactiveUsers.length === 0 && <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              {inactiveUsers.length === 0 
+                                ? "No hay usuarios inactivos en el sistema"
+                                : "No se encontraron usuarios inactivos que coincidan con la búsqueda"
+                              }
+                            </TableCell>
+                          </TableRow>}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    Total de usuarios inactivos: {filteredInactiveUsers.length}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
               <TabsContent value="requests" className="space-y-6">
                 <RegistrationRequests />
@@ -322,15 +497,15 @@ const AdminPanel = () => {
                 <ClassManagement />
               </TabsContent>
 
-              <TabsContent value="management" className="space-y-6">
+            <TabsContent value="management" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-destructive">
-                    <Trash2 className="h-5 w-5" />
-                    Gestión de Estado de Usuario
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Gestión Completa de Estados
                   </CardTitle>
                   <CardDescription>
-                    Desactivar o reactivar usuarios del sistema. Los usuarios desactivados no pueden iniciar sesión ni acceder a ninguna sección. Sus reservas futuras se cancelarán automáticamente.
+                    Vista completa de todos los usuarios aprobados con capacidad de cambiar su estado activo/inactivo
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -347,6 +522,7 @@ const AdminPanel = () => {
                         <TableRow>
                           <TableHead>Nombre</TableHead>
                           <TableHead>Teléfono</TableHead>
+                          <TableHead>Estado</TableHead>
                           <TableHead>Fecha de Registro</TableHead>
                           <TableHead>Acciones</TableHead>
                         </TableRow>
@@ -355,9 +531,6 @@ const AdminPanel = () => {
                         {filteredApprovedUsers.map(user => <TableRow key={user.id}>
                             <TableCell className="font-medium">
                               {user.first_name} {user.last_name}
-                              <Badge variant="secondary" className="ml-2 text-xs">
-                                {user.approval_status}
-                              </Badge>
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
                             <TableCell>
@@ -373,21 +546,21 @@ const AdminPanel = () => {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="destructive" size="sm">
-                                      <Trash2 className="h-4 w-4 mr-2" />
                                       Desactivar
                                     </Button>
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>¿Desactivar usuario?</AlertDialogTitle>
+                                      <AlertDialogTitle>¿Seguro que quieres desactivar esta cuenta?</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Esta acción desactivará al usuario{' '}
-                                        <strong>{user.first_name} {user.last_name}</strong>:
-                                        <br />• No podrá iniciar sesión
-                                        <br />• Se cancelarán sus reservas futuras
-                                        <br />• No tendrá acceso a ninguna sección del sistema
+                                        El usuario <strong>{user.first_name} {user.last_name}</strong> ya no podrá acceder al sistema.
                                         <br /><br />
-                                        <strong>Podrás reactivar al usuario más tarde si es necesario.</strong>
+                                        <strong>Consecuencias:</strong>
+                                        <br />• No podrá iniciar sesión
+                                        <br />• Sus reservas futuras serán canceladas
+                                        <br />• No tendrá acceso a ninguna sección
+                                        <br /><br />
+                                        Podrás reactivarlo más tarde si es necesario.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -396,24 +569,42 @@ const AdminPanel = () => {
                                         onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
-                                        Desactivar Usuario
+                                        Sí, desactivar cuenta
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
                               ) : (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
-                                >
-                                  Reactivar
-                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      Reactivar
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Reactivar usuario</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        El usuario <strong>{user.first_name} {user.last_name}</strong> vuelve a estar activo y puede acceder al sistema.
+                                        <br /><br />
+                                        Podrá iniciar sesión y reservar clases normalmente.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
+                                      >
+                                        Reactivar Usuario
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               )}
                             </TableCell>
                           </TableRow>)}
                         {filteredApprovedUsers.length === 0 && <TableRow>
-                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                               {approvedUsers.length === 0 
                                 ? "No hay usuarios aprobados en el sistema"
                                 : "No se encontraron usuarios aprobados que coincidan con la búsqueda"
@@ -425,7 +616,7 @@ const AdminPanel = () => {
                   </div>
 
                   <div className="mt-4 flex justify-between items-center text-sm text-muted-foreground">
-                    <span>Usuarios aprobados disponibles para eliminar: {filteredApprovedUsers.length}</span>
+                    <span>Usuarios activos: {activeUsers.length} | Usuarios inactivos: {inactiveUsers.length}</span>
                     <span>Total de usuarios aprobados: {approvedUsers.length}</span>
                   </div>
                 </CardContent>
