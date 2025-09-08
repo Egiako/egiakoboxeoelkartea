@@ -323,17 +323,17 @@ const Horarios = () => {
             <div className="absolute top-12 left-1/4 w-20 h-20 bg-primary/5 rounded-full blur-2xl animate-fade-in"></div>
           </div>
 
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing">
             {/* Main title with enhanced styling */}
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-primary to-primary rounded-full"></div>
-                <Calendar className="h-8 w-8 text-primary animate-fade-in" />
-                <div className="w-12 h-0.5 bg-gradient-to-r from-primary via-primary to-transparent rounded-full"></div>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-white rounded-full"></div>
+                <Calendar className="h-8 w-8 text-white animate-fade-in" />
+                <div className="w-12 h-0.5 bg-gradient-to-r from-white via-white to-transparent rounded-full"></div>
               </div>
               
               <h1 className="text-5xl md:text-7xl font-oswald font-bold tracking-tight animate-fade-in">
-                <span className="bg-gradient-to-r from-boxing-red via-primary to-boxing-red bg-clip-text text-transparent bg-size-200 animate-[gradient_3s_ease-in-out_infinite]">
+                <span className="text-white">
                   {user ? 'Reserva tu Clase' : 'Horarios de Clases'}
                 </span>
               </h1>
