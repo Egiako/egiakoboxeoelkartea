@@ -37,6 +37,7 @@ const BookingManagement = () => {
         booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.profile.phone.includes(searchTerm) ||
+        (booking.profile.email && booking.profile.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         booking.class.title.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
@@ -141,7 +142,7 @@ const BookingManagement = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar usuario o clase..."
+                placeholder="Buscar por nombre, email, teléfono o clase..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -312,7 +313,8 @@ const BookingManagement = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-muted/20">
-                          <TableHead>Alumno</TableHead>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Email</TableHead>
                           <TableHead>Teléfono</TableHead>
                           <TableHead>Clases Restantes</TableHead>
                           <TableHead>Estado</TableHead>
@@ -329,6 +331,12 @@ const BookingManagement = () => {
                               <div className="flex items-center gap-2">
                                 {getAttendanceIcon(booking.attended)}
                                 <span>{booking.profile.first_name} {booking.profile.last_name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Mail className="h-3 w-3 text-muted-foreground" />
+                                {booking.profile.email || 'Sin email'}
                               </div>
                             </TableCell>
                             <TableCell>

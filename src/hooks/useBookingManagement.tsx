@@ -14,6 +14,7 @@ export interface BookingWithFullDetails {
     first_name: string;
     last_name: string;
     phone: string;
+    email: string | null;
     user_id: string;
   };
   class: {
@@ -52,6 +53,7 @@ export const useBookingManagement = () => {
             first_name,
             last_name,
             phone,
+            email,
             user_id
           ),
           classes!inner(
