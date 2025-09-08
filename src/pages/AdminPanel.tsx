@@ -23,6 +23,7 @@ interface UserProfile {
   created_at: string;
   user_id: string;
   email?: string;
+  approval_status: 'pending' | 'approved' | 'rejected';
 }
 interface BookingWithDetails {
   id: string;
@@ -99,7 +100,8 @@ const AdminPanel = () => {
             last_name,
             phone,
             created_at,
-            user_id
+            user_id,
+            approval_status
           ),
           classes!inner(
             title,
@@ -132,34 +134,41 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
-  const deleteUser = async (userId: string, profileId: string) => {
+  const deleteUser = async (userId: string, userName: string) => {
     try {
-      // First delete all bookings for this user
-      const {
-        error: bookingsError
-      } = await supabase.from('bookings').delete().eq('user_id', userId);
-      if (bookingsError) throw bookingsError;
-
-      // Then delete the profile (this will cascade to user_roles)
-      const {
-        error: profileError
-      } = await supabase.from('profiles').delete().eq('id', profileId);
-      if (profileError) throw profileError;
-      toast({
-        title: "Usuario eliminado",
-        description: "El usuario ha sido eliminado correctamente"
+      const { data, error } = await supabase.rpc('admin_delete_user_completely', {
+        target_user_id: userId
       });
+
+      if (error) throw error;
+
+      toast({
+        title: "Usuario eliminado completamente",
+        description: `${userName} ha sido eliminado del sistema junto con todos sus datos`,
+      });
+      
       fetchData(); // Refresh data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el usuario",
+        title: "Error al eliminar usuario",
+        description: error.message || "No se pudo eliminar el usuario",
         variant: "destructive"
       });
     }
   };
-  const filteredUsers = users.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
+  const filteredUsers = users.filter(user => 
+    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.phone.includes(searchTerm)
+  );
+
+  const approvedUsers = users.filter(user => user.approval_status === 'approved');
+  const filteredApprovedUsers = approvedUsers.filter(user => 
+    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    user.phone.includes(searchTerm)
+  );
   const filteredBookings = bookings.filter(booking => booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.phone.includes(searchTerm) || booking.class.title.toLowerCase().includes(searchTerm.toLowerCase()));
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -295,7 +304,8 @@ const AdminPanel = () => {
                     Gestión de Bajas de Usuario
                   </CardTitle>
                   <CardDescription>
-                    Eliminar usuarios del sistema. Esta acción no se puede deshacer.
+                    Eliminar usuarios aprobados del sistema. Esta acción no se puede deshacer.
+                    Solo se muestran usuarios con estado "aprobado" - las solicitudes pendientes deben gestionarse en la pestaña "Solicitudes".
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -317,9 +327,12 @@ const AdminPanel = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map(user => <TableRow key={user.id}>
+                        {filteredApprovedUsers.map(user => <TableRow key={user.id}>
                             <TableCell className="font-medium">
                               {user.first_name} {user.last_name}
+                              <Badge variant="secondary" className="ml-2 text-xs">
+                                {user.approval_status}
+                              </Badge>
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
                             <TableCell>
@@ -338,27 +351,43 @@ const AdminPanel = () => {
                                     <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                                     <AlertDialogDescription>
                                       Esta acción eliminará permanentemente al usuario{' '}
-                                      <strong>{user.first_name} {user.last_name}</strong> y todas sus reservas.
-                                      Esta acción no se puede deshacer.
+                                      <strong>{user.first_name} {user.last_name}</strong> y todos sus datos asociados:
+                                      <br />• Todas sus reservas de clases
+                                      <br />• Su información de clases mensuales
+                                      <br />• Sus roles en el sistema
+                                      <br />• Su perfil completo
+                                      <br /><br />
+                                      <strong>Esta acción no se puede deshacer.</strong>
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteUser(user.user_id, user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                      Eliminar Usuario
+                                    <AlertDialogAction 
+                                      onClick={() => deleteUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Eliminar Usuario Completamente
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
                             </TableCell>
                           </TableRow>)}
-                        {filteredUsers.length === 0 && <TableRow>
+                        {filteredApprovedUsers.length === 0 && <TableRow>
                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                              No se encontraron usuarios
+                              {approvedUsers.length === 0 
+                                ? "No hay usuarios aprobados en el sistema"
+                                : "No se encontraron usuarios aprobados que coincidan con la búsqueda"
+                              }
                             </TableCell>
                           </TableRow>}
                       </TableBody>
                     </Table>
+                  </div>
+
+                  <div className="mt-4 flex justify-between items-center text-sm text-muted-foreground">
+                    <span>Usuarios aprobados disponibles para eliminar: {filteredApprovedUsers.length}</span>
+                    <span>Total de usuarios aprobados: {approvedUsers.length}</span>
                   </div>
                 </CardContent>
               </Card>

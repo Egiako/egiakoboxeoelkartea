@@ -225,6 +225,10 @@ export type Database = {
           user_id: string
         }
       }
+      admin_delete_user_completely: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       admin_get_monthly_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
