@@ -236,16 +236,27 @@ const Horarios = () => {
     // Only show classes Monday-Thursday (1-4)
     if (dayOfWeek < 1 || dayOfWeek > 4) return [];
     
-    return classes.filter(c => 
-      c.day_of_week === dayOfWeek && 
-      (c.start_time === '09:00:00' || c.start_time === '18:00:00')
-    );
+    return classes.filter(c => c.day_of_week === dayOfWeek);
   };
 
   // Check if selected date is weekend
   const isWeekend = () => {
     const dayOfWeek = selectedDate.getDay();
     return dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6; // Sunday, Friday, Saturday
+  };
+
+  // Check if date can be booked (today or tomorrow only)
+  const canBookDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return targetDate >= today && targetDate <= tomorrow;
   };
 
   return (
@@ -325,8 +336,8 @@ const Horarios = () => {
                     {getSelectedDayClasses().map((classItem) => {
                       const currentCount = getCurrentBookingCount(classItem.id, selectedDate);
                       const isBooked = isAlreadyBooked(classItem.id, selectedDate);
-                      const isFull = currentCount >= classItem.max_students;
-                      const isPastDate = selectedDate < new Date(new Date().setHours(0,0,0,0));
+                              const isFull = currentCount >= classItem.max_students;
+                              const canBook = canBookDate(selectedDate);
                       
                       return (
                         <Card key={classItem.id} className="relative">
@@ -384,9 +395,9 @@ const Horarios = () => {
                                   size="lg"
                                   className="w-full"
                                   onClick={() => createBooking(classItem.id, selectedDate)}
-                                  disabled={loading || isFull || isPastDate || !user}
+                                  disabled={loading || isFull || !canBook || !user}
                                 >
-                                  {isPastDate ? 'Fecha pasada' : 
+                                  {!canBook ? 'Solo se puede reservar hoy y mañana' : 
                                    isFull ? 'Clase completa' : 
                                    !user ? 'Inicia sesión para reservar' :
                                    'Reservar plaza'}
