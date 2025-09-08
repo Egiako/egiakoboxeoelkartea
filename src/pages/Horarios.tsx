@@ -47,8 +47,8 @@ const Horarios = () => {
   const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    fetchClasses(); // Always fetch classes for everyone
     if (user) {
-      fetchClasses();
       fetchUserBookings();
       fetchUserProfile();
     }
@@ -309,30 +309,32 @@ const Horarios = () => {
   };
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        
-        <main className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="flex justify-between items-center max-w-4xl mx-auto mb-4">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Reserva tu Clase
-              </h1>
-              {!monthlyClassesLoading && monthlyClasses && (
-                <div className="bg-card border rounded-lg p-4">
-                  <div className="text-sm text-muted-foreground">Clases restantes este mes</div>
-                  <div className="text-2xl font-bold text-primary">
-                    {monthlyClasses.remaining_classes}/12
-                  </div>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      <main className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex justify-between items-center max-w-4xl mx-auto mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              {user ? 'Reserva tu Clase' : 'Horarios de Clases'}
+            </h1>
+            {user && !monthlyClassesLoading && monthlyClasses && (
+              <div className="bg-card border rounded-lg p-4">
+                <div className="text-sm text-muted-foreground">Clases restantes este mes</div>
+                <div className="text-2xl font-bold text-primary">
+                  {monthlyClasses.remaining_classes}/12
                 </div>
-              )}
-            </div>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Selecciona el día y la clase que prefieras. Las reservas se pueden hacer para hoy y mañana únicamente.
-            </p>
+              </div>
+            )}
           </div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            {user 
+              ? 'Selecciona el día y la clase que prefieras. Las reservas se pueden hacer para hoy y mañana únicamente.'
+              : 'Consulta nuestros horarios de clases. Para reservar una plaza, necesitas registrarte e iniciar sesión.'
+            }
+          </p>
+        </div>
 
           {/* Large Calendar */}
           <div className="max-w-lg mx-auto mb-8">
@@ -515,8 +517,7 @@ const Horarios = () => {
 
         <Footer />
       </div>
-    </ProtectedRoute>
-  );
-};
+    );
+  };
 
 export default Horarios;
