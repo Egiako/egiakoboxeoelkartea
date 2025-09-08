@@ -14,7 +14,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Users, Trash2, Search, Calendar, Phone, Mail, User } from 'lucide-react';
 import ClassManagement from '@/components/ClassManagement';
 import BookingManagement from '@/components/BookingManagement';
-
 interface UserProfile {
   id: string;
   first_name: string;
@@ -24,7 +23,6 @@ interface UserProfile {
   user_id: string;
   email?: string;
 }
-
 interface BookingWithDetails {
   id: string;
   booking_date: string;
@@ -37,64 +35,62 @@ interface BookingWithDetails {
     end_time: string;
   };
 }
-
 const AdminPanel = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     fetchData();
-    
+
     // Set up real-time subscriptions
-    const profilesSubscription = supabase
-      .channel('profiles-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    const bookingsSubscription = supabase
-      .channel('bookings-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
+    const profilesSubscription = supabase.channel('profiles-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'profiles'
+    }, () => {
+      fetchData();
+    }).subscribe();
+    const bookingsSubscription = supabase.channel('bookings-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'bookings'
+    }, () => {
+      fetchData();
+    }).subscribe();
     return () => {
       supabase.removeChannel(profilesSubscription);
       supabase.removeChannel(bookingsSubscription);
     };
   }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch all user profiles
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
 
+      // Fetch all user profiles
+      const {
+        data: profilesData,
+        error: profilesError
+      } = await supabase.from('profiles').select('*').order('created_at', {
+        ascending: false
+      });
       if (profilesError) throw profilesError;
 
       // Fetch user emails from auth.users through a custom function or RPC
-      const profilesWithEmails = await Promise.all(
-        (profilesData || []).map(async (profile) => {
-          // We can't directly query auth.users, so we'll store email in the booking context
-          return profile;
-        })
-      );
-
+      const profilesWithEmails = await Promise.all((profilesData || []).map(async profile => {
+        // We can't directly query auth.users, so we'll store email in the booking context
+        return profile;
+      }));
       setUsers(profilesWithEmails);
 
       // Fetch bookings with user and class details
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from('bookings')
-        .select(`
+      const {
+        data: bookingsData,
+        error: bookingsError
+      } = await supabase.from('bookings').select(`
           *,
           profiles!inner(
             id,
@@ -109,10 +105,9 @@ const AdminPanel = () => {
             start_time,
             end_time
           )
-        `)
-        .eq('status', 'confirmed')
-        .order('created_at', { ascending: false });
-
+        `).eq('status', 'confirmed').order('created_at', {
+        ascending: false
+      });
       if (bookingsError) throw bookingsError;
 
       // Transform the data to match our interface
@@ -124,7 +119,6 @@ const AdminPanel = () => {
         profile: booking.profiles,
         class: booking.classes
       }));
-
       setBookings(transformedBookings);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -137,30 +131,23 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
-
   const deleteUser = async (userId: string, profileId: string) => {
     try {
       // First delete all bookings for this user
-      const { error: bookingsError } = await supabase
-        .from('bookings')
-        .delete()
-        .eq('user_id', userId);
-
+      const {
+        error: bookingsError
+      } = await supabase.from('bookings').delete().eq('user_id', userId);
       if (bookingsError) throw bookingsError;
 
       // Then delete the profile (this will cascade to user_roles)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
-
+      const {
+        error: profileError
+      } = await supabase.from('profiles').delete().eq('id', profileId);
       if (profileError) throw profileError;
-
       toast({
         title: "Usuario eliminado",
-        description: "El usuario ha sido eliminado correctamente",
+        description: "El usuario ha sido eliminado correctamente"
       });
-
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -171,30 +158,14 @@ const AdminPanel = () => {
       });
     }
   };
-
-  const filteredUsers = users.filter(user =>
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone.includes(searchTerm)
-  );
-
-  const filteredBookings = bookings.filter(booking =>
-    booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.profile.phone.includes(searchTerm) ||
-    booking.class.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const filteredUsers = users.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
+  const filteredBookings = bookings.filter(booking => booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.phone.includes(searchTerm) || booking.class.title.toLowerCase().includes(searchTerm.toLowerCase()));
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Cargando panel de administración...</div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <ProtectedRoute requireAdmin>
+  return <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-background">
         <Navigation />
         
@@ -239,12 +210,7 @@ const AdminPanel = () => {
                   <div className="mb-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar por nombre, apellido o teléfono..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input placeholder="Buscar por nombre, apellido o teléfono..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                     </div>
                   </div>
 
@@ -273,28 +239,24 @@ const AdminPanel = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map((user) => (
-                          <TableRow key={user.id}>
+                        {filteredUsers.map(user => <TableRow key={user.id}>
                             <TableCell className="font-medium">
                               {user.first_name} {user.last_name}
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
                             <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                             </TableCell>
-                          </TableRow>
-                        ))}
-                        {filteredUsers.length === 0 && (
-                          <TableRow>
+                          </TableRow>)}
+                        {filteredUsers.length === 0 && <TableRow>
                             <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                               No se encontraron usuarios
                             </TableCell>
-                          </TableRow>
-                        )}
+                          </TableRow>}
                       </TableBody>
                     </Table>
                   </div>
@@ -305,60 +267,7 @@ const AdminPanel = () => {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Reservas Activas</CardTitle>
-                  <CardDescription>
-                    Detalles de todas las reservas confirmadas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Usuario</TableHead>
-                          <TableHead>Teléfono</TableHead>
-                          <TableHead>Clase</TableHead>
-                          <TableHead>Fecha Reserva</TableHead>
-                          <TableHead>Estado</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredBookings.map((booking) => (
-                          <TableRow key={booking.id}>
-                            <TableCell className="font-medium">
-                              {booking.profile.first_name} {booking.profile.last_name}
-                            </TableCell>
-                            <TableCell>{booking.profile.phone}</TableCell>
-                            <TableCell>
-                              {booking.class.title}
-                              <div className="text-sm text-muted-foreground">
-                                {booking.class.start_time} - {booking.class.end_time}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(booking.booking_date).toLocaleDateString('es-ES')}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="default">
-                                {booking.status === 'confirmed' ? 'Confirmada' : booking.status}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {filteredBookings.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                              No se encontraron reservas
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+              
               </TabsContent>
 
               <TabsContent value="bookings" className="space-y-6">
@@ -384,12 +293,7 @@ const AdminPanel = () => {
                   <div className="mb-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar usuario para eliminar..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input placeholder="Buscar usuario para eliminar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                     </div>
                   </div>
 
@@ -404,8 +308,7 @@ const AdminPanel = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map((user) => (
-                          <TableRow key={user.id}>
+                        {filteredUsers.map(user => <TableRow key={user.id}>
                             <TableCell className="font-medium">
                               {user.first_name} {user.last_name}
                             </TableCell>
@@ -432,25 +335,19 @@ const AdminPanel = () => {
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteUser(user.user_id, user.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
+                                    <AlertDialogAction onClick={() => deleteUser(user.user_id, user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                       Eliminar Usuario
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
                             </TableCell>
-                          </TableRow>
-                        ))}
-                        {filteredUsers.length === 0 && (
-                          <TableRow>
+                          </TableRow>)}
+                        {filteredUsers.length === 0 && <TableRow>
                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                               No se encontraron usuarios
                             </TableCell>
-                          </TableRow>
-                        )}
+                          </TableRow>}
                       </TableBody>
                     </Table>
                   </div>
@@ -462,8 +359,6 @@ const AdminPanel = () => {
 
         <Footer />
       </div>
-    </ProtectedRoute>
-  );
+    </ProtectedRoute>;
 };
-
 export default AdminPanel;
