@@ -17,11 +17,13 @@ const BookingManagement = () => {
 
   // Get unique classes and dates for filters
   const uniqueClasses = useMemo(() => {
-    const classes = bookings.map(b => ({
-      id: b.class.id,
-      title: b.class.title,
-      time: `${b.class.start_time} - ${b.class.end_time}`
-    }));
+    const classes = bookings
+      .filter((b) => b.class)
+      .map(b => ({
+        id: b.class.id,
+        title: b.class.title,
+        time: `${b.class.start_time} - ${b.class.end_time}`
+      }));
     return classes.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
   }, [bookings]);
 

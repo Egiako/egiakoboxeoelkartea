@@ -39,52 +39,56 @@ export const useBookingManagement = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-          id,
-          booking_date,
-          attended,
-          created_at,
-          user_id,
-          class_id,
-          profiles!inner(
-            id,
-            first_name,
-            last_name,
-            phone,
-            email,
-            user_id
-          ),
-          classes!inner(
-            id,
-            title,
-            start_time,
-            end_time,
-            day_of_week,
-            instructor
-          )
-        `)
+        .select('id, booking_date, attended, created_at, user_id, class_id')
         .eq('status', 'confirmed')
-        .order('booking_date', { ascending: false })
-        .order('start_time', { ascending: true, foreignTable: 'classes' });
+        .order('booking_date', { ascending: false });
 
-      if (error) throw error;
+      if (bookingsError) throw bookingsError;
 
-      // Get remaining classes for each user
-      const bookingsWithClasses = await Promise.all(
-        (data || []).map(async (booking: any) => {
+      // Batch fetch related profiles and classes to avoid N+1 queries
+      const userIds = Array.from(new Set((bookingsData || []).map((b: any) => b.user_id)));
+      const classIds = Array.from(new Set((bookingsData || []).map((b: any) => b.class_id)));
+
+      const [profilesRes, classesRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, first_name, last_name, phone, email, user_id')
+          .in('user_id', userIds.length ? userIds : ['00000000-0000-0000-0000-000000000000']),
+        supabase
+          .from('classes')
+          .select('id, title, start_time, end_time, day_of_week, instructor')
+          .in('id', classIds.length ? classIds : ['00000000-0000-0000-0000-000000000000'])
+      ]);
+
+      const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p]));
+      const classMap = new Map((classesRes.data || []).map((c: any) => [c.id, c]));
+
+      // Get remaining classes for each user and assemble full objects
+      const bookingsWithDetails = await Promise.all(
+        (bookingsData || []).map(async (booking: any) => {
           const { data: monthlyData } = await supabase
             .rpc('get_or_create_monthly_classes', { user_uuid: booking.user_id });
-          
+
+          const profile = profileMap.get(booking.user_id);
+          const klass = classMap.get(booking.class_id);
+
           return {
             ...booking,
+            profile,
+            class: klass,
             user_monthly_classes: monthlyData || { remaining_classes: 0 }
-          };
+          } as BookingWithFullDetails;
         })
       );
 
-      setBookings(bookingsWithClasses);
+      // Filter out any incomplete records to prevent runtime errors
+      const complete = bookingsWithDetails.filter(
+        (b) => b.profile && b.class
+      ) as BookingWithFullDetails[];
+
+      setBookings(complete);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
