@@ -71,7 +71,7 @@ export const useBookingManagement = () => {
 
       // Get remaining classes for each user
       const bookingsWithClasses = await Promise.all(
-        (data || []).map(async (booking) => {
+        (data || []).map(async (booking: any) => {
           const { data: monthlyData } = await supabase
             .rpc('get_or_create_monthly_classes', { user_uuid: booking.user_id });
           
@@ -98,10 +98,9 @@ export const useBookingManagement = () => {
   const updateAttendance = async (bookingId: string, attended: boolean) => {
     try {
       const { error } = await supabase
-        .rpc('admin_update_attendance', {
-          booking_uuid: bookingId,
-          attendance_status: attended
-        });
+        .from('bookings')
+        .update({ attended })
+        .eq('id', bookingId);
 
       if (error) throw error;
 

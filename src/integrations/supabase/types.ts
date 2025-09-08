@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          attended: boolean | null
           booking_date: string
           class_id: string
           created_at: string
@@ -26,6 +27,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attended?: boolean | null
           booking_date: string
           class_id: string
           created_at?: string
@@ -36,6 +38,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attended?: boolean | null
           booking_date?: string
           class_id?: string
           created_at?: string
@@ -190,6 +193,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_attendance: {
+        Args: { attendance_status: boolean; booking_uuid: string }
+        Returns: {
+          attended: boolean | null
+          booking_date: string
+          class_id: string
+          created_at: string
+          id: string
+          profile_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+      }
       admin_update_user_classes: {
         Args: { class_change: number; target_user_id: string }
         Returns: {

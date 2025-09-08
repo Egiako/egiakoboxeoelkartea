@@ -11,8 +11,8 @@ import { Calendar, Clock, User, Phone, Mail, CheckCircle, XCircle, Circle, Filte
 const BookingManagement = () => {
   const { bookings, loading, updateAttendance } = useBookingManagement();
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [classFilter, setClassFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [classFilter, setClassFilter] = useState('all');
   const [attendanceFilter, setAttendanceFilter] = useState('all');
 
   // Get unique classes and dates for filters
@@ -39,8 +39,8 @@ const BookingManagement = () => {
         booking.profile.phone.includes(searchTerm) ||
         booking.class.title.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesDate = !dateFilter || booking.booking_date === dateFilter;
-      const matchesClass = !classFilter || booking.class.id === classFilter;
+      const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
+      const matchesClass = classFilter === 'all' || booking.class.id === classFilter;
       
       let matchesAttendance = true;
       if (attendanceFilter === 'attended') matchesAttendance = booking.attended === true;
@@ -129,7 +129,7 @@ const BookingManagement = () => {
                 <SelectValue placeholder="Filtrar por fecha" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las fechas</SelectItem>
+                <SelectItem value="all">Todas las fechas</SelectItem>
                 {uniqueDates.map(date => (
                   <SelectItem key={date} value={date}>
                     {new Date(date).toLocaleDateString('es-ES', {
@@ -148,7 +148,7 @@ const BookingManagement = () => {
                 <SelectValue placeholder="Filtrar por clase" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las clases</SelectItem>
+                <SelectItem value="all">Todas las clases</SelectItem>
                 {uniqueClasses.map(cls => (
                   <SelectItem key={cls.id} value={cls.id}>
                     {cls.title} ({cls.time})
