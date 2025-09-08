@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import SobreNosotros from "./pages/SobreNosotros";
 import Precios from "./pages/Precios";
 import Registrate from "./pages/Registrate";
+import Horarios from "./pages/Horarios";
 import EventosSemana from "./pages/EventosSemana";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import AvisoLegal from "./pages/AvisoLegal";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/sobre-nosotros" element={<SobreNosotros />} />
             <Route path="/precios" element={<Precios />} />
             <Route path="/registrate" element={<Registrate />} />
+            <Route path="/horarios" element={<Horarios />} />
             <Route path="/eventos-semana" element={<EventosSemana />} />
             <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/aviso-legal" element={<AvisoLegal />} />

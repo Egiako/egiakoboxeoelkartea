@@ -43,6 +43,10 @@ const Registrate = () => {
       objetivo
     });
 
+    if (!error) {
+      navigate('/horarios');
+    }
+
     setIsLoading(false);
   };
 
@@ -55,6 +59,10 @@ const Registrate = () => {
     const password = formData.get('loginPassword') as string;
 
     const { error } = await signIn(email, password);
+    
+    if (!error) {
+      navigate('/horarios');
+    }
     
     setIsLoading(false);
   };
