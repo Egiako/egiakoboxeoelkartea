@@ -85,34 +85,50 @@ export const handler = async (req: Request): Promise<Response> => {
     // 2) Delete or flag auth user
     let authAction: 'deleted' | 'flagged' | 'skipped' = 'skipped';
 
+    // Helper to rename email and flag as expelled (to free original email)
+    const renameAndFlag = async () => {
+      const { data: targetUserData } = await supabaseAdmin.auth.admin.getUserById(target_user_id);
+      const currentEmail = targetUserData?.user?.email || '';
+      const ts = Date.now();
+      let newEmail = `expelled-${ts}@invalid.local`;
+      if (currentEmail.includes('@')) {
+        const [local, domain] = currentEmail.split('@');
+        newEmail = `${local}+expelled-${ts}@${domain}`;
+      }
+      const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(target_user_id, {
+        email: newEmail,
+        app_metadata: { expelled: true },
+      } as any);
+      if (updErr) throw updErr;
+    };
+
     if (delete_auth) {
       const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(target_user_id);
       if (delErr) {
-        // If deletion fails, attempt to flag instead
-        const { error: flagErr } = await supabaseAdmin.auth.admin.updateUserById(target_user_id, {
-          app_metadata: { expelled: true },
-        } as any);
-        if (flagErr) {
-          return new Response(JSON.stringify({ error: `No se pudo eliminar ni marcar al usuario: ${delErr.message}` }), {
+        // If deletion fails, rename email and flag to free the original email for re-signup
+        try {
+          await renameAndFlag();
+          authAction = 'flagged';
+        } catch (e) {
+          return new Response(JSON.stringify({ error: `No se pudo eliminar ni renombrar al usuario: ${delErr.message}` }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
           });
         }
-        authAction = 'flagged';
       } else {
         authAction = 'deleted';
       }
     } else {
-      const { error: flagErr } = await supabaseAdmin.auth.admin.updateUserById(target_user_id, {
-        app_metadata: { expelled: true },
-      } as any);
-      if (flagErr) {
+      // Explicitly keep auth record: rename email and flag
+      try {
+        await renameAndFlag();
+        authAction = 'flagged';
+      } catch (flagErr: any) {
         return new Response(JSON.stringify({ error: flagErr.message }), {
           status: 500,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
       }
-      authAction = 'flagged';
     }
 
     return new Response(
