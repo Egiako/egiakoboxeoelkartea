@@ -392,7 +392,7 @@ const Horarios = () => {
                       <Clock className="h-6 w-6 text-primary" />
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      <div className="text-sm font-medium text-white uppercase tracking-wide">
                         Clases restantes este mes
                       </div>
                       <div className="text-3xl font-oswald font-bold text-primary">
