@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,38 +9,54 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Mail, Lock, User, Phone, Target } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Registrate = () => {
-  const { toast } = useToast();
+  const { user, signUp, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleRegister = async (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulación de registro - En producción necesitará Supabase
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "¡Registro completado!",
-        description: "Para activar la funcionalidad completa de autenticación, conecta tu proyecto con Supabase.",
-      });
-    }, 2000);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const nombre = formData.get('nombre') as string;
+    const apellidos = formData.get('apellidos') as string;
+    const telefono = formData.get('telefono') as string;
+    const objetivo = formData.get('objetivo') as string;
+
+    const { error } = await signUp(email, password, {
+      nombre,
+      apellidos,
+      telefono,
+      objetivo
+    });
+
+    setIsLoading(false);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulación de login - En producción necesitará Supabase
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Funcionalidad de autenticación",
-        description: "Para habilitar login/logout, conecta tu proyecto con Supabase.",
-      });
-    }, 1500);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('loginEmail') as string;
+    const password = formData.get('loginPassword') as string;
+
+    const { error } = await signIn(email, password);
+    
+    setIsLoading(false);
   };
 
   return (
@@ -76,23 +92,25 @@ const Registrate = () => {
                           <Label htmlFor="nombre" className="font-inter font-semibold">Nombre *</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              id="nombre"
-                              type="text"
-                              placeholder="Tu nombre"
-                              className="pl-10"
-                              required
-                            />
+                           <Input 
+                             id="nombre"
+                             name="nombre"
+                             type="text"
+                             placeholder="Tu nombre"
+                             className="pl-10"
+                             required
+                           />
                           </div>
                         </div>
                         <div>
                           <Label htmlFor="apellidos" className="font-inter font-semibold">Apellidos *</Label>
-                          <Input 
-                            id="apellidos"
-                            type="text"
-                            placeholder="Tus apellidos"
-                            required
-                          />
+                           <Input 
+                             id="apellidos"
+                             name="apellidos"
+                             type="text"
+                             placeholder="Tus apellidos"
+                             required
+                           />
                         </div>
                       </div>
 
@@ -100,13 +118,14 @@ const Registrate = () => {
                         <Label htmlFor="email" className="font-inter font-semibold">Email *</Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="email"
-                            type="email"
-                            placeholder="tu@email.com"
-                            className="pl-10"
-                            required
-                          />
+                           <Input 
+                             id="email"
+                             name="email"
+                             type="email"
+                             placeholder="tu@email.com"
+                             className="pl-10"
+                             required
+                           />
                         </div>
                       </div>
 
@@ -114,13 +133,14 @@ const Registrate = () => {
                         <Label htmlFor="telefono" className="font-inter font-semibold">Teléfono *</Label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="telefono"
-                            type="tel"
-                            placeholder="000 000 000"
-                            className="pl-10"
-                            required
-                          />
+                           <Input 
+                             id="telefono"
+                             name="telefono"
+                             type="tel"
+                             placeholder="000 000 000"
+                             className="pl-10"
+                             required
+                           />
                         </div>
                       </div>
 
@@ -128,14 +148,15 @@ const Registrate = () => {
                         <Label htmlFor="password" className="font-inter font-semibold">Contraseña *</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="password"
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            className="pl-10"
-                            required
-                            minLength={8}
-                          />
+                           <Input 
+                             id="password"
+                             name="password"
+                             type="password"
+                             placeholder="Mínimo 8 caracteres"
+                             className="pl-10"
+                             required
+                             minLength={8}
+                           />
                         </div>
                       </div>
 
@@ -143,16 +164,16 @@ const Registrate = () => {
                         <Label htmlFor="objetivo" className="font-inter font-semibold">Objetivo (opcional)</Label>
                         <div className="relative">
                           <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Select>
-                            <SelectTrigger className="pl-10">
-                              <SelectValue placeholder="¿Qué te gustaría conseguir?" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="forma">Ponerme en forma</SelectItem>
-                              <SelectItem value="competir">Competir</SelectItem>
-                              <SelectItem value="tecnica">Aprender técnica</SelectItem>
-                            </SelectContent>
-                          </Select>
+                           <Select name="objetivo">
+                             <SelectTrigger className="pl-10">
+                               <SelectValue placeholder="¿Qué te gustaría conseguir?" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="forma">Ponerme en forma</SelectItem>
+                               <SelectItem value="competir">Competir</SelectItem>
+                               <SelectItem value="tecnica">Aprender técnica</SelectItem>
+                             </SelectContent>
+                           </Select>
                         </div>
                       </div>
 
@@ -185,13 +206,14 @@ const Registrate = () => {
                         <Label htmlFor="loginEmail" className="font-inter font-semibold">Email</Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="loginEmail"
-                            type="email"
-                            placeholder="tu@email.com"
-                            className="pl-10"
-                            required
-                          />
+                           <Input 
+                             id="loginEmail"
+                             name="loginEmail"
+                             type="email"
+                             placeholder="tu@email.com"
+                             className="pl-10"
+                             required
+                           />
                         </div>
                       </div>
 
@@ -199,13 +221,14 @@ const Registrate = () => {
                         <Label htmlFor="loginPassword" className="font-inter font-semibold">Contraseña</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="loginPassword"
-                            type="password"
-                            placeholder="Tu contraseña"
-                            className="pl-10"
-                            required
-                          />
+                           <Input 
+                             id="loginPassword"
+                             name="loginPassword"
+                             type="password"
+                             placeholder="Tu contraseña"
+                             className="pl-10"
+                             required
+                           />
                         </div>
                       </div>
 
