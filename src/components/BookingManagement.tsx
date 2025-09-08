@@ -51,24 +51,48 @@ const BookingManagement = () => {
     });
   }, [bookings, searchTerm, dateFilter, classFilter, attendanceFilter]);
 
-  // Group bookings by class and date
-  const groupedBookings = useMemo(() => {
-    const groups: { [key: string]: BookingWithFullDetails[] } = {};
+  // Group bookings by date first, then by class
+  const groupedByDay = useMemo(() => {
+    const dayGroups: { [key: string]: BookingWithFullDetails[] } = {};
     
     filteredBookings.forEach(booking => {
-      const key = `${booking.booking_date}-${booking.class.id}`;
-      if (!groups[key]) {
-        groups[key] = [];
+      if (!dayGroups[booking.booking_date]) {
+        dayGroups[booking.booking_date] = [];
       }
-      groups[key].push(booking);
+      dayGroups[booking.booking_date].push(booking);
     });
 
-    return Object.entries(groups).map(([key, bookings]) => ({
-      key,
-      date: bookings[0].booking_date,
-      class: bookings[0].class,
-      bookings: bookings.sort((a, b) => `${a.profile.first_name} ${a.profile.last_name}`.localeCompare(`${b.profile.first_name} ${b.profile.last_name}`))
-    })).sort((a, b) => b.date.localeCompare(a.date) || a.class.start_time.localeCompare(b.class.start_time));
+    return Object.entries(dayGroups).map(([date, dayBookings]) => {
+      // Group by class within the day
+      const classGroups: { [key: string]: BookingWithFullDetails[] } = {};
+      
+      dayBookings.forEach(booking => {
+        if (!classGroups[booking.class.id]) {
+          classGroups[booking.class.id] = [];
+        }
+        classGroups[booking.class.id].push(booking);
+      });
+
+      const classes = Object.entries(classGroups).map(([classId, bookings]) => ({
+        class: bookings[0].class,
+        bookings: bookings.sort((a, b) => `${a.profile.first_name} ${a.profile.last_name}`.localeCompare(`${b.profile.first_name} ${b.profile.last_name}`))
+      })).sort((a, b) => a.class.start_time.localeCompare(b.class.start_time));
+
+      const totalReservations = dayBookings.length;
+      const attendedCount = dayBookings.filter(b => b.attended === true).length;
+      const notAttendedCount = dayBookings.filter(b => b.attended === false).length;
+      const pendingCount = dayBookings.filter(b => b.attended === null).length;
+
+      return {
+        date,
+        classes,
+        totalReservations,
+        attendedCount,
+        notAttendedCount,
+        pendingCount,
+        dayBookings
+      };
+    }).sort((a, b) => b.date.localeCompare(a.date));
   }, [filteredBookings]);
 
   const getDayName = (dayOfWeek: number) => {
@@ -200,118 +224,169 @@ const BookingManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Grouped Bookings */}
-      <div className="space-y-4">
-        {groupedBookings.map(group => (
-          <Card key={group.key} className="overflow-hidden">
-            <CardHeader className="bg-muted/50 pb-3">
+      {/* Grouped by Day */}
+      <div className="space-y-6">
+        {groupedByDay.map(day => (
+          <Card key={day.date} className="overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(group.date).toLocaleDateString('es-ES', {
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {new Date(day.date).toLocaleDateString('es-ES', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-4 mt-1">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {group.class.title} - {group.class.start_time} a {group.class.end_time}
-                    </span>
-                    {group.class.instructor && (
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        Instructor: {group.class.instructor}
-                      </span>
-                    )}
+                  <CardDescription className="mt-2">
+                    Total de reservas del día
                   </CardDescription>
                 </div>
-                <Badge variant="outline">
-                  {group.bookings.length} {group.bookings.length === 1 ? 'reserva' : 'reservas'}
-                </Badge>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold">{day.totalReservations}</div>
+                    <div className="text-xs text-muted-foreground">Total</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-600">{day.pendingCount}</div>
+                    <div className="text-xs text-muted-foreground">Pendientes</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Day Statistics */}
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="text-lg font-bold text-green-600">{day.attendedCount}</div>
+                    <p className="text-xs text-muted-foreground">Asistieron</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="text-lg font-bold text-red-600">{day.notAttendedCount}</div>
+                    <p className="text-xs text-muted-foreground">No Asistieron</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="text-lg font-bold text-muted-foreground">{day.pendingCount}</div>
+                    <p className="text-xs text-muted-foreground">Pendientes</p>
+                  </CardContent>
+                </Card>
               </div>
             </CardHeader>
+            
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Alumno</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead>Clases Restantes</TableHead>
-                    <TableHead>Estado Asistencia</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {group.bookings.map((booking) => (
-                    <TableRow 
-                      key={booking.id}
-                      className={booking.attended === false ? 'bg-red-50 hover:bg-red-100' : ''}
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {getAttendanceIcon(booking.attended)}
-                          {booking.profile.first_name} {booking.profile.last_name}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                          {booking.profile.phone}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={booking.user_monthly_classes?.remaining_classes === 0 ? "destructive" : "secondary"}
-                          className="flex items-center gap-1 w-fit"
-                        >
-                          {booking.user_monthly_classes?.remaining_classes === 0 && (
-                            <AlertTriangle className="h-3 w-3" />
+              {/* Classes for this day */}
+              <div className="space-y-0">
+                {day.classes.map((classGroup, index) => (
+                  <div key={classGroup.class.id} className={index > 0 ? "border-t" : ""}>
+                    {/* Class Header */}
+                    <div className="bg-muted/30 px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-primary" />
+                            <span className="font-semibold">{classGroup.class.start_time} - {classGroup.class.end_time}</span>
+                          </div>
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">
+                            {classGroup.class.title}
+                          </Badge>
+                          {classGroup.class.instructor && (
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {classGroup.class.instructor}
+                            </span>
                           )}
-                          {booking.user_monthly_classes?.remaining_classes || 0} restantes
+                        </div>
+                        <Badge variant="outline">
+                          {classGroup.bookings.length} {classGroup.bookings.length === 1 ? 'alumno' : 'alumnos'}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {getAttendanceBadge(booking.attended)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {booking.attended !== true && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateAttendance(booking.id, true)}
-                              className="text-green-600 hover:text-green-700 hover:border-green-300"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Asistió
-                            </Button>
-                          )}
-                          {booking.attended !== false && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateAttendance(booking.id, false)}
-                              className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              No Asistió
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                    </div>
+                    
+                    {/* Students Table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/20">
+                          <TableHead>Alumno</TableHead>
+                          <TableHead>Teléfono</TableHead>
+                          <TableHead>Clases Restantes</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {classGroup.bookings.map((booking) => (
+                          <TableRow 
+                            key={booking.id}
+                            className={booking.attended === false ? 'bg-red-50/50 hover:bg-red-100/50' : ''}
+                          >
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                {getAttendanceIcon(booking.attended)}
+                                <span>{booking.profile.first_name} {booking.profile.last_name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Phone className="h-3 w-3 text-muted-foreground" />
+                                {booking.profile.phone}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={booking.user_monthly_classes?.remaining_classes === 0 ? "destructive" : "secondary"}
+                                className="flex items-center gap-1 w-fit text-xs"
+                              >
+                                {booking.user_monthly_classes?.remaining_classes === 0 && (
+                                  <AlertTriangle className="h-3 w-3" />
+                                )}
+                                {booking.user_monthly_classes?.remaining_classes || 0}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {getAttendanceBadge(booking.attended)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {booking.attended !== true && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => updateAttendance(booking.id, true)}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 px-2"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {booking.attended !== false && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => updateAttendance(booking.id, false)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 px-2"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         ))}
 
-        {groupedBookings.length === 0 && (
+        {groupedByDay.length === 0 && (
           <Card>
             <CardContent className="py-12">
               <div className="text-center text-muted-foreground">
