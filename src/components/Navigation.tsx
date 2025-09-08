@@ -11,12 +11,16 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useUserRole();
 
-  const navItems = [
+  const baseNavItems = [
     { name: 'Inicio', href: '/' },
     { name: 'Sobre nosotros', href: '/sobre-nosotros' },
     { name: 'Precios', href: '/precios' },
-    { name: 'Horarios', href: '/horarios' },
   ];
+
+  // Only show Horarios link to authenticated users
+  const navItems = user 
+    ? [...baseNavItems, { name: 'Horarios', href: '/horarios' }]
+    : baseNavItems;
 
   const isActive = (href: string) => location.pathname === href;
 
