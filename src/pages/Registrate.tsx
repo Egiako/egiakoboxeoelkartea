@@ -141,7 +141,7 @@ const Registrate = () => {
                       Si tienes preguntas sobre tu solicitud, no dudes en contactarnos:
                     </p>
                     <div className="text-sm space-y-1">
-                      <p>📧 info@egiako.com</p>
+                      <p>📧 egiakobe@gmail.com</p>
                       <p>📞 669 339 812</p>
                     </div>
                   </CardContent>
