@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Users, Trash2, Search, Calendar, Phone, Mail, User } from 'lucide-react';
 import ClassManagement from '@/components/ClassManagement';
+import BookingManagement from '@/components/BookingManagement';
 
 interface UserProfile {
   id: string;
@@ -204,10 +205,14 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Lista de Inscritos
+              </TabsTrigger>
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Reservas por Clase
               </TabsTrigger>
               <TabsTrigger value="classes" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -354,6 +359,10 @@ const AdminPanel = () => {
                   </div>
                 </CardContent>
               </Card>
+              </TabsContent>
+
+              <TabsContent value="bookings" className="space-y-6">
+                <BookingManagement />
               </TabsContent>
 
               <TabsContent value="classes" className="space-y-6">
