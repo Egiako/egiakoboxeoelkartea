@@ -230,6 +230,24 @@ const Horarios = () => {
     return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   };
 
+  // Get classes for selected day
+  const getSelectedDayClasses = () => {
+    const dayOfWeek = selectedDate.getDay();
+    // Only show classes Monday-Thursday (1-4)
+    if (dayOfWeek < 1 || dayOfWeek > 4) return [];
+    
+    return classes.filter(c => 
+      c.day_of_week === dayOfWeek && 
+      (c.start_time === '09:00:00' || c.start_time === '18:00:00')
+    );
+  };
+
+  // Check if selected date is weekend
+  const isWeekend = () => {
+    const dayOfWeek = selectedDate.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6; // Sunday, Friday, Saturday
+  };
+
   return (
     <>
       <Navigation />
@@ -242,172 +260,186 @@ const Horarios = () => {
               Horarios y Reservas
             </h1>
             <p className="font-inter text-muted-foreground max-w-2xl mx-auto">
-              Reserva tu plaza en las clases de boxeo. Máximo 10 estudiantes por clase.
-              Selecciona el día y horario que mejor se adapte a ti.
+              Selecciona un día para ver las clases disponibles. Máximo 10 estudiantes por clase.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Calendario */}
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-oswald flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5" />
-                    Selecciona una semana
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
-                    className="rounded-md border"
-                    locale={es}
-                  />
-                  
-                  {/* Mis reservas */}
-                  {bookings.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="font-oswald font-semibold mb-3">Mis reservas</h3>
-                      <div className="space-y-2">
-                        {bookings.map((booking) => {
-                          const classInfo = classes.find(c => c.id === booking.class_id);
-                          return (
-                            <div key={booking.id} className="flex items-center justify-between p-2 bg-boxing-grey/20 rounded">
-                              <div className="text-sm">
-                                <div className="font-medium">{classInfo?.title}</div>
-                                <div className="text-muted-foreground">
-                                  {format(new Date(booking.booking_date), 'dd/MM/yyyy', { locale: es })}
-                                </div>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => cancelBooking(booking.id)}
-                                disabled={loading}
-                              >
-                                Cancelar
-                              </Button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+          {/* Large Calendar */}
+          <div className="max-w-lg mx-auto mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-oswald text-center flex items-center justify-center gap-2">
+                  <CalendarDays className="h-6 w-6" />
+                  Selecciona un día
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  className="rounded-md border scale-110 pointer-events-auto"
+                  locale={es}
+                  modifiers={{
+                    weekend: (date) => {
+                      const day = date.getDay();
+                      return day === 0 || day === 5 || day === 6; // Sunday, Friday, Saturday
+                    }
+                  }}
+                  modifiersStyles={{
+                    weekend: { 
+                      color: 'hsl(var(--destructive))',
+                      fontWeight: 'bold'
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Selected Day Classes */}
+          <div className="max-w-4xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-oswald text-center">
+                  {DAYS_OF_WEEK[selectedDate.getDay()]} - {format(selectedDate, 'dd MMMM yyyy', { locale: es })}
+                  {isSameDay(selectedDate, new Date()) && (
+                    <Badge variant="secondary" className="ml-2">Hoy</Badge>
                   )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Horarios de la semana */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-oswald">
-                    Semana del {format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'dd', { locale: es })} - {format(addDays(startOfWeek(selectedDate, { weekStartsOn: 1 }), 6), 'dd MMMM yyyy', { locale: es })}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    {getWeekDates().map((date) => {
-                      const dayOfWeek = date.getDay();
-                      const dayClasses = classes.filter(c => c.day_of_week === dayOfWeek);
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isWeekend() ? (
+                  <div className="text-center py-12">
+                    <div className="text-destructive text-6xl mb-4">😴</div>
+                    <h3 className="font-oswald font-semibold text-xl text-destructive mb-2">
+                      No hay clases disponibles
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Los fines de semana y viernes no tenemos clases programadas.
+                      Selecciona un día de lunes a jueves.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {getSelectedDayClasses().map((classItem) => {
+                      const currentCount = getCurrentBookingCount(classItem.id, selectedDate);
+                      const isBooked = isAlreadyBooked(classItem.id, selectedDate);
+                      const isFull = currentCount >= classItem.max_students;
+                      const isPastDate = selectedDate < new Date(new Date().setHours(0,0,0,0));
                       
-                      if (dayClasses.length === 0) return null;
-
                       return (
-                        <div key={date.toISOString()} className="border rounded-lg p-4">
-                          <h3 className="font-oswald font-semibold text-lg mb-3 flex items-center gap-2">
-                            {DAYS_OF_WEEK[dayOfWeek]} - {format(date, 'dd/MM', { locale: es })}
-                            {isSameDay(date, new Date()) && (
-                              <Badge variant="secondary">Hoy</Badge>
-                            )}
-                          </h3>
-                          
-                          <div className="grid md:grid-cols-2 gap-3">
-                            {dayClasses.map((classItem) => {
-                              const currentCount = getCurrentBookingCount(classItem.id, date);
-                              const isBooked = isAlreadyBooked(classItem.id, date);
-                              const isFull = currentCount >= classItem.max_students;
-                              const isPastDate = date < new Date(new Date().setHours(0,0,0,0));
-                              
-                              return (
-                                <Card key={classItem.id} className="relative">
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <h4 className="font-oswald font-semibold">{classItem.title}</h4>
-                                      {isBooked && (
-                                        <Badge className="bg-green-500">
-                                          <CheckCircle className="h-3 w-3 mr-1" />
-                                          Reservado
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    
-                                    <p className="text-sm text-muted-foreground mb-3">
-                                      {classItem.description}
-                                    </p>
-                                    
-                                    <div className="space-y-2 text-sm">
-                                      <div className="flex items-center gap-2">
-                                        <Clock className="h-4 w-4" />
-                                        {classItem.start_time} - {classItem.end_time}
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <User className="h-4 w-4" />
-                                        Instructor: {classItem.instructor}
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4" />
-                                        {currentCount}/{classItem.max_students} estudiantes
-                                        {isFull && (
-                                          <Badge variant="destructive">Completa</Badge>
-                                        )}
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="mt-4">
-                                      {isBooked ? (
-                                        <Button 
-                                          variant="outline"
-                                          className="w-full"
-                                          onClick={() => {
-                                            const booking = bookings.find(b => 
-                                              b.class_id === classItem.id && 
-                                              b.booking_date === format(date, 'yyyy-MM-dd')
-                                            );
-                                            if (booking) cancelBooking(booking.id);
-                                          }}
-                                          disabled={loading}
-                                        >
-                                          Cancelar reserva
-                                        </Button>
-                                      ) : (
-                                        <Button
-                                          variant="hero"
-                                          className="w-full"
-                                          onClick={() => createBooking(classItem.id, date)}
-                                          disabled={loading || isFull || isPastDate || !user}
-                                        >
-                                          {isPastDate ? 'Fecha pasada' : 
-                                           isFull ? 'Clase completa' : 
-                                           !user ? 'Inicia sesión para reservar' :
-                                           'Reservar plaza'}
-                                        </Button>
-                                      )}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <Card key={classItem.id} className="relative">
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <h4 className="font-oswald font-semibold text-xl">{classItem.title}</h4>
+                              {isBooked && (
+                                <Badge className="bg-green-500">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Reservado
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <p className="text-muted-foreground mb-4">
+                              {classItem.description}
+                            </p>
+                            
+                            <div className="space-y-3 text-sm mb-6">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-5 w-5 text-primary" />
+                                <span className="font-medium">{classItem.start_time} - {classItem.end_time}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
+                                <span className="font-medium">
+                                  Aforo: {currentCount}/{classItem.max_students} estudiantes
+                                </span>
+                                {isFull && (
+                                  <Badge variant="destructive">Completa</Badge>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              {isBooked ? (
+                                <Button 
+                                  variant="outline"
+                                  size="lg"
+                                  className="w-full"
+                                  onClick={() => {
+                                    const booking = bookings.find(b => 
+                                      b.class_id === classItem.id && 
+                                      b.booking_date === format(selectedDate, 'yyyy-MM-dd')
+                                    );
+                                    if (booking) cancelBooking(booking.id);
+                                  }}
+                                  disabled={loading}
+                                >
+                                  Cancelar reserva
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="hero"
+                                  size="lg"
+                                  className="w-full"
+                                  onClick={() => createBooking(classItem.id, selectedDate)}
+                                  disabled={loading || isFull || isPastDate || !user}
+                                >
+                                  {isPastDate ? 'Fecha pasada' : 
+                                   isFull ? 'Clase completa' : 
+                                   !user ? 'Inicia sesión para reservar' :
+                                   'Reservar plaza'}
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
+                    
+                    {getSelectedDayClasses().length === 0 && !isWeekend() && (
+                      <div className="col-span-2 text-center py-8">
+                        <p className="text-muted-foreground">No hay clases programadas para este día.</p>
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                )}
+
+                {/* My Bookings Section */}
+                {bookings.length > 0 && (
+                  <div className="mt-8 pt-8 border-t">
+                    <h3 className="font-oswald font-semibold text-lg mb-4 text-center">Mis reservas activas</h3>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {bookings.map((booking) => {
+                        const classInfo = classes.find(c => c.id === booking.class_id);
+                        return (
+                          <div key={booking.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                            <div>
+                              <div className="font-medium">{classInfo?.title}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {format(new Date(booking.booking_date), 'dd/MM/yyyy', { locale: es })}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {classInfo?.start_time} - {classInfo?.end_time}
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => cancelBooking(booking.id)}
+                              disabled={loading}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
