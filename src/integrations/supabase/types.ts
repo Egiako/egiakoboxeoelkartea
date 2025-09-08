@@ -196,6 +196,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_advance_all_to_next_month: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: number
+          remaining_classes: number
+          user_id: string
+          year: number
+        }[]
+      }
+      admin_get_monthly_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          average_remaining: number
+          current_month: number
+          current_year: number
+          total_users: number
+          users_with_classes: number
+          users_without_classes: number
+        }[]
+      }
+      admin_reset_user_monthly_classes: {
+        Args: { new_remaining?: number; target_user_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          month: number
+          remaining_classes: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+      }
       admin_update_attendance: {
         Args: { attendance_status: boolean; booking_uuid: string }
         Returns: {
