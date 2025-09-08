@@ -168,31 +168,66 @@ const Index = () => {
         {/* Mini-horario */}
         <section className="py-20 bg-boxing-grey/30">
           <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horario Destacado</h2>
+            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horarios Destacados</h2>
             
-            <Card className="max-w-4xl mx-auto shadow-boxing">
+            <Card className="max-w-5xl mx-auto shadow-boxing">
               <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                  {miniHorario.map((clase, index) => (
-                    <div key={index} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-oswald font-bold text-lg">{clase.dia}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {clase.hora}
-                        </Badge>
-                      </div>
-                      <h4 className="font-inter font-semibold text-boxing-red">{clase.clase}</h4>
-                    </div>
-                  ))}
+                {/* Horarios de Mañana */}
+                <div className="mb-8">
+                  <div className="text-center mb-6">
+                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Mañana</h3>
+                    <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-4 text-center">
+                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <Clock className="h-4 w-4 text-boxing-red" />
+                            <span className="font-inter font-semibold text-boxing-red">9:00 - 10:00</span>
+                          </div>
+                          <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="text-center">
+                {/* Horarios de Tarde */}
+                <div className="mb-8">
+                  <div className="text-center mb-6">
+                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Tarde</h3>
+                    <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-4 text-center">
+                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <Clock className="h-4 w-4 text-boxing-black" />
+                            <span className="font-inter font-semibold text-boxing-black">18:00 - 19:00</span>
+                          </div>
+                          <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-center border-t pt-6">
                   <p className="font-inter text-muted-foreground mb-6">
-                    Ver horario completo requiere registro
+                    Ver horario completo y reservar clases requiere registro
                   </p>
-                  <Button asChild variant="hero" className="font-oswald font-semibold">
-                    <Link to="/registrate">Ver todos los eventos</Link>
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild variant="hero" className="font-oswald font-semibold">
+                      <Link to="/registrate">Registrarse ahora</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="font-oswald font-semibold">
+                      <Link to="/horarios">Ver todos los horarios</Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
