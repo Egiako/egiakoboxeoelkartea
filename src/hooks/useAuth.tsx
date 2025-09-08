@@ -160,34 +160,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        toast({
-          title: "Error al cerrar sesión",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
-        // Clear local state immediately
+      // Check if there's a session first (production can lose session tokens between domains)
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      // If no session, perform a local sign out and redirect gracefully
+      if (!sessionData.session) {
+        await supabase.auth.signOut({ scope: 'local' });
         setUser(null);
         setSession(null);
         setIsActive(null);
-        
-        toast({
-          title: "Sesión cerrada",
-          description: "Has cerrado sesión correctamente."
-        });
-        
-        // Navigate to home page after successful logout
+        toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
         window.location.href = '/';
+        return;
       }
+
+      // Try global sign out; if session missing error, fall back to local
+      const { error } = await supabase.auth.signOut();
+      if (error && /auth session missing/i.test(error.message)) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+
+      // Clear local state and redirect
+      setUser(null);
+      setSession(null);
+      setIsActive(null);
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      window.location.href = '/';
     } catch (error: any) {
-      toast({
-        title: "Error al cerrar sesión",
-        description: "Ocurrió un error inesperado",
-        variant: "destructive"
-      });
+      // Last resort: local sign out and redirect
+      try { await supabase.auth.signOut({ scope: 'local' }); } catch {}
+      setUser(null);
+      setSession(null);
+      setIsActive(null);
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      window.location.href = '/';
     }
   };
 
