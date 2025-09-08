@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -39,6 +40,7 @@ const Horarios = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { monthlyClasses, loading: monthlyClassesLoading, refreshMonthlyClasses } = useMonthlyClasses();
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
@@ -145,6 +147,16 @@ const Horarios = () => {
       return;
     }
 
+    // Check if user has remaining classes
+    if (!monthlyClasses || monthlyClasses.remaining_classes <= 0) {
+      toast({
+        title: "Sin clases disponibles",
+        description: "Has agotado tus 12 clases mensuales. El contador se reinicia el 1 de cada mes.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     
     const bookingDate = format(date, 'yyyy-MM-dd');
@@ -189,6 +201,7 @@ const Horarios = () => {
         });
         fetchUserBookings();
         fetchBookingCounts();
+        refreshMonthlyClasses();
       }
     } catch (error) {
       toast({
@@ -223,6 +236,7 @@ const Horarios = () => {
       });
       fetchUserBookings();
       fetchBookingCounts();
+      refreshMonthlyClasses();
     }
     
     setLoading(false);
@@ -280,9 +294,19 @@ const Horarios = () => {
         <main className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Reserva tu Clase
-            </h1>
+            <div className="flex justify-between items-center max-w-4xl mx-auto mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Reserva tu Clase
+              </h1>
+              {!monthlyClassesLoading && monthlyClasses && (
+                <div className="bg-card border rounded-lg p-4">
+                  <div className="text-sm text-muted-foreground">Clases restantes este mes</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {monthlyClasses.remaining_classes}/12
+                  </div>
+                </div>
+              )}
+            </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Selecciona el día y la clase que prefieras. Las reservas se pueden hacer para hoy y mañana únicamente.
             </p>

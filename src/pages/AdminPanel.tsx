@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Users, Trash2, Search, Calendar, Phone, Mail, User } from 'lucide-react';
+import ClassManagement from '@/components/ClassManagement';
 
 interface UserProfile {
   id: string;
@@ -203,10 +204,14 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Lista de Inscritos
+              </TabsTrigger>
+              <TabsTrigger value="classes" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Gestionar Clases
               </TabsTrigger>
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
@@ -349,9 +354,13 @@ const AdminPanel = () => {
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="management" className="space-y-6">
+              <TabsContent value="classes" className="space-y-6">
+                <ClassManagement />
+              </TabsContent>
+
+              <TabsContent value="management" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-destructive">

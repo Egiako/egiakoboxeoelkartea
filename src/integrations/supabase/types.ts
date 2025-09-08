@@ -134,6 +134,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_monthly_classes: {
+        Row: {
+          created_at: string
+          id: string
+          month: number
+          remaining_classes: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: number
+          remaining_classes?: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: number
+          remaining_classes?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -160,6 +190,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_user_classes: {
+        Args: { class_change: number; target_user_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          month: number
+          remaining_classes: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+      }
+      get_or_create_monthly_classes: {
+        Args: { user_uuid: string }
+        Returns: {
+          created_at: string
+          id: string
+          month: number
+          remaining_classes: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
