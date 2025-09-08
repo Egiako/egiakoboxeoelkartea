@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .from('profiles')
         .select('is_active')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error checking user active status:', error);
@@ -49,28 +49,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if user is active
-          const active = await checkUserActive(session.user.id);
-          if (!active) {
-            // Sign out inactive user immediately
-            await supabase.auth.signOut();
-            toast({
-              title: "Cuenta desactivada",
-              description: "Tu cuenta ha sido desactivada. Contacta con el administrador.",
-              variant: "destructive"
+          // Defer Supabase calls to prevent deadlocks
+          setTimeout(() => {
+            checkUserActive(session.user!.id).then((active) => {
+              if (!active) {
+                supabase.auth.signOut();
+                toast({
+                  title: "Cuenta desactivada",
+                  description: "Tu cuenta ha sido desactivada. Contacta con el administrador.",
+                  variant: "destructive"
+                });
+              }
+              setLoading(false);
             });
-          }
+          }, 0);
         } else {
           setIsActive(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
