@@ -358,7 +358,7 @@ const Horarios = () => {
                   )
                   : (
                     <>
-                      Consulta nuestros <span className="text-primary font-semibold">horarios de clases</span>.
+                      Consulta nuestros <span className="text-primary font-semibold">horarios</span>.
                       <br className="hidden md:block" />
                       Para reservar una plaza, <span className="text-accent font-semibold">necesitas registrarte</span> e iniciar sesión.
                     </>
