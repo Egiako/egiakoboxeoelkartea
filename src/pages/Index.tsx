@@ -58,11 +58,11 @@ const Index = () => {
   const miniHorario = [
     { dia: 'Lunes', hora: '9:00-10:00', clase: 'Técnica mañana' },
     { dia: 'Lunes', hora: '18:00-19:00', clase: 'Técnica tarde' },
-    { dia: 'Martes', hora: '9:30-10:30', clase: 'Técnica mañana' },
+    { dia: 'Martes', hora: '9:00-10:00', clase: 'Técnica mañana' },
     { dia: 'Martes', hora: '18:00-19:00', clase: 'Técnica tarde' },
     { dia: 'Miércoles', hora: '9:00-10:00', clase: 'Técnica mañana' },
     { dia: 'Miércoles', hora: '18:00-19:00', clase: 'Técnica tarde' },
-    { dia: 'Jueves', hora: '9:30-10:30', clase: 'Técnica mañana' },
+    { dia: 'Jueves', hora: '9:00-10:00', clase: 'Técnica mañana' },
     { dia: 'Jueves', hora: '18:00-19:00', clase: 'Técnica tarde' }
   ];
 
