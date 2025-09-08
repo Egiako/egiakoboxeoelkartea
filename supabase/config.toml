@@ -9,3 +9,6 @@ max_rows = 1000
 
 [functions.send-approval-email]
 verify_jwt = false
+
+[functions.admin-expel-user]
+verify_jwt = true

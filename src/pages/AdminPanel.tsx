@@ -186,15 +186,15 @@ const AdminPanel = () => {
 
   const expelUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.rpc('admin_expel_user', {
-        target_user_id: userId
+      const { data, error } = await supabase.functions.invoke('admin-expel-user', {
+        body: { target_user_id: userId, delete_auth: true }
       });
 
       if (error) throw error;
 
       toast({
         title: "Usuario expulsado",
-        description: `${userName} ha sido expulsado del sistema. Podrá solicitar re-registro si lo desea.`,
+        description: `${userName} ha sido expulsado y su cuenta ha sido desactivada. Podrá solicitar re-registro si lo desea.`,
       });
       
       fetchData(); // Refresh data
