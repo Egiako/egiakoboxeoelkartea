@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -42,9 +44,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, metadata?: any) => {
+    console.log('Attempting sign up for:', email);
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -52,6 +55,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: metadata
       }
     });
+
+    console.log('Sign up result:', { data, error });
 
     if (error) {
       toast({
@@ -66,14 +71,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    return { error };
+    return { error, data };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('Attempting sign in for:', email);
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+
+    console.log('Sign in result:', { data, error });
 
     if (error) {
       toast({
@@ -88,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    return { error };
+    return { error, data };
   };
 
   const signOut = async () => {

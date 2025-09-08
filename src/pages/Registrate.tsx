@@ -19,9 +19,7 @@ const Registrate = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
+    console.log('Registrate page: user state changed:', user?.email);
   }, [user, navigate]);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -36,6 +34,8 @@ const Registrate = () => {
     const telefono = formData.get('telefono') as string;
     const objetivo = formData.get('objetivo') as string;
 
+    console.log('Registering user:', email);
+
     const { error } = await signUp(email, password, {
       nombre,
       apellidos,
@@ -43,8 +43,11 @@ const Registrate = () => {
       objetivo
     });
 
+    console.log('Registration result:', { error });
+
     if (!error) {
-      navigate('/horarios');
+      // Don't navigate immediately, let AuthRedirect handle it
+      console.log('Registration successful, waiting for auth state update...');
     }
 
     setIsLoading(false);
@@ -58,10 +61,15 @@ const Registrate = () => {
     const email = formData.get('loginEmail') as string;
     const password = formData.get('loginPassword') as string;
 
+    console.log('Logging in user:', email);
+
     const { error } = await signIn(email, password);
     
+    console.log('Login result:', { error });
+
     if (!error) {
-      navigate('/horarios');
+      // Don't navigate immediately, let AuthRedirect handle it
+      console.log('Login successful, waiting for auth state update...');
     }
     
     setIsLoading(false);
