@@ -17,11 +17,7 @@ const AuthRedirect = () => {
         navigate('/horarios', { replace: true });
       }
       
-      // If user is not authenticated and trying to access protected route, redirect to register
-      if (!user && location.pathname === '/horarios') {
-        console.log('Redirecting unauthenticated user to /registrate');
-        navigate('/registrate', { replace: true });
-      }
+      // Horarios es público: no redirigir a usuarios no autenticados
     }
   }, [user, loading, navigate, location.pathname]);
 
