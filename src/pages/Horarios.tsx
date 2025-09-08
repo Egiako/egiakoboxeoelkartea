@@ -100,7 +100,8 @@ const Horarios = () => {
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed');
 
       if (error) throw error;
       setUserBookings(data || []);
@@ -206,7 +207,7 @@ const Horarios = () => {
     
     const { error } = await supabase
       .from('bookings')
-      .update({ status: 'cancelled' })
+      .delete()
       .eq('id', bookingId);
 
     if (error) {
@@ -218,7 +219,7 @@ const Horarios = () => {
     } else {
       toast({
         title: "Reserva cancelada",
-        description: "Tu reserva ha sido cancelada exitosamente"
+        description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
       });
       fetchUserBookings();
       fetchBookingCounts();
@@ -230,7 +231,7 @@ const Horarios = () => {
   // Verificar si el usuario ya tiene una reserva para esta clase y fecha
   const isAlreadyBooked = (classId: string, date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return userBookings.some(b => b.class_id === classId && b.booking_date === dateStr);
+    return userBookings.some(b => b.class_id === classId && b.booking_date === dateStr && b.status === 'confirmed');
   };
 
   // Obtener conteo actual para una clase y fecha
