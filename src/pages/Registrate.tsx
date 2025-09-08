@@ -142,7 +142,7 @@ const Registrate = () => {
                     </p>
                     <div className="text-sm space-y-1">
                       <p>📧 info@egiako.com</p>
-                      <p>📞 943 XXX XXX</p>
+                      <p>📞 669 339 812</p>
                     </div>
                   </CardContent>
                 </Card>
