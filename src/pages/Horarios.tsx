@@ -347,7 +347,7 @@ const Horarios = () => {
 
             {/* Enhanced subtitle with better typography */}
             <div className="max-w-3xl mx-auto space-y-4">
-              <p className="text-xl md:text-2xl text-muted-foreground font-inter leading-relaxed animate-fade-in">
+              <p className="text-xl md:text-2xl text-white font-inter leading-relaxed animate-fade-in">
                 {user 
                   ? (
                     <>
