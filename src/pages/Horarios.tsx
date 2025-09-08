@@ -381,17 +381,17 @@ const Horarios = () => {
                 {/* Horarios de Mañana */}
                 <div className="mb-8">
                   <div className="text-center mb-6">
-                    <h3 className="font-oswald font-bold text-2xl text-primary mb-2">Horarios de Mañana</h3>
+                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Mañana</h3>
                     <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-primary/10 to-primary/20 border-primary/30 hover:shadow-lg transition-all duration-300">
+                      <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-primary" />
-                            <span className="font-inter font-semibold text-primary">9:00 - 10:00</span>
+                            <Clock className="h-4 w-4 text-boxing-red" />
+                            <span className="font-inter font-semibold text-boxing-red">9:00 - 10:00</span>
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
                         </CardContent>
@@ -403,17 +403,17 @@ const Horarios = () => {
                 {/* Horarios de Tarde */}
                 <div className="mb-8">
                   <div className="text-center mb-6">
-                    <h3 className="font-oswald font-bold text-2xl text-primary mb-2">Horarios de Tarde</h3>
+                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Tarde</h3>
                     <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-secondary/10 to-secondary/20 border-secondary/30 hover:shadow-lg transition-all duration-300">
+                      <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-secondary-foreground" />
-                            <span className="font-inter font-semibold text-secondary-foreground">18:00 - 19:00</span>
+                            <Clock className="h-4 w-4 text-boxing-black" />
+                            <span className="font-inter font-semibold text-boxing-black">18:00 - 19:00</span>
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
                         </CardContent>
@@ -424,11 +424,14 @@ const Horarios = () => {
 
                 <div className="text-center border-t pt-6">
                   <p className="font-inter text-muted-foreground mb-6">
-                    Para reservar clases y ver disponibilidad en tiempo real necesitas registrarte
+                    Ver horario completo y reservar clases requiere registro
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild variant="default" className="font-oswald font-semibold">
+                    <Button asChild variant="hero" className="font-oswald font-semibold">
                       <Link to="/registrate">Registrarse ahora</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="font-oswald font-semibold">
+                      <Link to="/sobre-nosotros">Conocer más</Link>
                     </Button>
                   </div>
                 </div>
