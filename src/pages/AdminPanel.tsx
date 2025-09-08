@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Users, Trash2, Search, Calendar, Phone, Mail, User } from 'lucide-react';
 import ClassManagement from '@/components/ClassManagement';
 import BookingManagement from '@/components/BookingManagement';
+import RegistrationRequests from '@/components/RegistrationRequests';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -176,10 +177,14 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Lista de Inscritos
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Solicitudes
               </TabsTrigger>
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -268,6 +273,10 @@ const AdminPanel = () => {
               </Card>
 
               
+              </TabsContent>
+
+              <TabsContent value="requests" className="space-y-6">
+                <RegistrationRequests />
               </TabsContent>
 
               <TabsContent value="bookings" className="space-y-6">

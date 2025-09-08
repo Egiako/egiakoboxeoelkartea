@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthRedirect from "@/components/AuthRedirect";
+import ApprovalGuard from "@/components/ApprovalGuard";
 import Index from "./pages/Index";
 import SobreNosotros from "./pages/SobreNosotros";
 import Precios from "./pages/Precios";
@@ -31,9 +32,9 @@ const App = () => (
             <Route path="/sobre-nosotros" element={<SobreNosotros />} />
             <Route path="/precios" element={<Precios />} />
             <Route path="/registrate" element={<Registrate />} />
-            <Route path="/horarios" element={<Horarios />} />
-            <Route path="/eventos-semana" element={<EventosSemana />} />
-            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/horarios" element={<ApprovalGuard><Horarios /></ApprovalGuard>} />
+            <Route path="/eventos-semana" element={<ApprovalGuard><EventosSemana /></ApprovalGuard>} />
+            <Route path="/admin" element={<ApprovalGuard><AdminPanel /></ApprovalGuard>} />
             <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/aviso-legal" element={<AvisoLegal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
