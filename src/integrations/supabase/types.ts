@@ -114,6 +114,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          is_active: boolean
           last_name: string
           phone: string
           updated_at: string
@@ -125,6 +126,7 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: string
+          is_active?: boolean
           last_name: string
           phone: string
           updated_at?: string
@@ -136,6 +138,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: string
+          is_active?: boolean
           last_name?: string
           phone?: string
           updated_at?: string
@@ -219,6 +222,22 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+      }
+      admin_deactivate_user: {
+        Args: { target_user_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean
           last_name: string
           phone: string
           updated_at: string
@@ -240,6 +259,21 @@ export type Database = {
           users_without_classes: number
         }[]
       }
+      admin_reactivate_user: {
+        Args: { target_user_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+      }
       admin_reject_user: {
         Args: { target_user_id: string }
         Returns: {
@@ -248,6 +282,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
+          is_active: boolean
           last_name: string
           phone: string
           updated_at: string
@@ -337,6 +372,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_user_active: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       is_user_approved: {

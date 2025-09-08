@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isActive } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
 
   if (authLoading || roleLoading) {
@@ -28,6 +28,19 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Debes iniciar sesión para acceder a esta sección.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (isActive === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Tu cuenta ha sido desactivada. Contacta con el administrador.
           </AlertDescription>
         </Alert>
       </div>

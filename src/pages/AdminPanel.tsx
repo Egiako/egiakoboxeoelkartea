@@ -24,6 +24,7 @@ interface UserProfile {
   user_id: string;
   email?: string;
   approval_status: 'pending' | 'approved' | 'rejected';
+  is_active: boolean;
 }
 interface BookingWithDetails {
   id: string;
@@ -101,7 +102,8 @@ const AdminPanel = () => {
             phone,
             created_at,
             user_id,
-            approval_status
+            approval_status,
+            is_active
           ),
           classes!inner(
             title,
@@ -134,25 +136,49 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
-  const deleteUser = async (userId: string, userName: string) => {
+  const deactivateUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.rpc('admin_delete_user_completely', {
+      const { data, error } = await supabase.rpc('admin_deactivate_user', {
         target_user_id: userId
       });
 
       if (error) throw error;
 
       toast({
-        title: "Usuario eliminado completamente",
-        description: `${userName} ha sido eliminado del sistema junto con todos sus datos`,
+        title: "Usuario desactivado",
+        description: `${userName} ha sido desactivado del sistema. No podrá acceder a ninguna sección.`,
       });
       
       fetchData(); // Refresh data
     } catch (error: any) {
-      console.error('Error deleting user:', error);
+      console.error('Error deactivating user:', error);
       toast({
-        title: "Error al eliminar usuario",
-        description: error.message || "No se pudo eliminar el usuario",
+        title: "Error al desactivar usuario",
+        description: error.message || "No se pudo desactivar el usuario",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const reactivateUser = async (userId: string, userName: string) => {
+    try {
+      const { data, error } = await supabase.rpc('admin_reactivate_user', {
+        target_user_id: userId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Usuario reactivado",
+        description: `${userName} ha sido reactivado y puede acceder nuevamente al sistema.`,
+      });
+      
+      fetchData(); // Refresh data
+    } catch (error: any) {
+      console.error('Error reactivating user:', error);
+      toast({
+        title: "Error al reactivar usuario",
+        description: error.message || "No se pudo reactivar el usuario",
         variant: "destructive"
       });
     }
@@ -301,18 +327,17 @@ const AdminPanel = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-destructive">
                     <Trash2 className="h-5 w-5" />
-                    Gestión de Bajas de Usuario
+                    Gestión de Estado de Usuario
                   </CardTitle>
                   <CardDescription>
-                    Eliminar usuarios aprobados del sistema. Esta acción no se puede deshacer.
-                    Solo se muestran usuarios con estado "aprobado" - las solicitudes pendientes deben gestionarse en la pestaña "Solicitudes".
+                    Desactivar o reactivar usuarios del sistema. Los usuarios desactivados no pueden iniciar sesión ni acceder a ninguna sección. Sus reservas futuras se cancelarán automáticamente.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Buscar usuario para eliminar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+                      <Input placeholder="Buscar usuario para gestionar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                     </div>
                   </div>
 
@@ -336,41 +361,55 @@ const AdminPanel = () => {
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
                             <TableCell>
+                              <Badge variant={user.is_active ? "default" : "destructive"}>
+                                {user.is_active ? "Activo" : "Inactivo"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES')}
                             </TableCell>
                             <TableCell>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" size="sm">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Dar de Baja
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Esta acción eliminará permanentemente al usuario{' '}
-                                      <strong>{user.first_name} {user.last_name}</strong> y todos sus datos asociados:
-                                      <br />• Todas sus reservas de clases
-                                      <br />• Su información de clases mensuales
-                                      <br />• Sus roles en el sistema
-                                      <br />• Su perfil completo
-                                      <br /><br />
-                                      <strong>Esta acción no se puede deshacer.</strong>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      onClick={() => deleteUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Eliminar Usuario Completamente
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                              {user.is_active ? (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm">
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Desactivar
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>¿Desactivar usuario?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta acción desactivará al usuario{' '}
+                                        <strong>{user.first_name} {user.last_name}</strong>:
+                                        <br />• No podrá iniciar sesión
+                                        <br />• Se cancelarán sus reservas futuras
+                                        <br />• No tendrá acceso a ninguna sección del sistema
+                                        <br /><br />
+                                        <strong>Podrás reactivar al usuario más tarde si es necesario.</strong>
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Desactivar Usuario
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
+                                >
+                                  Reactivar
+                                </Button>
+                              )}
                             </TableCell>
                           </TableRow>)}
                         {filteredApprovedUsers.length === 0 && <TableRow>
