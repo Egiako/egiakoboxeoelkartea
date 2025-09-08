@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
+import { Calendar, Clock, Users, MapPin, Phone } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Users, User, CalendarDays, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { CalendarDays, CheckCircle } from 'lucide-react';
 
 interface Class {
   id: string;
@@ -34,13 +35,26 @@ interface Booking {
 const DAYS_OF_WEEK = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 const Horarios = () => {
+  const [userBookings, setUserBookings] = useState<Booking[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (user) {
+      fetchClasses();
+      fetchUserBookings();
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchBookingCounts();
+  }, [selectedDate]);
 
   // Obtener clases disponibles
   const fetchClasses = async () => {
@@ -62,24 +76,36 @@ const Horarios = () => {
     }
   };
 
-  // Obtener reservas del usuario
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   const fetchUserBookings = async () => {
     if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', user.id);
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'confirmed');
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar tus reservas",
-        variant: "destructive"
-      });
-    } else {
-      setBookings(data || []);
+      if (error) throw error;
+      setUserBookings(data || []);
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
     }
   };
 
@@ -107,23 +133,9 @@ const Horarios = () => {
     }
   };
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserBookings();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchBookingCounts();
-  }, [selectedDate]);
-
   // Crear reserva
   const createBooking = async (classId: string, date: Date) => {
-    if (!user) {
+    if (!user || !userProfile) {
       toast({
         title: "Error",
         description: "Debes estar logueado para reservar una clase",
@@ -139,12 +151,15 @@ const Horarios = () => {
     try {
       const { error } = await supabase
         .from('bookings')
-        .insert({
-          user_id: user.id,
-          class_id: classId,
-          booking_date: bookingDate,
-          status: 'confirmed'
-        });
+        .insert([
+          {
+            user_id: user.id,
+            profile_id: userProfile?.id,
+            class_id: classId,
+            booking_date: bookingDate,
+            status: 'confirmed'
+          }
+        ]);
 
       if (error) {
         if (error.message.includes('La clase está completa')) {
@@ -215,19 +230,13 @@ const Horarios = () => {
   // Verificar si el usuario ya tiene una reserva para esta clase y fecha
   const isAlreadyBooked = (classId: string, date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return bookings.some(b => b.class_id === classId && b.booking_date === dateStr);
+    return userBookings.some(b => b.class_id === classId && b.booking_date === dateStr);
   };
 
   // Obtener conteo actual para una clase y fecha
   const getCurrentBookingCount = (classId: string, date: Date) => {
     const key = `${classId}-${format(date, 'yyyy-MM-dd')}`;
     return bookingCounts[key] || 0;
-  };
-
-  // Generar fechas de la semana actual
-  const getWeekDates = () => {
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   };
 
   // Get classes for selected day
@@ -263,18 +272,18 @@ const Horarios = () => {
   };
 
   return (
-    <>
-      <Navigation />
-      
-      <main className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        
+        <main className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="font-oswald font-bold text-4xl mb-4">
-              Horarios y Reservas
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Reserva tu Clase
             </h1>
-            <p className="font-inter text-muted-foreground max-w-2xl mx-auto">
-              Selecciona un día para ver las clases disponibles. Máximo 10 estudiantes por clase.
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Selecciona el día y la clase que prefieras. Las reservas se pueden hacer para hoy y mañana únicamente.
             </p>
           </div>
 
@@ -288,7 +297,7 @@ const Horarios = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex justify-center">
-                <Calendar
+                <CalendarComponent
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => date && setSelectedDate(date)}
@@ -339,8 +348,8 @@ const Horarios = () => {
                     {getSelectedDayClasses().map((classItem) => {
                       const currentCount = getCurrentBookingCount(classItem.id, selectedDate);
                       const isBooked = isAlreadyBooked(classItem.id, selectedDate);
-                              const isFull = currentCount >= classItem.max_students;
-                              const canBook = canBookDate(selectedDate);
+                      const isFull = currentCount >= classItem.max_students;
+                      const canBook = canBookDate(selectedDate);
                       
                       return (
                         <Card key={classItem.id} className="relative">
@@ -382,7 +391,7 @@ const Horarios = () => {
                                   size="lg"
                                   className="w-full"
                                   onClick={() => {
-                                    const booking = bookings.find(b => 
+                                    const booking = userBookings.find(b => 
                                       b.class_id === classItem.id && 
                                       b.booking_date === format(selectedDate, 'yyyy-MM-dd')
                                     );
@@ -421,11 +430,11 @@ const Horarios = () => {
                 )}
 
                 {/* My Bookings Section */}
-                {bookings.length > 0 && (
+                {userBookings.length > 0 && (
                   <div className="mt-8 pt-8 border-t">
                     <h3 className="font-oswald font-semibold text-lg mb-4 text-center">Mis reservas activas</h3>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {bookings.map((booking) => {
+                      {userBookings.map((booking) => {
                         const classInfo = classes.find(c => c.id === booking.class_id);
                         return (
                           <div key={booking.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -455,11 +464,11 @@ const Horarios = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <Footer />
-    </>
+        <Footer />
+      </div>
+    </ProtectedRoute>
   );
 };
 

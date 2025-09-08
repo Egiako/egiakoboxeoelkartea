@@ -13,6 +13,7 @@ import Horarios from "./pages/Horarios";
 import EventosSemana from "./pages/EventosSemana";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import AvisoLegal from "./pages/AvisoLegal";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/registrate" element={<Registrate />} />
             <Route path="/horarios" element={<Horarios />} />
             <Route path="/eventos-semana" element={<EventosSemana />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/aviso-legal" element={<AvisoLegal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

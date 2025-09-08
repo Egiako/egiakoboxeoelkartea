@@ -11,8 +11,8 @@ const AuthRedirect = () => {
     if (!loading) {
       console.log('AuthRedirect: loading done, user:', user?.email, 'current path:', location.pathname);
       
-      // If user is authenticated and on register/login page, redirect to schedules
-      if (user && (location.pathname === '/registrate' || location.pathname === '/')) {
+      // If user is authenticated and on register page, redirect to schedules
+      if (user && location.pathname === '/registrate') {
         console.log('Redirecting authenticated user to /horarios');
         navigate('/horarios', { replace: true });
       }

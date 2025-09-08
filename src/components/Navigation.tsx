@@ -1,17 +1,21 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
 
   const navItems = [
     { name: 'Inicio', href: '/' },
     { name: 'Sobre nosotros', href: '/sobre-nosotros' },
     { name: 'Precios', href: '/precios' },
-    { name: 'Regístrate', href: '/registrate' },
+    { name: 'Horarios', href: '/horarios' },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -42,6 +46,41 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {!user ? (
+              <Link 
+                to="/registrate" 
+                className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors ${
+                  location.pathname === '/registrate' ? 'text-boxing-red border-b-2 border-boxing-red pb-1' : 'text-boxing-white hover:text-boxing-red'
+                }`}
+              >
+                Regístrate
+              </Link>
+            ) : (
+              <div className="flex items-center gap-4">
+                {isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors ${
+                      location.pathname === '/admin' ? 'text-boxing-red border-b-2 border-boxing-red pb-1' : 'text-boxing-white hover:text-boxing-red'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Admin
+                    </div>
+                  </Link>
+                )}
+                <Button
+                  onClick={signOut}
+                  variant="outline"
+                  size="sm"
+                  className="text-boxing-white border-boxing-white hover:bg-boxing-white hover:text-boxing-black"
+                >
+                  Cerrar Sesión
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -73,6 +112,44 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
+              
+              {!user ? (
+                <Link 
+                  to="/registrate" 
+                  onClick={() => setIsOpen(false)}
+                  className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors px-4 py-2 ${
+                    location.pathname === '/registrate' ? 'text-boxing-red bg-boxing-red/10 rounded-lg' : 'text-boxing-white hover:text-boxing-red'
+                  }`}
+                >
+                  Regístrate
+                </Link>
+              ) : (
+                <>
+                  {isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setIsOpen(false)}
+                      className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors px-4 py-2 ${
+                        location.pathname === '/admin' ? 'text-boxing-red bg-boxing-red/10 rounded-lg' : 'text-boxing-white hover:text-boxing-red'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Admin
+                      </div>
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                    className="text-left font-inter font-medium text-sm uppercase tracking-wide transition-colors px-4 py-2 text-boxing-white hover:text-boxing-red"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

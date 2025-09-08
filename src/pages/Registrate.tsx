@@ -29,18 +29,18 @@ const Registrate = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-    const nombre = formData.get('nombre') as string;
-    const apellidos = formData.get('apellidos') as string;
-    const telefono = formData.get('telefono') as string;
-    const objetivo = formData.get('objetivo') as string;
+    const firstName = formData.get('nombre') as string;
+    const lastName = formData.get('apellidos') as string;
+    const phone = formData.get('telefono') as string;
+    const objective = formData.get('objetivo') as string;
 
     console.log('Registering user:', email);
 
     const { error } = await signUp(email, password, {
-      nombre,
-      apellidos,
-      telefono,
-      objetivo
+      first_name: firstName,
+      last_name: lastName,
+      phone,
+      objective
     });
 
     console.log('Registration result:', { error });
