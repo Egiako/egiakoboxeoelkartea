@@ -315,26 +315,88 @@ const Horarios = () => {
       
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex justify-between items-center max-w-4xl mx-auto mb-4">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {user ? 'Reserva tu Clase' : 'Horarios de Clases'}
-            </h1>
+        <div className="relative mb-16">
+          {/* Background decoration */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-16 right-1/4 w-16 h-16 bg-accent/20 rounded-full blur-2xl animate-fade-in"></div>
+            <div className="absolute top-12 left-1/4 w-20 h-20 bg-primary/5 rounded-full blur-2xl animate-fade-in"></div>
+          </div>
+
+          <div className="text-center space-y-6">
+            {/* Main title with enhanced styling */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-primary to-primary rounded-full"></div>
+                <Calendar className="h-8 w-8 text-primary animate-fade-in" />
+                <div className="w-12 h-0.5 bg-gradient-to-r from-primary via-primary to-transparent rounded-full"></div>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-oswald font-bold tracking-tight animate-fade-in">
+                <span className="bg-gradient-to-r from-boxing-red via-primary to-boxing-red bg-clip-text text-transparent bg-size-200 animate-[gradient_3s_ease-in-out_infinite]">
+                  {user ? 'Reserva tu Clase' : 'Horarios de Clases'}
+                </span>
+              </h1>
+              
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <div className="h-1 w-8 bg-primary rounded-full animate-scale-in"></div>
+                <div className="h-0.5 w-16 bg-gradient-to-r from-primary/50 to-accent/50 rounded-full animate-scale-in"></div>
+                <div className="h-1 w-8 bg-primary rounded-full animate-scale-in"></div>
+              </div>
+            </div>
+
+            {/* Enhanced subtitle with better typography */}
+            <div className="max-w-3xl mx-auto space-y-4">
+              <p className="text-xl md:text-2xl text-muted-foreground font-inter leading-relaxed animate-fade-in">
+                {user 
+                  ? (
+                    <>
+                      <span className="text-primary font-semibold">Selecciona el día y la clase</span> que prefieras.
+                      <br className="hidden md:block" />
+                      <span className="text-accent">Las reservas se pueden hacer para hoy y mañana únicamente.</span>
+                    </>
+                  )
+                  : (
+                    <>
+                      Consulta nuestros <span className="text-primary font-semibold">horarios de clases</span>.
+                      <br className="hidden md:block" />
+                      Para reservar una plaza, <span className="text-accent font-semibold">necesitas registrarte</span> e iniciar sesión.
+                    </>
+                  )
+                }
+              </p>
+
+              {/* CTA hint for non-authenticated users */}
+              {!user && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground/70 animate-fade-in">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  <span>¿Listo para entrenar? Regístrate ahora</span>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                </div>
+              )}
+            </div>
+
+            {/* Monthly classes counter for authenticated users */}
             {user && !monthlyClassesLoading && monthlyClasses && (
-              <div className="bg-card border rounded-lg p-4">
-                <div className="text-sm text-muted-foreground">Clases restantes este mes</div>
-                <div className="text-2xl font-bold text-primary">
-                  {monthlyClasses.remaining_classes}/12
+              <div className="flex justify-center animate-fade-in">
+                <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-boxing">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-xl">
+                      <Clock className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                        Clases restantes este mes
+                      </div>
+                      <div className="text-3xl font-oswald font-bold text-primary">
+                        {monthlyClasses.remaining_classes}<span className="text-muted-foreground text-xl">/12</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {user 
-              ? 'Selecciona el día y la clase que prefieras. Las reservas se pueden hacer para hoy y mañana únicamente.'
-              : 'Consulta nuestros horarios de clases. Para reservar una plaza, necesitas registrarte e iniciar sesión.'
-            }
-          </p>
         </div>
 
         {/* Schedule display - authenticated users see calendar, non-authenticated see featured schedules */}
