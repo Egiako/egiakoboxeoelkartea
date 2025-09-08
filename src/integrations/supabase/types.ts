@@ -109,6 +109,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
           created_at: string
           email: string | null
           first_name: string
@@ -119,6 +120,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
           created_at?: string
           email?: string | null
           first_name: string
@@ -129,6 +131,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
           created_at?: string
           email?: string | null
           first_name?: string
@@ -208,6 +211,20 @@ export type Database = {
           year: number
         }[]
       }
+      admin_approve_user: {
+        Args: { target_user_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+      }
       admin_get_monthly_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -218,6 +235,20 @@ export type Database = {
           users_with_classes: number
           users_without_classes: number
         }[]
+      }
+      admin_reject_user: {
+        Args: { target_user_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
       }
       admin_reset_user_monthly_classes: {
         Args: { new_remaining?: number; target_user_id: string }
@@ -304,9 +335,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_approved: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -435,6 +471,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      approval_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
