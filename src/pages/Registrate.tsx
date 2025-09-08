@@ -107,13 +107,13 @@ const Registrate = () => {
                         <span className="font-semibold text-lg">Pendiente de Aprobación</span>
                       </div>
                       
-                      <Alert className="border-yellow-200 bg-yellow-50">
-                        <AlertDescription className="text-center">
-                          <strong>Tu solicitud está siendo revisada por nuestro equipo.</strong>
-                          <br />
-                          Te notificaremos por email cuando tu cuenta sea activada.
-                        </AlertDescription>
-                      </Alert>
+                       <Alert className="border-yellow-200 bg-yellow-50">
+                         <AlertDescription className="text-center">
+                           <strong>Tu solicitud ha sido enviada y está pendiente de aprobación.</strong>
+                           <br />
+                           Te avisaremos cuando se active tu cuenta.
+                         </AlertDescription>
+                       </Alert>
 
                       <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
                         <p className="font-medium">¿Qué pasa ahora?</p>

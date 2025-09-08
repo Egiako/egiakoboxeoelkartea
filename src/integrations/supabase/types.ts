@@ -115,8 +115,10 @@ export type Database = {
           first_name: string
           id: string
           is_active: boolean
+          is_reregistration: boolean | null
           last_name: string
           phone: string
+          previous_status: string | null
           updated_at: string
           user_id: string
         }
@@ -127,8 +129,10 @@ export type Database = {
           first_name: string
           id?: string
           is_active?: boolean
+          is_reregistration?: boolean | null
           last_name: string
           phone: string
+          previous_status?: string | null
           updated_at?: string
           user_id: string
         }
@@ -139,8 +143,10 @@ export type Database = {
           first_name?: string
           id?: string
           is_active?: boolean
+          is_reregistration?: boolean | null
           last_name?: string
           phone?: string
+          previous_status?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -223,8 +229,10 @@ export type Database = {
           first_name: string
           id: string
           is_active: boolean
+          is_reregistration: boolean | null
           last_name: string
           phone: string
+          previous_status: string | null
           updated_at: string
           user_id: string
         }
@@ -238,8 +246,10 @@ export type Database = {
           first_name: string
           id: string
           is_active: boolean
+          is_reregistration: boolean | null
           last_name: string
           phone: string
+          previous_status: string | null
           updated_at: string
           user_id: string
         }
@@ -247,6 +257,23 @@ export type Database = {
       admin_delete_user_completely: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      admin_expel_user: {
+        Args: { target_user_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean
+          is_reregistration: boolean | null
+          last_name: string
+          phone: string
+          previous_status: string | null
+          updated_at: string
+          user_id: string
+        }
       }
       admin_get_monthly_stats: {
         Args: Record<PropertyKey, never>
@@ -268,8 +295,10 @@ export type Database = {
           first_name: string
           id: string
           is_active: boolean
+          is_reregistration: boolean | null
           last_name: string
           phone: string
+          previous_status: string | null
           updated_at: string
           user_id: string
         }
@@ -283,8 +312,10 @@ export type Database = {
           first_name: string
           id: string
           is_active: boolean
+          is_reregistration: boolean | null
           last_name: string
           phone: string
+          previous_status: string | null
           updated_at: string
           user_id: string
         }

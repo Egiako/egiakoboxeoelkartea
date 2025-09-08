@@ -18,6 +18,8 @@ interface PendingUser {
   email: string;
   created_at: string;
   approval_status: 'pending' | 'approved' | 'rejected';
+  is_reregistration: boolean;
+  previous_status: string | null;
 }
 
 const RegistrationRequests = () => {
@@ -222,6 +224,7 @@ const RegistrationRequests = () => {
                       Usuario
                     </div>
                   </TableHead>
+                  <TableHead>Estado</TableHead>
                   <TableHead>
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4" />
@@ -247,6 +250,26 @@ const RegistrationRequests = () => {
                           {user.first_name} {user.last_name}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.is_reregistration ? (
+                        <div className="space-y-1">
+                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                            Re-solicitud
+                          </Badge>
+                          {user.previous_status && (
+                            <div className="text-xs text-muted-foreground">
+                              {user.previous_status === 'previously_expelled' && 'Usuario expulsado anteriormente'}
+                              {user.previous_status === 'previously_rejected' && 'Solicitud rechazada anteriormente'}
+                              {user.previous_status === 'previously_deactivated' && 'Usuario desactivado anteriormente'}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Primera solicitud
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>{user.phone}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -276,10 +299,17 @@ const RegistrationRequests = () => {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>¿Aprobar usuario?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                ¿Estás seguro de que quieres aprobar la solicitud de {user.first_name} {user.last_name}?
-                                El usuario podrá acceder a todas las funcionalidades de socio y se le enviará un email de confirmación.
-                              </AlertDialogDescription>
+                               <AlertDialogDescription>
+                                 ¿Estás seguro de que quieres aprobar la solicitud de {user.first_name} {user.last_name}?
+                                 {user.is_reregistration && (
+                                   <>
+                                     <br /><br />
+                                     <strong>⚠️ Esta es una re-solicitud de un usuario que fue {user.previous_status === 'previously_expelled' ? 'expulsado' : user.previous_status === 'previously_rejected' ? 'rechazado' : 'desactivado'} anteriormente.</strong>
+                                     <br />Se creará un perfil completamente nuevo sin recuperar datos anteriores.
+                                   </>
+                                 )}
+                                 <br /><br />El usuario podrá acceder a todas las funcionalidades de socio y se le enviará un email de confirmación.
+                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>

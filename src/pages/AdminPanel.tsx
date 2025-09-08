@@ -186,7 +186,7 @@ const AdminPanel = () => {
 
   const expelUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.rpc('admin_delete_user_completely', {
+      const { data, error } = await supabase.rpc('admin_expel_user', {
         target_user_id: userId
       });
 
@@ -194,7 +194,7 @@ const AdminPanel = () => {
 
       toast({
         title: "Usuario expulsado",
-        description: `${userName} ha sido eliminado completamente del sistema.`,
+        description: `${userName} ha sido expulsado del sistema. Podrá solicitar re-registro si lo desea.`,
       });
       
       fetchData(); // Refresh data
