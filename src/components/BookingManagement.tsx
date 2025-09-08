@@ -198,13 +198,10 @@ const BookingManagement = () => {
                   </CardDescription>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-center">
+                  
                   <div>
-                    <div className="text-2xl font-bold">{day.totalReservations}</div>
-                    <div className="text-xs text-muted-foreground">Total</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">{day.pendingCount}</div>
-                    <div className="text-xs text-muted-foreground">Pendientes</div>
+                    
+                    
                   </div>
                 </div>
               </div>
