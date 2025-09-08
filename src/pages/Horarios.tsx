@@ -323,44 +323,51 @@ const Horarios = () => {
             <div className="absolute top-12 left-1/4 w-20 h-20 bg-primary/5 rounded-full blur-2xl animate-fade-in"></div>
           </div>
 
-          <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing">
+          <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black via-boxing-black/90 to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing relative overflow-hidden">
+            
+            {/* Animated decorative elements */}
+            <div className="absolute top-4 left-4 w-3 h-3 bg-white/20 rounded-full animate-ping"></div>
+            <div className="absolute top-6 right-6 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
+            <div className="absolute bottom-4 left-8 w-4 h-4 bg-white/10 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-6 right-4 w-2 h-2 bg-white/20 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+
             {/* Main title with enhanced styling */}
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-white rounded-full"></div>
-                <Calendar className="h-8 w-8 text-white animate-fade-in" />
-                <div className="w-12 h-0.5 bg-gradient-to-r from-white via-white to-transparent rounded-full"></div>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-white rounded-full animate-fade-in"></div>
+                <Calendar className="h-10 w-10 text-white animate-scale-in" />
+                <div className="w-12 h-0.5 bg-gradient-to-r from-white via-white to-transparent rounded-full animate-fade-in"></div>
               </div>
               
               <h1 className="text-5xl md:text-7xl font-oswald font-bold tracking-tight animate-fade-in">
-                <span className="text-white">
+                <span className="text-white inline-block hover:scale-105 transition-transform duration-300">
                   {user ? 'Reserva tu Clase' : 'Horarios de Clases'}
                 </span>
               </h1>
               
               <div className="flex items-center justify-center gap-2 mt-4">
-                <div className="h-1 w-8 bg-primary rounded-full animate-scale-in"></div>
-                <div className="h-0.5 w-16 bg-gradient-to-r from-primary/50 to-accent/50 rounded-full animate-scale-in"></div>
-                <div className="h-1 w-8 bg-primary rounded-full animate-scale-in"></div>
+                <div className="h-1 w-8 bg-white/60 rounded-full animate-scale-in"></div>
+                <div className="h-0.5 w-16 bg-gradient-to-r from-white/50 to-white/30 rounded-full animate-scale-in"></div>
+                <div className="h-1 w-8 bg-white/60 rounded-full animate-scale-in"></div>
               </div>
             </div>
 
             {/* Enhanced subtitle with better typography */}
             <div className="max-w-3xl mx-auto space-y-4">
-              <p className="text-xl md:text-2xl text-white font-inter leading-relaxed animate-fade-in">
+              <p className="text-xl md:text-2xl text-white font-inter leading-relaxed animate-fade-in" style={{animationDelay: '0.3s'}}>
                 {user 
                   ? (
                     <>
-                      <span className="text-primary font-semibold">Selecciona el día y la clase</span> que prefieras.
+                      <span className="text-white font-semibold">Selecciona el día y la clase</span> que prefieras.
                       <br className="hidden md:block" />
-                      <span className="text-accent">Las reservas se pueden hacer para hoy y mañana únicamente.</span>
+                      <span className="text-white/80">Las reservas se pueden hacer para hoy y mañana únicamente.</span>
                     </>
                   )
                   : (
                     <>
-                      Consulta nuestros <span className="text-primary font-semibold">horarios</span>.
+                      Consulta nuestros <span className="text-white font-semibold">horarios</span>.
                       <br className="hidden md:block" />
-                      Para reservar una plaza, <span className="text-accent font-semibold">necesitas registrarte</span> e iniciar sesión.
+                      Para reservar una plaza, <span className="text-white font-semibold">necesitas registrarte</span> e iniciar sesión.
                     </>
                   )
                 }
@@ -368,10 +375,10 @@ const Horarios = () => {
 
               {/* CTA hint for non-authenticated users */}
               {!user && (
-                <div className="flex items-center justify-center gap-2 text-sm text-white/90 animate-fade-in">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <div className="flex items-center justify-center gap-2 text-sm text-white/90 animate-fade-in" style={{animationDelay: '0.6s'}}>
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
                   <span>¿Listo para entrenar? Regístrate ahora</span>
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
                 </div>
               )}
             </div>

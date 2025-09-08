@@ -49,15 +49,50 @@ const SobreNosotros = () => {
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
         <section className="relative py-24">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-16 right-1/4 w-16 h-16 bg-accent/20 rounded-full blur-2xl animate-fade-in"></div>
+            <div className="absolute top-12 left-1/4 w-20 h-20 bg-primary/5 rounded-full blur-2xl animate-fade-in"></div>
+          </div>
+
           <div className="container mx-auto px-4">
-            <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing">
-              <h1 className="font-oswald font-bold text-5xl md:text-6xl text-white mb-6">
-                Somos boxeo.
-                <span className="block text-white">Somos comunidad.</span>
-              </h1>
-              <p className="font-inter text-xl text-white/90 max-w-2xl mx-auto">
-                Más que un gimnasio, somos una familia unida por la pasión del boxeo
-              </p>
+            <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black via-boxing-black/90 to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing relative overflow-hidden">
+              
+              {/* Animated decorative elements */}
+              <div className="absolute top-4 left-4 w-3 h-3 bg-white/20 rounded-full animate-ping"></div>
+              <div className="absolute top-6 right-6 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
+              <div className="absolute bottom-4 left-8 w-4 h-4 bg-white/10 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute bottom-6 right-4 w-2 h-2 bg-white/20 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+
+              {/* Title with enhanced animations */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-white rounded-full animate-fade-in"></div>
+                  <Users className="h-10 w-10 text-white animate-scale-in" />
+                  <div className="w-12 h-0.5 bg-gradient-to-r from-white via-white to-transparent rounded-full animate-fade-in"></div>
+                </div>
+                
+                <h1 className="font-oswald font-bold text-5xl md:text-6xl text-white mb-6 animate-fade-in">
+                  <span className="inline-block hover:scale-105 transition-transform duration-300">Somos</span>{" "}
+                  <span className="inline-block hover:scale-105 transition-transform duration-300 text-transparent bg-gradient-to-r from-white to-white/80 bg-clip-text">boxeo.</span>
+                  <span className="block text-white animate-slide-in-right" style={{animationDelay: '0.3s'}}>
+                    <span className="inline-block hover:scale-105 transition-transform duration-300">Somos</span>{" "}
+                    <span className="inline-block hover:scale-105 transition-transform duration-300">comunidad.</span>
+                  </span>
+                </h1>
+                
+                <p className="font-inter text-xl text-white/90 max-w-2xl mx-auto animate-fade-in" style={{animationDelay: '0.6s'}}>
+                  Más que un gimnasio, somos una <span className="font-semibold text-white">familia unida</span> por la pasión del boxeo
+                </p>
+
+                {/* Pulsing call-to-action indicator */}
+                <div className="flex items-center justify-center gap-2 mt-6 animate-fade-in" style={{animationDelay: '0.9s'}}>
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                  <span className="text-sm text-white/80">Descubre nuestra historia</span>
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
