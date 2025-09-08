@@ -201,7 +201,7 @@ const Horarios = () => {
         if (error.message.includes('La clase está completa')) {
           toast({
             title: "Clase completa",
-            description: "Esta clase ya tiene el máximo de estudiantes (10 personas)",
+            description: "Esta clase ya tiene el máximo de personas (10 personas)",
             variant: "destructive"
           });
         } else if (error.message.includes('duplicate')) {
@@ -566,7 +566,7 @@ const Horarios = () => {
                               <div className="flex items-center gap-2">
                                 <Users className="h-5 w-5 text-primary" />
                                 <span className="font-medium">
-                                  Aforo: {currentCount}/{classItem.max_students} estudiantes
+                                  Aforo: {currentCount}/{classItem.max_students} personas
                                 </span>
                                 {isFull && (
                                   <Badge variant="destructive">Completa</Badge>

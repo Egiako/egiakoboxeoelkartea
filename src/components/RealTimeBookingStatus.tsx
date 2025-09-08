@@ -30,7 +30,7 @@ const RealTimeBookingStatus = ({ currentCount, maxCapacity, className = "" }: Re
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-primary" />
         <span className="font-medium">
-          {currentCount}/{maxCapacity} estudiantes
+          {currentCount}/{maxCapacity} personas
         </span>
         <Badge variant={getStatusColor()}>
           {isFull ? 'Completa' : `${percentage}% ocupada`}
