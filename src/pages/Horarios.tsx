@@ -386,7 +386,7 @@ const Horarios = () => {
             {/* Monthly classes counter for authenticated users */}
             {user && !monthlyClassesLoading && monthlyClasses && (
               <div className="flex justify-center animate-fade-in">
-                <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-boxing">
+                <div className="bg-gradient-to-r from-primary/30 via-accent/20 to-primary/30 backdrop-blur-sm border-2 border-primary/40 rounded-2xl p-6 shadow-boxing">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-xl">
                       <Clock className="h-6 w-6 text-primary" />
