@@ -157,18 +157,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "Error al cerrar sesión",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        // Clear local state immediately
+        setUser(null);
+        setSession(null);
+        setIsActive(null);
+        
+        toast({
+          title: "Sesión cerrada",
+          description: "Has cerrado sesión correctamente."
+        });
+        
+        // Navigate to home page after successful logout
+        window.location.href = '/';
+      }
+    } catch (error: any) {
       toast({
         title: "Error al cerrar sesión",
-        description: error.message,
+        description: "Ocurrió un error inesperado",
         variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión correctamente."
       });
     }
   };
