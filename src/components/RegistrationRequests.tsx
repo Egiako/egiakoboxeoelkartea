@@ -167,6 +167,9 @@ const RegistrationRequests = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const newUsers = filteredUsers.filter((u) => !u.is_reregistration);
+  const oldUsers = filteredUsers.filter((u) => u.is_reregistration);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -214,151 +217,291 @@ const RegistrationRequests = () => {
             </p>
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Usuario
-                    </div>
-                  </TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Teléfono
-                    </div>
-                  </TableHead>
-                  <TableHead>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      Email
-                    </div>
-                  </TableHead>
-                  <TableHead>Fecha Solicitud</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {user.first_name} {user.last_name}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {user.is_reregistration ? (
-                        <div className="space-y-1">
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                            Re-solicitud
-                          </Badge>
-                          {user.previous_status && (
-                            <div className="text-xs text-muted-foreground">
-                              {user.previous_status === 'previously_expelled' && 'Usuario expulsado anteriormente'}
-                              {user.previous_status === 'previously_rejected' && 'Solicitud rechazada anteriormente'}
-                              {user.previous_status === 'previously_deactivated' && 'Usuario desactivado anteriormente'}
+          <div className="space-y-8">
+            {/* Nuevos socios */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold">Nuevos socios</h3>
+                <Badge variant="secondary">{newUsers.length}</Badge>
+              </div>
+              {newUsers.length === 0 ? (
+                <div className="text-sm text-muted-foreground border rounded-lg p-4">
+                  No hay nuevas solicitudes.
+                </div>
+              ) : (
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Usuario
+                          </div>
+                        </TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            Teléfono
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            Email
+                          </div>
+                        </TableHead>
+                        <TableHead>Fecha Solicitud</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {newUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">
+                                {user.first_name} {user.last_name}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          Primera solicitud
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{user.phone}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {new Date(user.created_at).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              disabled={processingUser === user.id}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <UserCheck className="h-3 w-3 mr-1" />
-                              Aprobar
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Aprobar usuario?</AlertDialogTitle>
-                               <AlertDialogDescription>
-                                 ¿Estás seguro de que quieres aprobar la solicitud de {user.first_name} {user.last_name}?
-                                 {user.is_reregistration && (
-                                   <>
-                                     <br /><br />
-                                     <strong>⚠️ Esta es una re-solicitud de un usuario que fue {user.previous_status === 'previously_expelled' ? 'expulsado' : user.previous_status === 'previously_rejected' ? 'rechazado' : 'desactivado'} anteriormente.</strong>
-                                     <br />Se creará un perfil completamente nuevo sin recuperar datos anteriores.
-                                   </>
-                                 )}
-                                 <br /><br />El usuario podrá acceder a todas las funcionalidades de socio y se le enviará un email de confirmación.
-                               </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleApproveUser(user)}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                Aprobar Usuario
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              Primera solicitud
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{user.phone}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    disabled={processingUser === user.id}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <UserCheck className="h-3 w-3 mr-1" />
+                                    Aprobar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Aprobar usuario?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      ¿Estás seguro de que quieres aprobar la solicitud de {user.first_name} {user.last_name}?
+                                      <br /><br />El usuario podrá acceder a todas las funcionalidades de socio y se le enviará un email de confirmación.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleApproveUser(user)}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      Aprobar Usuario
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              disabled={processingUser === user.id}
-                            >
-                              <UserX className="h-3 w-3 mr-1" />
-                              Rechazar
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Rechazar usuario?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                ¿Estás seguro de que quieres rechazar la solicitud de {user.first_name} {user.last_name}?
-                                El usuario no podrá acceder a las funcionalidades de socio y se le enviará un email informativo.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleRejectUser(user)}
-                                className="bg-destructive hover:bg-destructive/90"
-                              >
-                                Rechazar Usuario
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={processingUser === user.id}
+                                  >
+                                    <UserX className="h-3 w-3 mr-1" />
+                                    Rechazar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Rechazar usuario?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      ¿Estás seguro de que quieres rechazar la solicitud de {user.first_name} {user.last_name}?
+                                      El usuario no podrá acceder a las funcionalidades de socio y se le enviará un email informativo.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleRejectUser(user)}
+                                      className="bg-destructive hover:bg-destructive/90"
+                                    >
+                                      Rechazar Usuario
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </section>
+
+            {/* Viejos socios */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold">Viejos socios</h3>
+                <Badge variant="secondary">{oldUsers.length}</Badge>
+              </div>
+              {oldUsers.length === 0 ? (
+                <div className="text-sm text-muted-foreground border rounded-lg p-4">
+                  No hay solicitudes de antiguos socios.
+                </div>
+              ) : (
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Usuario
+                          </div>
+                        </TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            Teléfono
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            Email
+                          </div>
+                        </TableHead>
+                        <TableHead>Fecha Solicitud</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {oldUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">
+                                {user.first_name} {user.last_name}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                Re-solicitud
+                              </Badge>
+                              {user.previous_status && (
+                                <div className="text-xs text-muted-foreground">
+                                  {user.previous_status === 'previously_expelled' && 'Usuario expulsado anteriormente'}
+                                  {user.previous_status === 'previously_rejected' && 'Solicitud rechazada anteriormente'}
+                                  {user.previous_status === 'previously_deactivated' && 'Usuario desactivado anteriormente'}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{user.phone}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    disabled={processingUser === user.id}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <UserCheck className="h-3 w-3 mr-1" />
+                                    Volver a ser socio
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Permitir que vuelva a ser socio?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Vas a aprobar la re-solicitud de {user.first_name} {user.last_name}.
+                                      <br /><br />
+                                      <strong>Nota:</strong> Se mantendrá el perfil generado en este nuevo registro. No se recuperan datos de perfiles anteriores.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleApproveUser(user)}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      Aprobar re-solicitud
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={processingUser === user.id}
+                                  >
+                                    <UserX className="h-3 w-3 mr-1" />
+                                    Rechazar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Rechazar re-solicitud?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      ¿Estás seguro de que quieres rechazar la re-solicitud de {user.first_name} {user.last_name}?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleRejectUser(user)}
+                                      className="bg-destructive hover:bg-destructive/90"
+                                    >
+                                      Rechazar
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </section>
           </div>
         )}
 
