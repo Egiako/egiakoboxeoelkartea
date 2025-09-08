@@ -136,7 +136,7 @@ const Horarios = () => {
     }
   };
 
-  // Obtener conteo de reservas por clase y fecha
+  // Obtener conteo de reservas por clase y fecha (GLOBAL vía RPC para evitar RLS)
   const fetchBookingCounts = async () => {
     const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const dates = Array.from({ length: 7 }, (_, i) => {
@@ -144,17 +144,15 @@ const Horarios = () => {
       return format(date, 'yyyy-MM-dd');
     });
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('class_id, booking_date')
-      .in('booking_date', dates)
-      .eq('status', 'confirmed');
+    const { data, error } = await (supabase as any)
+      .rpc('get_booking_counts' as any, { _dates: dates as any });
 
     if (!error && data) {
       const counts: Record<string, number> = {};
-      data.forEach((booking) => {
-        const key = `${booking.class_id}-${booking.booking_date}`;
-        counts[key] = (counts[key] || 0) + 1;
+      const rows = (data || []) as Array<{ class_id: string; booking_date: string; count: number }>;
+      rows.forEach((row) => {
+        const key = `${row.class_id}-${row.booking_date}`;
+        counts[key] = row.count;
       });
       setBookingCounts(counts);
     }

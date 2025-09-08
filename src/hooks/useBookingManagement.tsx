@@ -67,7 +67,7 @@ export const useBookingManagement = () => {
         `)
         .eq('status', 'confirmed')
         .order('booking_date', { ascending: false })
-        .order('classes.start_time', { ascending: true });
+        .order('start_time', { ascending: true, foreignTable: 'classes' });
 
       if (error) throw error;
 
