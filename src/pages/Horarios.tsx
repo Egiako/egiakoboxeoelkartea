@@ -236,7 +236,10 @@ const Horarios = () => {
     // Only show classes Monday-Thursday (1-4)
     if (dayOfWeek < 1 || dayOfWeek > 4) return [];
     
-    return classes.filter(c => c.day_of_week === dayOfWeek);
+    return classes.filter(c => 
+      c.day_of_week === dayOfWeek && 
+      (c.start_time === '09:00:00' || c.start_time === '18:00:00')
+    );
   };
 
   // Check if selected date is weekend
