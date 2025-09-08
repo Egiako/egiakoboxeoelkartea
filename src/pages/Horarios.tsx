@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, MapPin, Phone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -336,40 +337,108 @@ const Horarios = () => {
           </p>
         </div>
 
-          {/* Large Calendar */}
-          <div className="max-w-lg mx-auto mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-oswald text-center flex items-center justify-center gap-2">
-                  <CalendarDays className="h-6 w-6" />
-                  Selecciona un día
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  className="rounded-md border scale-110 pointer-events-auto"
-                  locale={es}
-                  modifiers={{
-                    weekend: (date) => {
-                      const day = date.getDay();
-                      return day === 0 || day === 5 || day === 6; // Sunday, Friday, Saturday
-                    }
-                  }}
-                  modifiersStyles={{
-                    weekend: { 
-                      color: 'hsl(var(--destructive))',
-                      fontWeight: 'bold'
-                    }
-                  }}
-                />
+        {/* Schedule display - authenticated users see calendar, non-authenticated see featured schedules */}
+        {user ? (
+          <>
+            {/* Large Calendar */}
+            <div className="max-w-lg mx-auto mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-oswald text-center flex items-center justify-center gap-2">
+                    <CalendarDays className="h-6 w-6" />
+                    Selecciona un día
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    className="rounded-md border scale-110 pointer-events-auto"
+                    locale={es}
+                    modifiers={{
+                      weekend: (date) => {
+                        const day = date.getDay();
+                        return day === 0 || day === 5 || day === 6; // Sunday, Friday, Saturday
+                      }
+                    }}
+                    modifiersStyles={{
+                      weekend: { 
+                        color: 'hsl(var(--destructive))',
+                        fontWeight: 'bold'
+                      }
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        ) : (
+          /* Featured schedules for non-authenticated users */
+          <div className="max-w-5xl mx-auto mb-8">
+            <Card className="shadow-boxing">
+              <CardContent className="p-8">
+                {/* Horarios de Mañana */}
+                <div className="mb-8">
+                  <div className="text-center mb-6">
+                    <h3 className="font-oswald font-bold text-2xl text-primary mb-2">Horarios de Mañana</h3>
+                    <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={index} className="bg-gradient-to-br from-primary/10 to-primary/20 border-primary/30 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-4 text-center">
+                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <Clock className="h-4 w-4 text-primary" />
+                            <span className="font-inter font-semibold text-primary">9:00 - 10:00</span>
+                          </div>
+                          <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Horarios de Tarde */}
+                <div className="mb-8">
+                  <div className="text-center mb-6">
+                    <h3 className="font-oswald font-bold text-2xl text-primary mb-2">Horarios de Tarde</h3>
+                    <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={index} className="bg-gradient-to-br from-secondary/10 to-secondary/20 border-secondary/30 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-4 text-center">
+                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <Clock className="h-4 w-4 text-secondary-foreground" />
+                            <span className="font-inter font-semibold text-secondary-foreground">18:00 - 19:00</span>
+                          </div>
+                          <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-center border-t pt-6">
+                  <p className="font-inter text-muted-foreground mb-6">
+                    Para reservar clases y ver disponibilidad en tiempo real necesitas registrarte
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild variant="default" className="font-oswald font-semibold">
+                      <Link to="/registrate">Registrarse ahora</Link>
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
+        )}
 
-          {/* Selected Day Classes */}
+        {/* Selected Day Classes - Only show for authenticated users */}
+        {user && (
           <div className="max-w-4xl mx-auto">
             <Card>
               <CardHeader>
@@ -513,6 +582,7 @@ const Horarios = () => {
               </CardContent>
             </Card>
           </div>
+        )}
         </main>
 
         <Footer />
