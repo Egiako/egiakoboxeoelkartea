@@ -632,23 +632,6 @@ export type Database = {
           year: number
         }
       }
-      get_unified_classes_for_range: {
-        Args: { end_date: string; start_date: string }
-        Returns: {
-          class_date: string
-          class_id: string
-          current_bookings: number
-          end_time: string
-          instructor_name: string
-          is_enabled: boolean
-          is_manual: boolean
-          manual_schedule_id: string
-          max_students: number
-          notes: string
-          start_time: string
-          title: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

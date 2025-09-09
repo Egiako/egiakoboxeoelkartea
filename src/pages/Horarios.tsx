@@ -7,10 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
-import { useUnifiedSchedules } from '@/hooks/useUnifiedSchedules';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { CalendarDays } from 'lucide-react';
@@ -22,28 +21,32 @@ const Horarios = () => {
   const { monthlyClasses, loading: monthlyClassesLoading, refreshMonthlyClasses } = useMonthlyClasses();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [userBookings, setUserBookings] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
-
-  // Calculate date range (today to 7 days ahead)
-  const today = new Date();
-  const endDate = new Date();
-  endDate.setDate(today.getDate() + 7);
-  
-  const { 
-    classes, 
-    userBookings, 
-    loading: schedulesLoading, 
-    fetchUserBookings, 
-    setUserBookingsState,
-    bookClass, 
-    cancelBooking 
-  } = useUnifiedSchedules(today, endDate);
 
   useEffect(() => {
     if (user) {
       loadUserData();
     }
+    loadClasses();
   }, [user]);
+
+  const loadClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('is_active', true)
+        .order('day_of_week', { ascending: true })
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      setClasses(data || []);
+    } catch (error) {
+      console.error('Error loading classes:', error);
+    }
+  };
 
   const loadUserData = async () => {
     if (!user) return;
@@ -60,15 +63,27 @@ const Horarios = () => {
       setUserProfile(profile);
 
       // Fetch user bookings
-      const bookings = await fetchUserBookings(user.id);
-      setUserBookingsState(bookings);
+      const { data: bookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed');
+
+      if (bookingsError) throw bookingsError;
+      setUserBookings(bookings || []);
     } catch (error) {
       console.error('Error loading user data:', error);
     }
   };
 
+  // Get classes for selected date
+  const getSelectedDateClasses = () => {
+    const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    return classes.filter(c => c.day_of_week === dayOfWeek);
+  };
+
   // Create booking
-  const createBooking = async (classData: any, date: Date) => {
+  const createBooking = async (classItem: any, date: Date) => {
     if (!user || !userProfile) {
       toast({
         title: "Error",
@@ -91,13 +106,42 @@ const Horarios = () => {
     setLoading(true);
     
     try {
-      const success = await bookClass(classData, user.id, date);
-      if (success) {
-        await loadUserData();
-        refreshMonthlyClasses();
+      const { error } = await supabase
+        .from('bookings')
+        .insert([
+          {
+            user_id: user.id,
+            class_id: classItem.id,
+            booking_date: format(date, 'yyyy-MM-dd'),
+            status: 'confirmed'
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Reserva confirmada!",
+        description: "Tu plaza ha sido reservada exitosamente"
+      });
+
+      await loadUserData();
+      refreshMonthlyClasses();
+    } catch (error: any) {
+      let errorMessage = "No se pudo crear la reserva";
+      
+      if (error.message.includes('está completa')) {
+        errorMessage = "Esta clase ya tiene el máximo de personas";
+      } else if (error.message.includes('No tienes clases restantes')) {
+        errorMessage = "Has agotado tus clases mensuales";
+      } else if (error.message.includes('antelación')) {
+        errorMessage = "Solo puedes reservar con un día de antelación como máximo";
       }
-    } catch (error) {
-      // Error handling is done in bookClass
+      
+      toast({
+        title: "Error al reservar",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
     
     setLoading(false);
@@ -108,45 +152,46 @@ const Horarios = () => {
     setLoading(true);
     
     try {
-      const success = await cancelBooking(bookingId);
-      if (success) {
-        await loadUserData();
-        refreshMonthlyClasses();
-      }
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Reserva cancelada",
+        description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
+      });
+
+      await loadUserData();
+      refreshMonthlyClasses();
     } catch (error) {
-      // Error handling is done in cancelBooking
+      toast({
+        title: "Error",
+        description: "No se pudo cancelar la reserva",
+        variant: "destructive"
+      });
     }
     
     setLoading(false);
   };
 
   // Check if user already has a booking for this class
-  const isAlreadyBooked = (classData: any) => {
-    return userBookings.some(b => {
-      if (classData.is_manual) {
-        return b.manual_schedule_id === classData.manual_schedule_id;
-      } else {
-        return b.class_id === classData.class_id && b.booking_date === classData.class_date;
-      }
-    });
+  const isAlreadyBooked = (classItem: any) => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    return userBookings.some(b => 
+      b.class_id === classItem.id && b.booking_date === dateStr
+    );
   };
 
   // Get booking ID for cancellation
-  const getBookingId = (classData: any) => {
-    const booking = userBookings.find(b => {
-      if (classData.is_manual) {
-        return b.manual_schedule_id === classData.manual_schedule_id;
-      } else {
-        return b.class_id === classData.class_id && b.booking_date === classData.class_date;
-      }
-    });
-    return booking?.id || '';
-  };
-
-  // Get classes for selected date
-  const getSelectedDateClasses = () => {
+  const getBookingId = (classItem: any) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return classes.filter(c => c.class_date === dateStr);
+    const booking = userBookings.find(b => 
+      b.class_id === classItem.id && b.booking_date === dateStr
+    );
+    return booking?.id || '';
   };
 
   // Check if date can be booked (today or tomorrow only)
@@ -161,6 +206,12 @@ const Horarios = () => {
     targetDate.setHours(0, 0, 0, 0);
     
     return targetDate >= today && targetDate <= tomorrow;
+  };
+
+  // Get day name for display
+  const getDayName = (dayOfWeek: number) => {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return days[dayOfWeek];
   };
 
   return (
@@ -260,10 +311,10 @@ const Horarios = () => {
           </div>
         </div>
 
-        {/* Schedule display - authenticated users see calendar, non-authenticated see featured schedules */}
+        {/* Schedule display - authenticated users see calendar, non-authenticated see weekly schedule */}
         {user ? (
           <>
-            {/* Large Calendar */}
+            {/* Large Calendar for authenticated users */}
             <div className="max-w-lg mx-auto mb-8">
               <Card>
                 <CardHeader>
@@ -298,17 +349,7 @@ const Horarios = () => {
 
             {/* Classes for selected day */}
             <div className="mb-8">
-              {schedulesLoading ? (
-                <Card className="max-w-md mx-auto">
-                  <CardContent className="p-6 text-center">
-                    <div className="animate-pulse">
-                      <div className="h-12 w-12 bg-muted rounded mx-auto mb-4" />
-                      <div className="h-4 bg-muted rounded w-3/4 mx-auto mb-2" />
-                      <div className="h-3 bg-muted rounded w-1/2 mx-auto" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : !canBookDate(selectedDate) ? (
+              {!canBookDate(selectedDate) ? (
                 <Card className="max-w-md mx-auto">
                   <CardContent className="p-6 text-center">
                     <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -335,28 +376,19 @@ const Horarios = () => {
                       </Card>
                     </div>
                   ) : (
-                    getSelectedDateClasses().map((classData) => {
-                      const isBooked = isAlreadyBooked(classData);
-                      const isFull = classData.current_bookings >= classData.max_students;
-                      const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
-                      const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
-                      const uniqueKey = classData.is_manual ? classData.manual_schedule_id : `${classData.class_id}-${classData.class_date}`;
+                    getSelectedDateClasses().map((classItem) => {
+                      const isBooked = isAlreadyBooked(classItem);
+                      const timeStr = format(new Date(`2000-01-01T${classItem.start_time}`), 'HH:mm');
+                      const endTimeStr = format(new Date(`2000-01-01T${classItem.end_time}`), 'HH:mm');
                       
                       return (
-                        <Card key={uniqueKey} className="shadow-boxing hover:shadow-lg transition-shadow">
+                        <Card key={classItem.id} className="shadow-boxing hover:shadow-lg transition-shadow">
                           <CardHeader>
                             <div className="flex items-center justify-between">
-                              <CardTitle className="font-oswald text-lg">{classData.title}</CardTitle>
-                              <div className="flex items-center gap-2">
-                                <Badge variant={isFull ? "destructive" : "default"}>
-                                  {classData.current_bookings}/{classData.max_students}
-                                </Badge>
-                                {classData.is_manual && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Especial
-                                  </Badge>
-                                )}
-                              </div>
+                              <CardTitle className="font-oswald text-lg">{classItem.title}</CardTitle>
+                              <Badge variant="default">
+                                {classItem.max_students} plazas
+                              </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -367,28 +399,20 @@ const Horarios = () => {
                               </div>
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-boxing-red" />
-                                <span>{classData.instructor_name}</span>
+                                <span>{classItem.instructor || 'Sin asignar'}</span>
                               </div>
                             </div>
-                            
-                            {classData.notes && (
-                              <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
-                                <p>{classData.notes}</p>
-                              </div>
-                            )}
 
                             <Button 
-                              onClick={() => isBooked ? handleCancelBooking(getBookingId(classData)) : createBooking(classData, selectedDate)}
-                              disabled={loading || (!isBooked && isFull) || (!isBooked && (!monthlyClasses || monthlyClasses.remaining_classes <= 0))}
-                              variant={isBooked ? "destructive" : isFull ? "secondary" : "default"}
+                              onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking(classItem, selectedDate)}
+                              disabled={loading || (!isBooked && (!monthlyClasses || monthlyClasses.remaining_classes <= 0))}
+                              variant={isBooked ? "destructive" : "default"}
                               className="w-full"
                             >
                               {loading ? (
                                 "Procesando..."
                               ) : isBooked ? (
                                 "Cancelar reserva"
-                              ) : isFull ? (
-                                "Completo"
                               ) : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? (
                                 "Sin clases disponibles"
                               ) : (
@@ -405,117 +429,116 @@ const Horarios = () => {
             </div>
           </>
         ) : (
-          /* Featured schedules for non-authenticated users */
-          <div className="max-w-5xl mx-auto mb-8">
-            <Card className="shadow-boxing">
-              <CardContent className="p-8">
-                {schedulesLoading ? (
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-6 bg-muted rounded w-1/3 mx-auto" />
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-20 bg-muted rounded" />
-                      ))}
-                    </div>
-                  </div>
-                ) : classes.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-oswald font-bold text-xl mb-2">No hay clases programadas</h3>
-                    <p className="text-muted-foreground">Actualmente no hay clases disponibles. Vuelve pronto.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    <div className="text-center mb-6">
-                      <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Próximas Clases Disponibles</h3>
-                      <p className="font-inter text-muted-foreground">Regístrate para reservar tu plaza</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {classes.slice(0, 6).map((classData) => {
-                        const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
-                        const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
-                        const dateStr = format(new Date(classData.class_date), 'EEEE d \'de\' MMMM', { locale: es });
-                        const isFull = classData.current_bookings >= classData.max_students;
-                        const uniqueKey = classData.is_manual ? classData.manual_schedule_id : `${classData.class_id}-${classData.class_date}`;
-                        
-                        return (
-                          <Card key={uniqueKey} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
-                            <CardContent className="p-4">
-                              <h4 className="font-oswald font-bold text-lg mb-2 text-center">{classData.title}</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center justify-center gap-1">
-                                  <Calendar className="h-4 w-4 text-boxing-red" />
-                                  <span className="font-inter text-center">{dateStr}</span>
-                                </div>
-                                <div className="flex items-center justify-center gap-1">
-                                  <Clock className="h-4 w-4 text-boxing-red" />
-                                  <span className="font-inter font-semibold text-boxing-red">{timeStr} - {endTimeStr}</span>
-                                </div>
-                                <div className="flex items-center justify-center gap-1">
-                                  <Users className="h-4 w-4 text-boxing-red" />
-                                  <span className="font-inter">{classData.instructor_name}</span>
-                                </div>
-                                <div className="flex items-center justify-center gap-1">
-                                  <Badge variant={isFull ? "destructive" : "default"} className="text-xs">
-                                    {classData.current_bookings}/{classData.max_students} plazas
+          /* Weekly schedule for non-authenticated users */
+          <div className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4].map(day => {
+                const dayClasses = classes.filter(c => c.day_of_week === day);
+                const dayName = getDayName(day);
+                
+                return (
+                  <Card key={day} className="shadow-boxing">
+                    <CardHeader>
+                      <CardTitle className="font-oswald font-bold text-xl text-center">
+                        {dayName}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {dayClasses.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground font-inter">Sin clases programadas</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {dayClasses.map((classItem) => {
+                            const timeStr = format(new Date(`2000-01-01T${classItem.start_time}`), 'HH:mm');
+                            const endTimeStr = format(new Date(`2000-01-01T${classItem.end_time}`), 'HH:mm');
+                            
+                            return (
+                              <div
+                                key={classItem.id}
+                                className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-boxing-red" />
+                                    <span className="font-oswald font-semibold">{timeStr} - {endTimeStr}</span>
+                                  </div>
+                                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 border">
+                                    {classItem.title}
                                   </Badge>
-                                  {classData.is_manual && (
-                                    <Badge variant="secondary" className="text-xs ml-1">
-                                      Especial
-                                    </Badge>
-                                  )}
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                                  <span>Instructor: {classItem.instructor || 'Sin asignar'}</span>
+                                  <div className="flex items-center gap-1">
+                                    <Users className="h-4 w-4" />
+                                    <span>{classItem.max_students} plazas</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="text-center">
+                                  <Link to="/registrate">
+                                    <Button className="w-full font-inter" variant="outline">
+                                      Regístrate para reservar
+                                    </Button>
+                                  </Link>
                                 </div>
                               </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                    <div className="text-center">
-                      <Link to="/registrate">
-                        <Button size="lg" className="font-inter">
-                          Regístrate para reservar
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Contact Information */}
-        <Card className="bg-boxing-grey/30 max-w-4xl mx-auto">
-          <CardContent className="p-8">
-            <div className="grid md:grid-cols-2 gap-8">
+        {/* Contact and Location Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <Card className="shadow-boxing">
+            <CardHeader>
+              <CardTitle className="font-oswald flex items-center gap-2">
+                <Phone className="h-6 w-6 text-boxing-red" />
+                Contacto
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 font-inter">
               <div>
-                <h3 className="font-oswald font-bold text-xl mb-4 flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-boxing-red" />
-                  Nuestra Ubicación
-                </h3>
-                <div className="space-y-2 font-inter text-muted-foreground">
-                  <p>Ginmásio Egia Kobe</p>
-                  <p>Calle Egia, 15, Bajo</p>
-                  <p>20012 Donostia-San Sebastián</p>
-                  <p>Gipuzkoa, País Vasco</p>
-                </div>
+                <h4 className="font-semibold mb-2">Teléfono</h4>
+                <p className="text-muted-foreground">669 33 98 12</p>
               </div>
-              
               <div>
-                <h3 className="font-oswald font-bold text-xl mb-4 flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-boxing-red" />
-                  Contacto
-                </h3>
-                <div className="space-y-2 font-inter text-muted-foreground">
-                  <p>Teléfono: +34 943 000 000</p>
-                  <p>Email: info@egiakobe.com</p>
-                  <p>Síguenos en redes sociales para más información</p>
-                </div>
+                <h4 className="font-semibold mb-2">Email</h4>
+                <p className="text-muted-foreground">info@boxeoelkartea.com</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div>
+                <h4 className="font-semibold mb-2">Horario de atención</h4>
+                <p className="text-muted-foreground">Lunes a Jueves: 17:00 - 21:00</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-boxing">
+            <CardHeader>
+              <CardTitle className="font-oswald flex items-center gap-2">
+                <MapPin className="h-6 w-6 text-boxing-red" />
+                Ubicación
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="font-inter">
+              <div className="space-y-2 mb-4">
+                <p className="font-semibold">Boxeo Elkartea</p>
+                <p className="text-muted-foreground">Calle Principal, 123</p>
+                <p className="text-muted-foreground">48001 Bilbao, Bizkaia</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       <Footer />

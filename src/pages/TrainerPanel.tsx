@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Users, Calendar, ClipboardList } from 'lucide-react';
 import { TrainerActiveUsers } from '@/components/TrainerActiveUsers';
-import { TrainerBookingManagement } from '@/components/TrainerBookingManagement';
+import TrainerBookingManagement from '@/components/TrainerBookingManagement';
 import ManualScheduleManagement from '@/components/ManualScheduleManagement';
 
 const TrainerPanel = () => {

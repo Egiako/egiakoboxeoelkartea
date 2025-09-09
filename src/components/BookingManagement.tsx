@@ -1,225 +1,223 @@
-import { useState, useMemo } from 'react';
-import { useUnifiedBookingManagement, UnifiedBookingWithDetails } from '@/hooks/useUnifiedBookingManagement';
+import { useState, useEffect } from 'react';
+import { useBookingManagement } from '@/hooks/useBookingManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Clock, User, Phone, Mail, CheckCircle, XCircle, Circle, Filter, Search, AlertTriangle } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Clock, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { format, isAfter, startOfDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const BookingManagement = () => {
-  const { bookings, loading, updateAttendance } = useUnifiedBookingManagement();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [classFilter, setClassFilter] = useState('all');
-  const [attendanceFilter, setAttendanceFilter] = useState('all');
+  const { bookings, loading, updateAttendance, refetch } = useBookingManagement();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [updating, setUpdating] = useState<string | null>(null);
 
-  // Get unique classes and dates for filters
-  const uniqueClasses = useMemo(() => {
-    const classes = bookings.map(b => ({
-      id: b.manual_schedule_id || b.class_id || '',
-      title: b.title,
-      time: `${b.start_time} - ${b.end_time}`
-    }));
-    return classes.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
-  }, [bookings]);
-  
-  const uniqueDates = useMemo(() => {
-    const dates = [...new Set(bookings.map(b => b.booking_date))].sort((a: string, b: string) => b.localeCompare(a));
-    return dates;
-  }, [bookings]);
+  // Group bookings by date
+  const groupedBookings = bookings.reduce((acc, booking) => {
+    const date = booking.booking_date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(booking);
+    return acc;
+  }, {} as Record<string, typeof bookings>);
 
-  // Filter bookings based on search and filters
-  const filteredBookings = useMemo(() => {
-    return bookings.filter(booking => {
-      const matchesSearch = booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        booking.profile.phone.includes(searchTerm) || 
-        (booking.profile.email && booking.profile.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-        booking.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
-      const matchesClass = classFilter === 'all' || (booking.manual_schedule_id || booking.class_id) === classFilter;
-      let matchesAttendance = true;
-      if (attendanceFilter === 'attended') matchesAttendance = booking.attended === true;
-      else if (attendanceFilter === 'not_attended') matchesAttendance = booking.attended === false;
-      else if (attendanceFilter === 'pending') matchesAttendance = booking.attended === null;
-      return matchesSearch && matchesDate && matchesClass && matchesAttendance;
-    });
-  }, [bookings, searchTerm, dateFilter, classFilter, attendanceFilter]);
+  // Sort dates
+  const sortedDates = Object.keys(groupedBookings).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  );
 
-  // Format time helper
-  const formatTime = (timeString: string) => {
-    return timeString.slice(0, 5); // Remove seconds if present
+  const handleAttendanceUpdate = async (bookingId: string, attended: boolean) => {
+    setUpdating(bookingId);
+    try {
+      await updateAttendance(bookingId, attended);
+    } finally {
+      setUpdating(null);
+    }
   };
 
-  const getAttendanceIcon = (attended: boolean | null) => {
-    if (attended === true) return <CheckCircle className="h-4 w-4 text-green-500" />;
-    if (attended === false) return <XCircle className="h-4 w-4 text-red-500" />;
-    return <Circle className="h-4 w-4 text-muted-foreground" />;
-  };
-
-  const getAttendanceBadge = (attended: boolean | null) => {
-    if (attended === true) return <Badge variant="secondary" className="bg-green-100 text-green-800">Asistió</Badge>;
-    if (attended === false) return <Badge variant="destructive">No asistió</Badge>;
-    return <Badge variant="outline">Pendiente</Badge>;
+  // Check if a booking is from today or future dates
+  const isBookingEditable = (bookingDate: string) => {
+    const today = startOfDay(new Date());
+    const booking = startOfDay(new Date(bookingDate));
+    return !isAfter(today, booking); // Today or future
   };
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4"></div>
-          <div className="h-32 bg-muted rounded"></div>
-        </div>
-      </div>
+      <Card className="shadow-boxing">
+        <CardHeader>
+          <CardTitle className="font-oswald">Gestión de Reservas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-16 bg-muted rounded" />
+            <div className="h-16 bg-muted rounded" />
+            <div className="h-16 bg-muted rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (sortedDates.length === 0) {
+    return (
+      <Card className="shadow-boxing">
+        <CardHeader>
+          <CardTitle className="font-oswald">Gestión de Reservas</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-12">
+          <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="font-oswald font-bold text-lg mb-2">No hay reservas</h3>
+          <p className="text-muted-foreground font-inter">
+            No hay reservas de clases para mostrar
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Lista de Reservas por Clase
-          </CardTitle>
-          <CardDescription>
-            Gestiona la asistencia y visualiza las reservas organizadas por clase y fecha
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por nombre, email, teléfono o clase..." 
-                value={searchTerm} 
-                onChange={e => setSearchTerm(e.target.value)} 
-                className="pl-10" 
-              />
-            </div>
-
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por fecha" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las fechas</SelectItem>
-                {uniqueDates.map((date: string) => (
-                  <SelectItem key={date} value={date}>
-                    {new Date(date).toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por clase" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las clases</SelectItem>
-                {uniqueClasses.map(cls => (
-                  <SelectItem key={cls.id} value={cls.id}>
-                    {cls.title} ({cls.time})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={attendanceFilter} onValueChange={setAttendanceFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por asistencia" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="attended">Asistieron</SelectItem>
-                <SelectItem value="not_attended">No asistieron</SelectItem>
-                <SelectItem value="pending">Pendientes</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Bookings Table */}
-          {filteredBookings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12">
-                <div className="text-center text-muted-foreground">
-                  <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No se encontraron reservas</h3>
-                  <p>Ajusta los filtros para ver más resultados</p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Estudiante</TableHead>
-                    <TableHead>Clase</TableHead>
-                    <TableHead>Horario</TableHead>
-                    <TableHead>Instructor</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Clases Restantes</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBookings.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-medium">{booking.profile.first_name} {booking.profile.last_name}</TableCell>
-                      <TableCell>{booking.title}</TableCell>
-                      <TableCell>{formatTime(booking.start_time)} - {formatTime(booking.end_time)}</TableCell>
-                      <TableCell>{booking.instructor_name}</TableCell>
-                      <TableCell>{new Date(booking.booking_date).toLocaleDateString('es-ES')}</TableCell>
-                      <TableCell>
-                        <Badge variant={booking.user_monthly_classes?.remaining_classes === 0 ? "destructive" : "secondary"}>
-                          {booking.user_monthly_classes?.remaining_classes || 0}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{getAttendanceBadge(booking.attended)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {booking.attended !== true && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={() => updateAttendance(booking.id, true)} 
-                              className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 px-2"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {booking.attended !== false && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              onClick={() => updateAttendance(booking.id, false)} 
-                              className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 px-2"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          )}
+    <Card className="shadow-boxing">
+      <CardHeader>
+        <CardTitle className="font-oswald">Gestión de Reservas - Administrador</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Gestiona la asistencia de los alumnos a las clases
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {sortedDates.map((date) => {
+          const dateBookings = groupedBookings[date];
+          const isEditable = isBookingEditable(date);
+          
+          return (
+            <div key={date} className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-boxing-red" />
+                <h3 className="font-oswald font-bold text-lg">
+                  {format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}
+                </h3>
+                <Badge variant={isEditable ? "default" : "secondary"}>
+                  {isEditable ? "Editable" : "Finalizada"}
+                </Badge>
+              </div>
+              
+              <div className="grid gap-4">
+                {dateBookings
+                  .sort((a, b) => a.class?.start_time.localeCompare(b.class?.start_time))
+                  .map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-boxing-red" />
+                            <span className="font-oswald font-semibold">
+                              {format(new Date(`2000-01-01T${booking.class?.start_time}`), 'HH:mm')} - 
+                              {format(new Date(`2000-01-01T${booking.class?.end_time}`), 'HH:mm')}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-boxing-red" />
+                            <span className="text-sm font-medium">{booking.class?.title}</span>
+                          </div>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>
+                            <strong>Alumno:</strong> {booking.profile?.first_name} {booking.profile?.last_name}
+                          </span>
+                          <span>
+                            <strong>Teléfono:</strong> {booking.profile?.phone}
+                          </span>
+                          <span>
+                            <strong>Instructor:</strong> {booking.class?.instructor}
+                          </span>
+                          <span>
+                            <strong>Clases restantes:</strong> {booking.user_monthly_classes?.remaining_classes || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        {booking.attended === null ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleAttendanceUpdate(booking.id, true)}
+                              disabled={updating === booking.id || !isEditable}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {updating === booking.id ? (
+                                <div className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+                              ) : (
+                                <CheckCircle className="h-4 w-4" />
+                              )}
+                              Asistió
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleAttendanceUpdate(booking.id, false)}
+                              disabled={updating === booking.id || !isEditable}
+                            >
+                              {updating === booking.id ? (
+                                <div className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+                              ) : (
+                                <XCircle className="h-4 w-4" />
+                              )}
+                              No asistió
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={booking.attended ? "default" : "destructive"}
+                              className="flex items-center gap-1"
+                            >
+                              {booking.attended ? (
+                                <>
+                                  <CheckCircle className="h-3 w-3" />
+                                  Asistió
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="h-3 w-3" />
+                                  No asistió
+                                </>
+                              )}
+                            </Badge>
+                            {isEditable && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleAttendanceUpdate(booking.id, !booking.attended)}
+                                disabled={updating === booking.id}
+                              >
+                                {updating === booking.id ? (
+                                  <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
+                                ) : (
+                                  "Cambiar"
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+              </div>
+              
+              {date !== sortedDates[sortedDates.length - 1] && <Separator />}
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 };
 
