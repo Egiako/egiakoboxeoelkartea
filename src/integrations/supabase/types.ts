@@ -727,6 +727,10 @@ export type Database = {
           updated_at: string
         }
       }
+      trainer_can_view_user_profile: {
+        Args: { target_user_id: string; trainer_id: string }
+        Returns: boolean
+      }
       trainer_update_attendance: {
         Args: { attendance_status: boolean; booking_uuid: string }
         Returns: {
