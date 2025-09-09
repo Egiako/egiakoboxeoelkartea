@@ -134,7 +134,7 @@ export const useUnifiedBookingManagement = () => {
       // Filter out any null results and incomplete bookings
       const completeBookings = enrichedBookings.filter(
         (booking): booking is UnifiedBookingWithDetails => 
-          booking !== null && booking.profile
+          booking !== null && !!booking.profile
       );
 
       setBookings(completeBookings);
