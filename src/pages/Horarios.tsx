@@ -396,7 +396,7 @@ const Horarios = () => {
                         Clases restantes este mes
                       </div>
                       <div className="text-3xl font-oswald font-bold text-primary text-center">
-                        {monthlyClasses.remaining_classes}<span className="text-white text-xl">/12</span>
+                        {monthlyClasses.remaining_classes}<span className="text-white text-xl">/10</span>
                       </div>
                     </div>
                   </div>
