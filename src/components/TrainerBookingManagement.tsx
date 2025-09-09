@@ -28,7 +28,7 @@ export const TrainerBookingManagement = () => {
       const matchesSearch = `${booking.profile.first_name} ${booking.profile.last_name}`
         .toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.profile.phone.includes(searchTerm) ||
-        booking.class.title.toLowerCase().includes(searchTerm.toLowerCase());
+        booking.manual_schedule.title.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
       const matchesClass = classFilter === 'all' || booking.manual_schedule.title === classFilter;
@@ -49,10 +49,10 @@ export const TrainerBookingManagement = () => {
       if (!acc[date]) {
         acc[date] = {};
       }
-      const classTitle = booking.class.title;
+      const classTitle = booking.manual_schedule.title;
       if (!acc[date][classTitle]) {
         acc[date][classTitle] = {
-          class: booking.class,
+          class: booking.manual_schedule,
           bookings: [],
           stats: { total: 0, attended: 0, notAttended: 0, pending: 0 }
         };
@@ -231,7 +231,7 @@ export const TrainerBookingManagement = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {classData.bookings.map((booking: TrainerBookingWithDetails) => (
+                          {classData.bookings.map((booking: any) => (
                             <TableRow key={booking.id}>
                               <TableCell className="font-medium">
                                 {booking.profile.first_name} {booking.profile.last_name}
@@ -247,22 +247,22 @@ export const TrainerBookingManagement = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex gap-2">
-                                   <Button
-                                     size="sm"
-                                     variant={booking.attended === true ? "default" : "outline"}
-                                     onClick={() => updateTrainerAttendance(booking.id, true)}
-                                     disabled={booking.attended === true}
-                                   >
-                                     <Check className="h-4 w-4" />
-                                   </Button>
-                                   <Button
-                                     size="sm"
-                                     variant={booking.attended === false ? "destructive" : "outline"}
-                                     onClick={() => updateTrainerAttendance(booking.id, false)}
-                                     disabled={booking.attended === false}
-                                   >
-                                     <X className="h-4 w-4" />
-                                   </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={booking.attended === true ? "default" : "outline"}
+                                    onClick={() => updateTrainerAttendance(booking.id, true)}
+                                    disabled={booking.attended === true}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={booking.attended === false ? "destructive" : "outline"}
+                                    onClick={() => updateTrainerAttendance(booking.id, false)}
+                                    disabled={booking.attended === false}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
                                 </div>
                               </TableCell>
                             </TableRow>

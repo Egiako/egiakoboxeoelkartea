@@ -35,11 +35,17 @@ const BookingManagement = () => {
   // Filter bookings based on search and filters
   const filteredBookings = useMemo(() => {
     return bookings.filter(booking => {
-      const matchesSearch = booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.phone.includes(searchTerm) || booking.profile.email && booking.profile.email.toLowerCase().includes(searchTerm.toLowerCase()) || booking.class.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        booking.profile.phone.includes(searchTerm) || 
+        (booking.profile.email && booking.profile.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
+        booking.manual_schedule.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
-      const matchesClass = classFilter === 'all' || booking.class.id === classFilter;
+      const matchesClass = classFilter === 'all' || booking.manual_schedule.id === classFilter;
       let matchesAttendance = true;
-      if (attendanceFilter === 'attended') matchesAttendance = booking.attended === true;else if (attendanceFilter === 'not_attended') matchesAttendance = booking.attended === false;else if (attendanceFilter === 'pending') matchesAttendance = booking.attended === null;
+      if (attendanceFilter === 'attended') matchesAttendance = booking.attended === true;
+      else if (attendanceFilter === 'not_attended') matchesAttendance = booking.attended === false;
+      else if (attendanceFilter === 'pending') matchesAttendance = booking.attended === null;
       return matchesSearch && matchesDate && matchesClass && matchesAttendance;
     });
   }, [bookings, searchTerm, dateFilter, classFilter, attendanceFilter]);
@@ -225,9 +231,9 @@ const BookingManagement = () => {
                           <Badge variant="secondary" className="bg-primary/10 text-primary">
                             {classGroup.class.title}
                           </Badge>
-                          {classGroup.class.instructor && <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          {classGroup.class.instructor_name && <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              {classGroup.class.instructor}
+                              {classGroup.class.instructor_name}
                             </span>}
                         </div>
                         <Badge variant="outline">
