@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           attended: boolean | null
           booking_date: string
-          class_id: string
+          class_id: string | null
           created_at: string
           id: string
           manual_schedule_id: string | null
@@ -30,7 +30,7 @@ export type Database = {
         Insert: {
           attended?: boolean | null
           booking_date: string
-          class_id: string
+          class_id?: string | null
           created_at?: string
           id?: string
           manual_schedule_id?: string | null
@@ -42,7 +42,7 @@ export type Database = {
         Update: {
           attended?: boolean | null
           booking_date?: string
-          class_id?: string
+          class_id?: string | null
           created_at?: string
           id?: string
           manual_schedule_id?: string | null
@@ -475,7 +475,7 @@ export type Database = {
         Returns: {
           attended: boolean | null
           booking_date: string
-          class_id: string
+          class_id: string | null
           created_at: string
           id: string
           manual_schedule_id: string | null
@@ -516,15 +516,17 @@ export type Database = {
         }
       }
       book_manual_schedule: {
-        Args: {
-          p_booking_date: string
-          p_manual_schedule_id: string
-          p_user_id: string
-        }
+        Args:
+          | {
+              p_booking_date: string
+              p_manual_schedule_id: string
+              p_user_id: string
+            }
+          | { p_manual_schedule_id: string; p_user_id: string }
         Returns: {
           attended: boolean | null
           booking_date: string
-          class_id: string
+          class_id: string | null
           created_at: string
           id: string
           manual_schedule_id: string | null
@@ -630,6 +632,23 @@ export type Database = {
           year: number
         }
       }
+      get_unified_classes_for_range: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          class_date: string
+          class_id: string
+          current_bookings: number
+          end_time: string
+          instructor_name: string
+          is_enabled: boolean
+          is_manual: boolean
+          manual_schedule_id: string
+          max_students: number
+          notes: string
+          start_time: string
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -713,7 +732,7 @@ export type Database = {
         Returns: {
           attended: boolean | null
           booking_date: string
-          class_id: string
+          class_id: string | null
           created_at: string
           id: string
           manual_schedule_id: string | null

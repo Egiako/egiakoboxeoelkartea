@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useManualBookingManagement } from '@/hooks/useManualBookingManagement';
+import { useUnifiedBookingManagement } from '@/hooks/useUnifiedBookingManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Calendar, BookOpen, Check, X, Clock, AlertTriangle } from 'lucide-react';
 
 export const TrainerBookingManagement = () => {
-  const { bookings, loading, updateTrainerAttendance } = useManualBookingManagement();
+  const { bookings, loading, updateTrainerAttendance } = useUnifiedBookingManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
@@ -17,7 +17,7 @@ export const TrainerBookingManagement = () => {
 
   // Get unique classes and dates for filters
   const { uniqueClasses, uniqueDates } = useMemo(() => {
-    const classes = Array.from(new Set(bookings.map(b => b.manual_schedule.title)));
+    const classes = Array.from(new Set(bookings.map(b => b.title)));
     const dates = Array.from(new Set(bookings.map(b => b.booking_date))).sort();
     return { uniqueClasses: classes, uniqueDates: dates };
   }, [bookings]);
@@ -28,10 +28,10 @@ export const TrainerBookingManagement = () => {
       const matchesSearch = `${booking.profile.first_name} ${booking.profile.last_name}`
         .toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking.profile.phone.includes(searchTerm) ||
-        booking.manual_schedule.title.toLowerCase().includes(searchTerm.toLowerCase());
+        booking.title.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
-      const matchesClass = classFilter === 'all' || booking.manual_schedule.title === classFilter;
+      const matchesClass = classFilter === 'all' || booking.title === classFilter;
       
       const matchesAttendance = attendanceFilter === 'all' ||
         (attendanceFilter === 'attended' && booking.attended === true) ||
@@ -49,10 +49,14 @@ export const TrainerBookingManagement = () => {
       if (!acc[date]) {
         acc[date] = {};
       }
-      const classTitle = booking.manual_schedule.title;
+      const classTitle = booking.title;
       if (!acc[date][classTitle]) {
         acc[date][classTitle] = {
-          class: booking.manual_schedule,
+          class: {
+            title: booking.title,
+            start_time: booking.start_time,
+            end_time: booking.end_time
+          },
           bookings: [],
           stats: { total: 0, attended: 0, notAttended: 0, pending: 0 }
         };

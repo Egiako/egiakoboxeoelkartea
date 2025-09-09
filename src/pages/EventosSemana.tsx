@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Shield, Calendar } from 'lucide-react';
-import { useManualSchedules } from '@/hooks/useManualSchedules';
+import { useUnifiedSchedules } from '@/hooks/useUnifiedSchedules';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
@@ -15,12 +15,12 @@ const EventosSemana = () => {
   const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 }); // Sunday
 
-  const { schedules, loading } = useManualSchedules(weekStart, weekEnd);
+  const { classes, loading } = useUnifiedSchedules(weekStart, weekEnd);
   const [filtroInstructor, setFiltroInstructor] = useState('Todos');
 
-  // Group schedules by day
-  const schedulesByDay = schedules.reduce((acc, schedule) => {
-    const date = new Date(schedule.class_date);
+  // Group classes by day
+  const schedulesByDay = classes.reduce((acc, classData) => {
+    const date = new Date(classData.class_date);
     const dayName = format(date, 'EEEE', { locale: es });
     const dayKey = dayName.charAt(0).toUpperCase() + dayName.slice(1);
     
@@ -32,17 +32,18 @@ const EventosSemana = () => {
       };
     }
     
-    const timeStr = format(new Date(`2000-01-01T${schedule.start_time}`), 'HH:mm');
-    const endTimeStr = format(new Date(`2000-01-01T${schedule.end_time}`), 'HH:mm');
+    const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
+    const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
     
     acc[dayKey].eventos.push({
-      id: schedule.id,
+      id: classData.is_manual ? classData.manual_schedule_id : `${classData.class_id}-${classData.class_date}`,
       hora: `${timeStr} - ${endTimeStr}`,
-      nivel: schedule.title,
-      instructor: schedule.instructor_name,
-      plazas: schedule.max_students,
-      ocupadas: schedule.current_bookings,
-      notes: schedule.notes
+      nivel: classData.title,
+      instructor: classData.instructor_name,
+      plazas: classData.max_students,
+      ocupadas: classData.current_bookings,
+      notes: classData.notes,
+      is_manual: classData.is_manual
     });
     
     return acc;
@@ -62,7 +63,7 @@ const EventosSemana = () => {
   });
 
   // Get unique instructors for filtering
-  const instructores = ['Todos', ...new Set(schedules.map(s => s.instructor_name))];
+  const instructores = ['Todos', ...new Set(classes.map(c => c.instructor_name))];
 
   const eventosFiltrados = horario.map(dia => ({
     ...dia,
@@ -164,9 +165,16 @@ const EventosSemana = () => {
                                   <Clock className="h-4 w-4 text-boxing-red" />
                                   <span className="font-oswald font-semibold">{evento.hora}</span>
                                 </div>
-                                <Badge className={`${getNivelColor(evento.nivel)} border`}>
-                                  {evento.nivel}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`${getNivelColor(evento.nivel)} border`}>
+                                    {evento.nivel}
+                                  </Badge>
+                                  {evento.is_manual && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Especial
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                               
                               <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">

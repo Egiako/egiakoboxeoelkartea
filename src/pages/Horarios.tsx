@@ -7,69 +7,68 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
-import { useManualSchedules, ManualScheduleBooking } from '@/hooks/useManualSchedules';
+import { useUnifiedSchedules } from '@/hooks/useUnifiedSchedules';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { CalendarDays, CheckCircle } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Horarios = () => {
-  const [userBookings, setUserBookings] = useState<ManualScheduleBooking[]>([]);
-  const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const { monthlyClasses, loading: monthlyClassesLoading, refreshMonthlyClasses } = useMonthlyClasses();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
-  // Calculate date range for manual schedules (today to 7 days ahead)
+  // Calculate date range (today to 7 days ahead)
   const today = new Date();
   const endDate = new Date();
   endDate.setDate(today.getDate() + 7);
   
-  const { schedules, loading: schedulesLoading, bookSchedule, getUserBookings, cancelBooking } = useManualSchedules(today, endDate);
+  const { 
+    classes, 
+    userBookings, 
+    loading: schedulesLoading, 
+    fetchUserBookings, 
+    setUserBookingsState,
+    bookClass, 
+    cancelBooking 
+  } = useUnifiedSchedules(today, endDate);
 
   useEffect(() => {
     if (user) {
-      fetchUserBookings();
-      fetchUserProfile();
+      loadUserData();
     }
   }, [user]);
 
-  const fetchUserBookings = async () => {
+  const loadUserData = async () => {
     if (!user) return;
     
     try {
-      const bookings = await getUserBookings(user.id);
-      setUserBookings(bookings);
-    } catch (error) {
-      console.error('Error fetching user bookings:', error);
-    }
-  };
-
-  const fetchUserProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
-      setUserProfile(data);
+      if (profileError) throw profileError;
+      setUserProfile(profile);
+
+      // Fetch user bookings
+      const bookings = await fetchUserBookings(user.id);
+      setUserBookingsState(bookings);
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error loading user data:', error);
     }
   };
 
-  // Create booking using manual schedule system
-  const createBooking = async (scheduleId: string, date: Date) => {
+  // Create booking
+  const createBooking = async (classData: any, date: Date) => {
     if (!user || !userProfile) {
       toast({
         title: "Error",
@@ -92,24 +91,28 @@ const Horarios = () => {
     setLoading(true);
     
     try {
-      await bookSchedule(scheduleId, user.id, date);
-      await fetchUserBookings();
-      refreshMonthlyClasses();
+      const success = await bookClass(classData, user.id, date);
+      if (success) {
+        await loadUserData();
+        refreshMonthlyClasses();
+      }
     } catch (error) {
-      // Error handling is done in bookSchedule
+      // Error handling is done in bookClass
     }
     
     setLoading(false);
   };
 
-  // Cancel booking using manual schedule system
+  // Cancel booking
   const handleCancelBooking = async (bookingId: string) => {
     setLoading(true);
     
     try {
-      await cancelBooking(bookingId);
-      await fetchUserBookings();
-      refreshMonthlyClasses();
+      const success = await cancelBooking(bookingId);
+      if (success) {
+        await loadUserData();
+        refreshMonthlyClasses();
+      }
     } catch (error) {
       // Error handling is done in cancelBooking
     }
@@ -117,15 +120,33 @@ const Horarios = () => {
     setLoading(false);
   };
 
-  // Check if user already has a booking for this schedule
-  const isAlreadyBooked = (scheduleId: string) => {
-    return userBookings.some(b => b.manual_schedule_id === scheduleId);
+  // Check if user already has a booking for this class
+  const isAlreadyBooked = (classData: any) => {
+    return userBookings.some(b => {
+      if (classData.is_manual) {
+        return b.manual_schedule_id === classData.manual_schedule_id;
+      } else {
+        return b.class_id === classData.class_id && b.booking_date === classData.class_date;
+      }
+    });
   };
 
-  // Get schedules for selected date
-  const getSelectedDateSchedules = () => {
+  // Get booking ID for cancellation
+  const getBookingId = (classData: any) => {
+    const booking = userBookings.find(b => {
+      if (classData.is_manual) {
+        return b.manual_schedule_id === classData.manual_schedule_id;
+      } else {
+        return b.class_id === classData.class_id && b.booking_date === classData.class_date;
+      }
+    });
+    return booking?.id || '';
+  };
+
+  // Get classes for selected date
+  const getSelectedDateClasses = () => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return schedules.filter(s => s.class_date === dateStr);
+    return classes.filter(c => c.class_date === dateStr);
   };
 
   // Check if date can be booked (today or tomorrow only)
@@ -301,7 +322,7 @@ const Horarios = () => {
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {getSelectedDateSchedules().length === 0 ? (
+                  {getSelectedDateClasses().length === 0 ? (
                     <div className="md:col-span-2">
                       <Card>
                         <CardContent className="p-8 text-center">
@@ -314,20 +335,28 @@ const Horarios = () => {
                       </Card>
                     </div>
                   ) : (
-                    getSelectedDateSchedules().map((schedule) => {
-                      const isBooked = isAlreadyBooked(schedule.id);
-                      const isFull = schedule.current_bookings >= schedule.max_students;
-                      const timeStr = format(new Date(`2000-01-01T${schedule.start_time}`), 'HH:mm');
-                      const endTimeStr = format(new Date(`2000-01-01T${schedule.end_time}`), 'HH:mm');
+                    getSelectedDateClasses().map((classData) => {
+                      const isBooked = isAlreadyBooked(classData);
+                      const isFull = classData.current_bookings >= classData.max_students;
+                      const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
+                      const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
+                      const uniqueKey = classData.is_manual ? classData.manual_schedule_id : `${classData.class_id}-${classData.class_date}`;
                       
                       return (
-                        <Card key={schedule.id} className="shadow-boxing hover:shadow-lg transition-shadow">
+                        <Card key={uniqueKey} className="shadow-boxing hover:shadow-lg transition-shadow">
                           <CardHeader>
                             <div className="flex items-center justify-between">
-                              <CardTitle className="font-oswald text-lg">{schedule.title}</CardTitle>
-                              <Badge variant={isFull ? "destructive" : "default"}>
-                                {schedule.current_bookings}/{schedule.max_students}
-                              </Badge>
+                              <CardTitle className="font-oswald text-lg">{classData.title}</CardTitle>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={isFull ? "destructive" : "default"}>
+                                  {classData.current_bookings}/{classData.max_students}
+                                </Badge>
+                                {classData.is_manual && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Especial
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -338,20 +367,18 @@ const Horarios = () => {
                               </div>
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-boxing-red" />
-                                <span>{schedule.instructor_name}</span>
+                                <span>{classData.instructor_name}</span>
                               </div>
                             </div>
                             
-                            {schedule.notes && (
+                            {classData.notes && (
                               <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
-                                <p>{schedule.notes}</p>
+                                <p>{classData.notes}</p>
                               </div>
                             )}
 
                             <Button 
-                              onClick={() => isBooked ? handleCancelBooking(
-                                userBookings.find(b => b.manual_schedule_id === schedule.id)?.id || ''
-                              ) : createBooking(schedule.id, selectedDate)}
+                              onClick={() => isBooked ? handleCancelBooking(getBookingId(classData)) : createBooking(classData, selectedDate)}
                               disabled={loading || (!isBooked && isFull) || (!isBooked && (!monthlyClasses || monthlyClasses.remaining_classes <= 0))}
                               variant={isBooked ? "destructive" : isFull ? "secondary" : "default"}
                               className="w-full"
@@ -391,7 +418,7 @@ const Horarios = () => {
                       ))}
                     </div>
                   </div>
-                ) : schedules.length === 0 ? (
+                ) : classes.length === 0 ? (
                   <div className="text-center py-8">
                     <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-oswald font-bold text-xl mb-2">No hay clases programadas</h3>
@@ -404,16 +431,17 @@ const Horarios = () => {
                       <p className="font-inter text-muted-foreground">Regístrate para reservar tu plaza</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {schedules.slice(0, 6).map((schedule) => {
-                        const timeStr = format(new Date(`2000-01-01T${schedule.start_time}`), 'HH:mm');
-                        const endTimeStr = format(new Date(`2000-01-01T${schedule.end_time}`), 'HH:mm');
-                        const dateStr = format(new Date(schedule.class_date), 'EEEE d \'de\' MMMM', { locale: es });
-                        const isFull = schedule.current_bookings >= schedule.max_students;
+                      {classes.slice(0, 6).map((classData) => {
+                        const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
+                        const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
+                        const dateStr = format(new Date(classData.class_date), 'EEEE d \'de\' MMMM', { locale: es });
+                        const isFull = classData.current_bookings >= classData.max_students;
+                        const uniqueKey = classData.is_manual ? classData.manual_schedule_id : `${classData.class_id}-${classData.class_date}`;
                         
                         return (
-                          <Card key={schedule.id} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                          <Card key={uniqueKey} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
                             <CardContent className="p-4">
-                              <h4 className="font-oswald font-bold text-lg mb-2 text-center">{schedule.title}</h4>
+                              <h4 className="font-oswald font-bold text-lg mb-2 text-center">{classData.title}</h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex items-center justify-center gap-1">
                                   <Calendar className="h-4 w-4 text-boxing-red" />
@@ -425,12 +453,17 @@ const Horarios = () => {
                                 </div>
                                 <div className="flex items-center justify-center gap-1">
                                   <Users className="h-4 w-4 text-boxing-red" />
-                                  <span className="font-inter">{schedule.instructor_name}</span>
+                                  <span className="font-inter">{classData.instructor_name}</span>
                                 </div>
                                 <div className="flex items-center justify-center gap-1">
                                   <Badge variant={isFull ? "destructive" : "default"} className="text-xs">
-                                    {schedule.current_bookings}/{schedule.max_students} plazas
+                                    {classData.current_bookings}/{classData.max_students} plazas
                                   </Badge>
+                                  {classData.is_manual && (
+                                    <Badge variant="secondary" className="text-xs ml-1">
+                                      Especial
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
