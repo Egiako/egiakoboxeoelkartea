@@ -9,7 +9,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isTrainer } = useUserRole();
 
   const navItems = [
     { name: 'Inicio', href: '/' },
@@ -68,6 +68,19 @@ const Navigation = () => {
                     <div className="flex items-center gap-2">
                       <Settings className="h-4 w-4" />
                       Admin
+                    </div>
+                  </Link>
+                )}
+                {isTrainer && (
+                  <Link 
+                    to="/trainer" 
+                    className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors ${
+                      location.pathname === '/trainer' ? 'text-boxing-red border-b-2 border-boxing-red pb-1' : 'text-boxing-white hover:text-boxing-red'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Entrenador
                     </div>
                   </Link>
                 )}
@@ -136,6 +149,20 @@ const Navigation = () => {
                       <div className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Admin
+                      </div>
+                    </Link>
+                  )}
+                  {isTrainer && (
+                    <Link 
+                      to="/trainer" 
+                      onClick={() => setIsOpen(false)}
+                      className={`font-inter font-medium text-sm uppercase tracking-wide transition-colors px-4 py-2 ${
+                        location.pathname === '/trainer' ? 'text-boxing-red bg-boxing-red/10 rounded-lg' : 'text-boxing-white hover:text-boxing-red'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Entrenador
                       </div>
                     </Link>
                   )}

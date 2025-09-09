@@ -15,6 +15,7 @@ import EventosSemana from "./pages/EventosSemana";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import AvisoLegal from "./pages/AvisoLegal";
 import AdminPanel from "./pages/AdminPanel";
+import TrainerPanel from "./pages/TrainerPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/horarios" element={<ApprovalGuard><Horarios /></ApprovalGuard>} />
             <Route path="/eventos-semana" element={<ApprovalGuard><EventosSemana /></ApprovalGuard>} />
             <Route path="/admin" element={<ApprovalGuard><AdminPanel /></ApprovalGuard>} />
+            <Route path="/trainer" element={<ApprovalGuard><TrainerPanel /></ApprovalGuard>} />
             <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/aviso-legal" element={<AvisoLegal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

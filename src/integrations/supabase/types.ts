@@ -405,6 +405,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_specific_trainer: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_user_active: {
         Args: { _user_id: string }
         Returns: boolean
@@ -412,6 +416,20 @@ export type Database = {
       is_user_approved: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      trainer_update_attendance: {
+        Args: { attendance_status: boolean; booking_uuid: string }
+        Returns: {
+          attended: boolean | null
+          booking_date: string
+          class_id: string
+          created_at: string
+          id: string
+          profile_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
       }
     }
     Enums: {
