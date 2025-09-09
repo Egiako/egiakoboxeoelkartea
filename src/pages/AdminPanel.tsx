@@ -12,10 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX } from 'lucide-react';
-import ClassManagement from '@/components/ClassManagement';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
-import ManualScheduleManagement from '@/components/ManualScheduleManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -252,7 +250,7 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Usuarios Activos
@@ -268,14 +266,6 @@ const AdminPanel = () => {
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Reservas por Clase
-              </TabsTrigger>
-              <TabsTrigger value="classes" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Gestionar Clases
-              </TabsTrigger>
-              <TabsTrigger value="schedule" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Gestión de Horarios
               </TabsTrigger>
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
@@ -488,26 +478,6 @@ const AdminPanel = () => {
                 <BookingManagement />
               </TabsContent>
 
-              <TabsContent value="classes" className="space-y-6">
-                <ClassManagement />
-            </TabsContent>
-
-            <TabsContent value="schedule" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Gestión de Horarios y Profesores
-                  </CardTitle>
-                  <CardDescription>
-                    Gestiona los instructores y horarios especiales de las clases
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ManualScheduleManagement />
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="management" className="space-y-6">
               <Card>
