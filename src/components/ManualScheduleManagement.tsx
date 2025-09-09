@@ -174,6 +174,7 @@ const ManualScheduleManagement = () => {
                     onSelect={setSelectedDate}
                     disabled={(date) => date < new Date()}
                     initialFocus
+                    locale={es}
                     className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
@@ -270,6 +271,7 @@ const ManualScheduleManagement = () => {
                     selected={toggleDate}
                     onSelect={setToggleDate}
                     initialFocus
+                    locale={es}
                     className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
