@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
+import { useManualSchedules, ManualScheduleBooking } from '@/hooks/useManualSchedules';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -15,91 +15,39 @@ import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { CalendarDays, CheckCircle } from 'lucide-react';
-
-interface Class {
-  id: string;
-  title: string;
-  description: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  max_students: number;
-  instructor: string;
-}
-
-interface Booking {
-  id: string;
-  class_id: string;
-  booking_date: string;
-  status: string;
-}
-
-const DAYS_OF_WEEK = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+import { supabase } from '@/integrations/supabase/client';
 
 const Horarios = () => {
-  const [userBookings, setUserBookings] = useState<Booking[]>([]);
+  const [userBookings, setUserBookings] = useState<ManualScheduleBooking[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const { monthlyClasses, loading: monthlyClassesLoading, refreshMonthlyClasses } = useMonthlyClasses();
-  const [classes, setClasses] = useState<Class[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
-  const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
+
+  // Calculate date range for manual schedules (today to 7 days ahead)
+  const today = new Date();
+  const endDate = new Date();
+  endDate.setDate(today.getDate() + 7);
+  
+  const { schedules, loading: schedulesLoading, bookSchedule, getUserBookings, cancelBooking } = useManualSchedules(today, endDate);
 
   useEffect(() => {
-    fetchClasses(); // Always fetch classes for everyone
     if (user) {
       fetchUserBookings();
       fetchUserProfile();
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchBookingCounts();
-  }, [selectedDate]);
-
-  // Real-time updates for booking changes
-  useEffect(() => {
+  const fetchUserBookings = async () => {
     if (!user) return;
-
-    // Set up real-time subscription for booking changes
-    const bookingsChannel = supabase
-      .channel('bookings-realtime')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'bookings' 
-      }, () => {
-        // Refresh both booking counts and user bookings when any booking changes
-        fetchBookingCounts();
-        fetchUserBookings();
-        refreshMonthlyClasses();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(bookingsChannel);
-    };
-  }, [user, selectedDate]);
-
-  // Obtener clases disponibles
-  const fetchClasses = async () => {
-    const { data, error } = await supabase
-      .from('classes')
-      .select('*')
-      .eq('is_active', true)
-      .order('day_of_week')
-      .order('start_time');
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los horarios",
-        variant: "destructive"
-      });
-    } else {
-      setClasses(data || []);
+    
+    try {
+      const bookings = await getUserBookings(user.id);
+      setUserBookings(bookings);
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
     }
   };
 
@@ -120,47 +68,8 @@ const Horarios = () => {
     }
   };
 
-  const fetchUserBookings = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'confirmed');
-
-      if (error) throw error;
-      setUserBookings(data || []);
-    } catch (error) {
-      console.error('Error fetching user bookings:', error);
-    }
-  };
-
-  // Obtener conteo de reservas por clase y fecha (GLOBAL vía RPC para evitar RLS)
-  const fetchBookingCounts = async () => {
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-    const dates = Array.from({ length: 7 }, (_, i) => {
-      const date = addDays(weekStart, i);
-      return format(date, 'yyyy-MM-dd');
-    });
-
-    const { data, error } = await (supabase as any)
-      .rpc('get_booking_counts' as any, { _dates: dates as any });
-
-    if (!error && data) {
-      const counts: Record<string, number> = {};
-      const rows = (data || []) as Array<{ class_id: string; booking_date: string; count: number }>;
-      rows.forEach((row) => {
-        const key = `${row.class_id}-${row.booking_date}`;
-        counts[key] = row.count;
-      });
-      setBookingCounts(counts);
-    }
-  };
-
-  // Crear reserva
-  const createBooking = async (classId: string, date: Date) => {
+  // Create booking using manual schedule system
+  const createBooking = async (scheduleId: string, date: Date) => {
     if (!user || !userProfile) {
       toast({
         title: "Error",
@@ -174,7 +83,7 @@ const Horarios = () => {
     if (!monthlyClasses || monthlyClasses.remaining_classes <= 0) {
       toast({
         title: "Sin clases disponibles",
-        description: "Has agotado tus 12 clases mensuales. El contador se reinicia el 1 de cada mes.",
+        description: "Has agotado tus clases mensuales. El contador se reinicia el 1 de cada mes.",
         variant: "destructive"
       });
       return;
@@ -182,117 +91,41 @@ const Horarios = () => {
 
     setLoading(true);
     
-    const bookingDate = format(date, 'yyyy-MM-dd');
-    
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .insert([
-          {
-            user_id: user.id,
-            profile_id: userProfile?.id,
-            class_id: classId,
-            booking_date: bookingDate,
-            status: 'confirmed'
-          }
-        ]);
-
-      if (error) {
-        if (error.message.includes('La clase está completa')) {
-          toast({
-            title: "Clase completa",
-            description: "Esta clase ya tiene el máximo de personas (10 personas)",
-            variant: "destructive"
-          });
-        } else if (error.message.includes('duplicate')) {
-          toast({
-            title: "Ya reservado",
-            description: "Ya tienes una reserva para esta clase en esta fecha",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "No se pudo crear la reserva",
-            variant: "destructive"
-          });
-        }
-      } else {
-        toast({
-          title: "¡Reserva confirmada!",
-          description: "Tu plaza ha sido reservada exitosamente"
-        });
-        fetchUserBookings();
-        fetchBookingCounts();
-        refreshMonthlyClasses();
-      }
+      await bookSchedule(scheduleId, user.id, date);
+      await fetchUserBookings();
+      refreshMonthlyClasses();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ocurrió un error inesperado",
-        variant: "destructive"
-      });
+      // Error handling is done in bookSchedule
     }
     
     setLoading(false);
   };
 
-  // Cancelar reserva
-  const cancelBooking = async (bookingId: string) => {
+  // Cancel booking using manual schedule system
+  const handleCancelBooking = async (bookingId: string) => {
     setLoading(true);
     
-    const { error } = await supabase
-      .from('bookings')
-      .delete()
-      .eq('id', bookingId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cancelar la reserva",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Reserva cancelada",
-        description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
-      });
-      fetchUserBookings();
-      fetchBookingCounts();
+    try {
+      await cancelBooking(bookingId);
+      await fetchUserBookings();
       refreshMonthlyClasses();
+    } catch (error) {
+      // Error handling is done in cancelBooking
     }
     
     setLoading(false);
   };
 
-  // Verificar si el usuario ya tiene una reserva para esta clase y fecha
-  const isAlreadyBooked = (classId: string, date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return userBookings.some(b => b.class_id === classId && b.booking_date === dateStr && b.status === 'confirmed');
+  // Check if user already has a booking for this schedule
+  const isAlreadyBooked = (scheduleId: string) => {
+    return userBookings.some(b => b.manual_schedule_id === scheduleId);
   };
 
-  // Obtener conteo actual para una clase y fecha
-  const getCurrentBookingCount = (classId: string, date: Date) => {
-    const key = `${classId}-${format(date, 'yyyy-MM-dd')}`;
-    return bookingCounts[key] || 0;
-  };
-
-  // Get classes for selected day
-  const getSelectedDayClasses = () => {
-    const dayOfWeek = selectedDate.getDay();
-    // Only show classes Monday-Thursday (1-4)
-    if (dayOfWeek < 1 || dayOfWeek > 4) return [];
-    
-    return classes.filter(c => 
-      c.day_of_week === dayOfWeek && 
-      (c.start_time === '09:00:00' || c.start_time === '18:00:00')
-    );
-  };
-
-  // Check if selected date is weekend
-  const isWeekend = () => {
-    const dayOfWeek = selectedDate.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6; // Sunday, Friday, Saturday
+  // Get schedules for selected date
+  const getSelectedDateSchedules = () => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    return schedules.filter(s => s.class_date === dateStr);
   };
 
   // Check if date can be booked (today or tomorrow only)
@@ -441,213 +274,176 @@ const Horarios = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Classes for selected day */}
+            <div className="mb-8">
+              {schedulesLoading ? (
+                <Card className="max-w-md mx-auto">
+                  <CardContent className="p-6 text-center">
+                    <div className="animate-pulse">
+                      <div className="h-12 w-12 bg-muted rounded mx-auto mb-4" />
+                      <div className="h-4 bg-muted rounded w-3/4 mx-auto mb-2" />
+                      <div className="h-3 bg-muted rounded w-1/2 mx-auto" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : !canBookDate(selectedDate) ? (
+                <Card className="max-w-md mx-auto">
+                  <CardContent className="p-6 text-center">
+                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-oswald font-bold text-lg mb-2">
+                      Solo se puede reservar para hoy y mañana
+                    </h3>
+                    <p className="text-muted-foreground font-inter">
+                      Selecciona hoy {format(new Date(), 'EEEE d', { locale: es })} o mañana {format(addDays(new Date(), 1), 'EEEE d', { locale: es })} para hacer una reserva.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {getSelectedDateSchedules().length === 0 ? (
+                    <div className="md:col-span-2">
+                      <Card>
+                        <CardContent className="p-8 text-center">
+                          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="font-oswald font-bold text-lg mb-2">No hay clases disponibles</h3>
+                          <p className="text-muted-foreground font-inter">
+                            No hay clases programadas para {format(selectedDate, 'EEEE d \'de\' MMMM', { locale: es })}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    getSelectedDateSchedules().map((schedule) => {
+                      const isBooked = isAlreadyBooked(schedule.id);
+                      const isFull = schedule.current_bookings >= schedule.max_students;
+                      const timeStr = format(new Date(`2000-01-01T${schedule.start_time}`), 'HH:mm');
+                      const endTimeStr = format(new Date(`2000-01-01T${schedule.end_time}`), 'HH:mm');
+                      
+                      return (
+                        <Card key={schedule.id} className="shadow-boxing hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="font-oswald text-lg">{schedule.title}</CardTitle>
+                              <Badge variant={isFull ? "destructive" : "default"}>
+                                {schedule.current_bookings}/{schedule.max_students}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-boxing-red" />
+                                <span>{timeStr} - {endTimeStr}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-boxing-red" />
+                                <span>{schedule.instructor_name}</span>
+                              </div>
+                            </div>
+                            
+                            {schedule.notes && (
+                              <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+                                <p>{schedule.notes}</p>
+                              </div>
+                            )}
+
+                            <Button 
+                              onClick={() => isBooked ? handleCancelBooking(
+                                userBookings.find(b => b.manual_schedule_id === schedule.id)?.id || ''
+                              ) : createBooking(schedule.id, selectedDate)}
+                              disabled={loading || (!isBooked && isFull) || (!isBooked && (!monthlyClasses || monthlyClasses.remaining_classes <= 0))}
+                              variant={isBooked ? "destructive" : isFull ? "secondary" : "default"}
+                              className="w-full"
+                            >
+                              {loading ? (
+                                "Procesando..."
+                              ) : isBooked ? (
+                                "Cancelar reserva"
+                              ) : isFull ? (
+                                "Completo"
+                              ) : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? (
+                                "Sin clases disponibles"
+                              ) : (
+                                "Reservar plaza"
+                              )}
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
           </>
         ) : (
           /* Featured schedules for non-authenticated users */
           <div className="max-w-5xl mx-auto mb-8">
             <Card className="shadow-boxing">
               <CardContent className="p-8">
-                {/* Horarios de Mañana */}
-                <div className="mb-8">
-                  <div className="text-center mb-6">
-                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Mañana</h3>
-                    <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
+                {schedulesLoading ? (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-6 bg-muted rounded w-1/3 mx-auto" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-20 bg-muted rounded" />
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
-                        <CardContent className="p-4 text-center">
-                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
-                          <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-boxing-red" />
-                            <span className="font-inter font-semibold text-boxing-red">9:00 - 10:00</span>
-                          </div>
-                          <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Horarios de Tarde */}
-                <div className="mb-8">
-                  <div className="text-center mb-6">
-                    <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Tarde</h3>
-                    <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
-                        <CardContent className="p-4 text-center">
-                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
-                          <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-boxing-black" />
-                            <span className="font-inter font-semibold text-boxing-black">18:00 - 19:00</span>
-                          </div>
-                          <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="text-center border-t pt-6">
-                  <p className="font-inter text-muted-foreground mb-6">
-                    Ver horario completo y reservar clases requiere registro
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild variant="hero" className="font-oswald font-semibold">
-                      <Link to="/registrate">Registrarse ahora</Link>
-                    </Button>
-                    <Button asChild variant="outline" className="font-oswald font-semibold">
-                      <Link to="/sobre-nosotros">Conocer más</Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Selected Day Classes - Only show for authenticated users */}
-        {user && (
-          <div className="max-w-4xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-oswald text-center">
-                  {DAYS_OF_WEEK[selectedDate.getDay()]} - {format(selectedDate, 'dd MMMM yyyy', { locale: es })}
-                  {isSameDay(selectedDate, new Date()) && (
-                    <Badge variant="secondary" className="ml-2">Hoy</Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isWeekend() ? (
-                  <div className="text-center py-12">
-                    <div className="text-destructive text-6xl mb-4">😴</div>
-                    <h3 className="font-oswald font-semibold text-xl text-destructive mb-2">
-                      No hay clases disponibles
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Los fines de semana y viernes no tenemos clases programadas.
-                      Selecciona un día de lunes a jueves.
-                    </p>
+                ) : schedules.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-oswald font-bold text-xl mb-2">No hay clases programadas</h3>
+                    <p className="text-muted-foreground">Actualmente no hay clases disponibles. Vuelve pronto.</p>
                   </div>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {getSelectedDayClasses().map((classItem) => {
-                      const currentCount = getCurrentBookingCount(classItem.id, selectedDate);
-                      const isBooked = isAlreadyBooked(classItem.id, selectedDate);
-                      const isFull = currentCount >= classItem.max_students;
-                      const canBook = canBookDate(selectedDate);
-                      
-                      return (
-                        <Card key={classItem.id} className="relative">
-                          <CardContent className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                              <h4 className="font-oswald font-semibold text-xl">{classItem.title}</h4>
-                              {isBooked && (
-                                <Badge className="bg-green-500">
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Reservado
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            <p className="text-muted-foreground mb-4">
-                              {classItem.description}
-                            </p>
-                            
-                            <div className="space-y-3 text-sm mb-6">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-5 w-5 text-primary" />
-                                <span className="font-medium">{classItem.start_time} - {classItem.end_time}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Users className="h-5 w-5 text-primary" />
-                                <span className="font-medium">
-                                  Aforo: {currentCount}/{classItem.max_students} personas
-                                </span>
-                                {isFull && (
-                                  <Badge variant="destructive">Completa</Badge>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div>
-                              {isBooked ? (
-                                <Button 
-                                  variant="outline"
-                                  size="lg"
-                                  className="w-full"
-                                  onClick={() => {
-                                    const booking = userBookings.find(b => 
-                                      b.class_id === classItem.id && 
-                                      b.booking_date === format(selectedDate, 'yyyy-MM-dd')
-                                    );
-                                    if (booking) cancelBooking(booking.id);
-                                  }}
-                                  disabled={loading}
-                                >
-                                  Cancelar reserva
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="hero"
-                                  size="lg"
-                                  className="w-full"
-                                  onClick={() => createBooking(classItem.id, selectedDate)}
-                                  disabled={loading || isFull || !canBook || !user}
-                                >
-                                  {!canBook ? 'Solo se puede reservar hoy y mañana' : 
-                                   isFull ? 'Clase completa' : 
-                                   !user ? 'Inicia sesión para reservar' :
-                                   'Reservar plaza'}
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                    
-                    {getSelectedDayClasses().length === 0 && !isWeekend() && (
-                      <div className="col-span-2 text-center py-8">
-                        <p className="text-muted-foreground">No hay clases programadas para este día.</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* My Bookings Section */}
-                {userBookings.length > 0 && (
-                  <div className="mt-8 pt-8 border-t">
-                    <h3 className="font-oswald font-semibold text-lg mb-4 text-center">Mis reservas activas</h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {userBookings.map((booking) => {
-                        const classInfo = classes.find(c => c.id === booking.class_id);
+                  <div className="space-y-8">
+                    <div className="text-center mb-6">
+                      <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Próximas Clases Disponibles</h3>
+                      <p className="font-inter text-muted-foreground">Regístrate para reservar tu plaza</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {schedules.slice(0, 6).map((schedule) => {
+                        const timeStr = format(new Date(`2000-01-01T${schedule.start_time}`), 'HH:mm');
+                        const endTimeStr = format(new Date(`2000-01-01T${schedule.end_time}`), 'HH:mm');
+                        const dateStr = format(new Date(schedule.class_date), 'EEEE d \'de\' MMMM', { locale: es });
+                        const isFull = schedule.current_bookings >= schedule.max_students;
+                        
                         return (
-                          <div key={booking.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                            <div>
-                              <div className="font-medium">{classInfo?.title}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {format(new Date(booking.booking_date), 'dd/MM/yyyy', { locale: es })}
+                          <Card key={schedule.id} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                            <CardContent className="p-4">
+                              <h4 className="font-oswald font-bold text-lg mb-2 text-center">{schedule.title}</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center justify-center gap-1">
+                                  <Calendar className="h-4 w-4 text-boxing-red" />
+                                  <span className="font-inter text-center">{dateStr}</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                  <Clock className="h-4 w-4 text-boxing-red" />
+                                  <span className="font-inter font-semibold text-boxing-red">{timeStr} - {endTimeStr}</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                  <Users className="h-4 w-4 text-boxing-red" />
+                                  <span className="font-inter">{schedule.instructor_name}</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                  <Badge variant={isFull ? "destructive" : "default"} className="text-xs">
+                                    {schedule.current_bookings}/{schedule.max_students} plazas
+                                  </Badge>
+                                </div>
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                {classInfo?.start_time} - {classInfo?.end_time}
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => cancelBooking(booking.id)}
-                              disabled={loading}
-                            >
-                              Cancelar
-                            </Button>
-                          </div>
+                            </CardContent>
+                          </Card>
                         );
                       })}
+                    </div>
+                    <div className="text-center">
+                      <Link to="/registrate">
+                        <Button size="lg" className="font-inter">
+                          Regístrate para reservar
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -655,11 +451,43 @@ const Horarios = () => {
             </Card>
           </div>
         )}
-        </main>
 
-        <Footer />
-      </div>
-    );
-  };
+        {/* Contact Information */}
+        <Card className="bg-boxing-grey/30 max-w-4xl mx-auto">
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-oswald font-bold text-xl mb-4 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-boxing-red" />
+                  Nuestra Ubicación
+                </h3>
+                <div className="space-y-2 font-inter text-muted-foreground">
+                  <p>Ginmásio Egia Kobe</p>
+                  <p>Calle Egia, 15, Bajo</p>
+                  <p>20012 Donostia-San Sebastián</p>
+                  <p>Gipuzkoa, País Vasco</p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-oswald font-bold text-xl mb-4 flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-boxing-red" />
+                  Contacto
+                </h3>
+                <div className="space-y-2 font-inter text-muted-foreground">
+                  <p>Teléfono: +34 943 000 000</p>
+                  <p>Email: info@egiakobe.com</p>
+                  <p>Síguenos en redes sociales para más información</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
 
 export default Horarios;

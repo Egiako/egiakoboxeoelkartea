@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useBookingManagement, BookingWithFullDetails } from '@/hooks/useBookingManagement';
+import { useManualBookingManagement, ManualBookingWithDetails } from '@/hooks/useManualBookingManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ const BookingManagement = () => {
     bookings,
     loading,
     updateAttendance
-  } = useBookingManagement();
+  } = useManualBookingManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
@@ -20,15 +20,15 @@ const BookingManagement = () => {
 
   // Get unique classes and dates for filters
   const uniqueClasses = useMemo(() => {
-    const classes = bookings.filter(b => b.class).map(b => ({
-      id: b.class.id,
-      title: b.class.title,
-      time: `${b.class.start_time} - ${b.class.end_time}`
+    const classes = bookings.filter(b => b.manual_schedule).map(b => ({
+      id: b.manual_schedule.id,
+      title: b.manual_schedule.title,
+      time: `${b.manual_schedule.start_time} - ${b.manual_schedule.end_time}`
     }));
     return classes.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
   }, [bookings]);
   const uniqueDates = useMemo(() => {
-    const dates = [...new Set(bookings.map(b => b.booking_date))].sort((a, b) => b.localeCompare(a));
+    const dates = [...new Set(bookings.map(b => b.booking_date))].sort((a: string, b: string) => b.localeCompare(a));
     return dates;
   }, [bookings]);
 
@@ -47,7 +47,7 @@ const BookingManagement = () => {
   // Group bookings by date first, then by class
   const groupedByDay = useMemo(() => {
     const dayGroups: {
-      [key: string]: BookingWithFullDetails[];
+      [key: string]: ManualBookingWithDetails[];
     } = {};
     filteredBookings.forEach(booking => {
       if (!dayGroups[booking.booking_date]) {
@@ -58,16 +58,16 @@ const BookingManagement = () => {
     return Object.entries(dayGroups).map(([date, dayBookings]) => {
       // Group by class within the day
       const classGroups: {
-        [key: string]: BookingWithFullDetails[];
+        [key: string]: ManualBookingWithDetails[];
       } = {};
       dayBookings.forEach(booking => {
-        if (!classGroups[booking.class.id]) {
-          classGroups[booking.class.id] = [];
+        if (!classGroups[booking.manual_schedule.id]) {
+          classGroups[booking.manual_schedule.id] = [];
         }
-        classGroups[booking.class.id].push(booking);
+        classGroups[booking.manual_schedule.id].push(booking);
       });
       const classes = Object.entries(classGroups).map(([classId, bookings]) => ({
-        class: bookings[0].class,
+        class: bookings[0].manual_schedule,
         bookings: bookings.sort((a, b) => `${a.profile.first_name} ${a.profile.last_name}`.localeCompare(`${b.profile.first_name} ${b.profile.last_name}`))
       })).sort((a, b) => a.class.start_time.localeCompare(b.class.start_time));
       const totalReservations = dayBookings.length;
@@ -132,7 +132,7 @@ const BookingManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las fechas</SelectItem>
-                {uniqueDates.map(date => <SelectItem key={date} value={date}>
+                {uniqueDates.map((date: string) => <SelectItem key={date} value={date}>
                     {new Date(date).toLocaleDateString('es-ES', {
                   weekday: 'long',
                   year: 'numeric',

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useTrainerBookingManagement, TrainerBookingWithDetails } from '@/hooks/useTrainerBookingManagement';
+import { useManualBookingManagement } from '@/hooks/useManualBookingManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Calendar, BookOpen, Check, X, Clock, AlertTriangle } from 'lucide-react';
 
 export const TrainerBookingManagement = () => {
-  const { bookings, loading, updateAttendance } = useTrainerBookingManagement();
+  const { bookings, loading, updateTrainerAttendance } = useManualBookingManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
@@ -17,7 +17,7 @@ export const TrainerBookingManagement = () => {
 
   // Get unique classes and dates for filters
   const { uniqueClasses, uniqueDates } = useMemo(() => {
-    const classes = Array.from(new Set(bookings.map(b => b.class.title)));
+    const classes = Array.from(new Set(bookings.map(b => b.manual_schedule.title)));
     const dates = Array.from(new Set(bookings.map(b => b.booking_date))).sort();
     return { uniqueClasses: classes, uniqueDates: dates };
   }, [bookings]);
@@ -31,7 +31,7 @@ export const TrainerBookingManagement = () => {
         booking.class.title.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDate = dateFilter === 'all' || booking.booking_date === dateFilter;
-      const matchesClass = classFilter === 'all' || booking.class.title === classFilter;
+      const matchesClass = classFilter === 'all' || booking.manual_schedule.title === classFilter;
       
       const matchesAttendance = attendanceFilter === 'all' ||
         (attendanceFilter === 'attended' && booking.attended === true) ||
@@ -247,22 +247,22 @@ export const TrainerBookingManagement = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={booking.attended === true ? "default" : "outline"}
-                                    onClick={() => updateAttendance(booking.id, true)}
-                                    disabled={booking.attended === true}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={booking.attended === false ? "destructive" : "outline"}
-                                    onClick={() => updateAttendance(booking.id, false)}
-                                    disabled={booking.attended === false}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
+                                   <Button
+                                     size="sm"
+                                     variant={booking.attended === true ? "default" : "outline"}
+                                     onClick={() => updateTrainerAttendance(booking.id, true)}
+                                     disabled={booking.attended === true}
+                                   >
+                                     <Check className="h-4 w-4" />
+                                   </Button>
+                                   <Button
+                                     size="sm"
+                                     variant={booking.attended === false ? "destructive" : "outline"}
+                                     onClick={() => updateTrainerAttendance(booking.id, false)}
+                                     disabled={booking.attended === false}
+                                   >
+                                     <X className="h-4 w-4" />
+                                   </Button>
                                 </div>
                               </TableCell>
                             </TableRow>

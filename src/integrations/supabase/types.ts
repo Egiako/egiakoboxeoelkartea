@@ -21,6 +21,7 @@ export type Database = {
           class_id: string
           created_at: string
           id: string
+          manual_schedule_id: string | null
           profile_id: string | null
           status: string
           updated_at: string
@@ -32,6 +33,7 @@ export type Database = {
           class_id: string
           created_at?: string
           id?: string
+          manual_schedule_id?: string | null
           profile_id?: string | null
           status?: string
           updated_at?: string
@@ -43,6 +45,7 @@ export type Database = {
           class_id?: string
           created_at?: string
           id?: string
+          manual_schedule_id?: string | null
           profile_id?: string | null
           status?: string
           updated_at?: string
@@ -54,6 +57,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_manual_schedule_id_fkey"
+            columns: ["manual_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "manual_class_schedules"
             referencedColumns: ["id"]
           },
           {
@@ -468,6 +478,7 @@ export type Database = {
           class_id: string
           created_at: string
           id: string
+          manual_schedule_id: string | null
           profile_id: string | null
           status: string
           updated_at: string
@@ -502,6 +513,25 @@ export type Database = {
           updated_at: string
           user_id: string
           year: number
+        }
+      }
+      book_manual_schedule: {
+        Args: {
+          p_booking_date: string
+          p_manual_schedule_id: string
+          p_user_id: string
+        }
+        Returns: {
+          attended: boolean | null
+          booking_date: string
+          class_id: string
+          created_at: string
+          id: string
+          manual_schedule_id: string | null
+          profile_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
         }
       }
       create_manual_class_schedule: {
@@ -568,6 +598,21 @@ export type Database = {
           is_special_day: boolean
           max_students: number
           override_notes: string
+          start_time: string
+          title: string
+        }[]
+      }
+      get_manual_schedules_for_booking: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          class_date: string
+          current_bookings: number
+          end_time: string
+          id: string
+          instructor_name: string
+          is_enabled: boolean
+          max_students: number
+          notes: string
           start_time: string
           title: string
         }[]
@@ -671,6 +716,7 @@ export type Database = {
           class_id: string
           created_at: string
           id: string
+          manual_schedule_id: string | null
           profile_id: string | null
           status: string
           updated_at: string
