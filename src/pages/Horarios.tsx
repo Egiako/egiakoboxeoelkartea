@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, Users, MapPin, Phone } from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, Phone, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
+import { useBookingCounts } from '@/hooks/useBookingCounts';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { format, addDays, isSameDay } from 'date-fns';
@@ -24,6 +25,10 @@ const Horarios = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // Get booking counts for the selected date
+  const dateStr = format(selectedDate, 'yyyy-MM-dd');
+  const { getAvailableSpots, getBookedSpots, loading: countsLoading } = useBookingCounts([dateStr]);
 
   useEffect(() => {
     if (user) {
@@ -62,12 +67,22 @@ const Horarios = () => {
       if (profileError) throw profileError;
       setUserProfile(profile);
 
-      // Fetch user bookings
+      // Fetch user bookings with class details
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
-        .select('*')
+        .select(`
+          *,
+          classes (
+            title,
+            start_time,
+            end_time,
+            day_of_week
+          )
+        `)
         .eq('user_id', user.id)
-        .eq('status', 'confirmed');
+        .eq('status', 'confirmed')
+        .gte('booking_date', format(new Date(), 'yyyy-MM-dd'))
+        .order('booking_date', { ascending: true });
 
       if (bookingsError) throw bookingsError;
       setUserBookings(bookings || []);
@@ -380,32 +395,40 @@ const Horarios = () => {
                       const isBooked = isAlreadyBooked(classItem);
                       const timeStr = format(new Date(`2000-01-01T${classItem.start_time}`), 'HH:mm');
                       const endTimeStr = format(new Date(`2000-01-01T${classItem.end_time}`), 'HH:mm');
+                      const availableSpots = getAvailableSpots(classItem.id, dateStr, classItem.max_students);
+                      const bookedSpots = getBookedSpots(classItem.id, dateStr);
+                      const isFull = availableSpots === 0;
                       
                       return (
                         <Card key={classItem.id} className="shadow-boxing hover:shadow-lg transition-shadow">
                           <CardHeader>
                             <div className="flex items-center justify-between">
                               <CardTitle className="font-oswald text-lg">{classItem.title}</CardTitle>
-                              <Badge variant="default">
-                                {classItem.max_students} plazas
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={availableSpots > 0 ? "default" : "destructive"}>
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {availableSpots}/{classItem.max_students}
+                                </Badge>
+                              </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-boxing-red" />
-                                <span>{timeStr} - {endTimeStr}</span>
+                                <span className="font-medium">{timeStr} - {endTimeStr}</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-boxing-red" />
-                                <span>{classItem.instructor || 'Sin asignar'}</span>
+                              <div className="text-right">
+                                <div className="text-xs text-muted-foreground">Plazas disponibles</div>
+                                <div className={`font-bold ${availableSpots > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {availableSpots}
+                                </div>
                               </div>
                             </div>
 
                             <Button 
                               onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking(classItem, selectedDate)}
-                              disabled={loading || (!isBooked && (!monthlyClasses || monthlyClasses.remaining_classes <= 0))}
+                              disabled={loading || (!isBooked && (isFull || !monthlyClasses || monthlyClasses.remaining_classes <= 0))}
                               variant={isBooked ? "destructive" : "default"}
                               className="w-full"
                             >
@@ -413,6 +436,8 @@ const Horarios = () => {
                                 "Procesando..."
                               ) : isBooked ? (
                                 "Cancelar reserva"
+                              ) : isFull ? (
+                                "Clase completa"
                               ) : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? (
                                 "Sin clases disponibles"
                               ) : (
@@ -471,10 +496,10 @@ const Horarios = () => {
                                 </div>
                                 
                                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                                  <span>Instructor: {classItem.instructor || 'Sin asignar'}</span>
+                                  <span className="font-medium">Aforo máximo: {classItem.max_students}</span>
                                   <div className="flex items-center gap-1">
                                     <Users className="h-4 w-4" />
-                                    <span>{classItem.max_students} plazas</span>
+                                    <span className="font-bold text-green-600">{classItem.max_students} plazas</span>
                                   </div>
                                 </div>
                                 
@@ -495,6 +520,65 @@ const Horarios = () => {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* User's upcoming bookings */}
+        {user && userBookings.length > 0 && (
+          <div className="mb-8">
+            <Card className="shadow-boxing">
+              <CardHeader>
+                <CardTitle className="font-oswald flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-boxing-red" />
+                  Mis Clases Reservadas
+                </CardTitle>
+                <CardDescription>
+                  Estas son tus próximas clases reservadas. Puedes cancelar cualquier reserva.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {userBookings.map((booking) => {
+                    const timeStr = format(new Date(`2000-01-01T${booking.classes.start_time}`), 'HH:mm');
+                    const endTimeStr = format(new Date(`2000-01-01T${booking.classes.end_time}`), 'HH:mm');
+                    const bookingDate = new Date(booking.booking_date);
+                    const dayName = format(bookingDate, 'EEEE', { locale: es });
+                    const dateStr = format(bookingDate, 'd \'de\' MMMM', { locale: es });
+                    
+                    return (
+                      <div 
+                        key={booking.id}
+                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                            <Calendar className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-oswald font-semibold text-lg">
+                              {booking.classes.title}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {dayName} {dateStr} • {timeStr} - {endTimeStr}
+                            </div>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => handleCancelBooking(booking.id)}
+                          disabled={loading}
+                          variant="destructive"
+                          size="sm"
+                          className="flex items-center gap-2"
+                        >
+                          <X className="h-4 w-4" />
+                          Cancelar
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
