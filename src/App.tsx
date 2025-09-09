@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthRedirect from "@/components/AuthRedirect";
 import ApprovalGuard from "@/components/ApprovalGuard";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import SobreNosotros from "./pages/SobreNosotros";
 import Precios from "./pages/Precios";
@@ -35,7 +36,7 @@ const App = () => (
             <Route path="/registrate" element={<Registrate />} />
             <Route path="/horarios" element={<ApprovalGuard><Horarios /></ApprovalGuard>} />
             <Route path="/eventos-semana" element={<ApprovalGuard><EventosSemana /></ApprovalGuard>} />
-            <Route path="/admin" element={<ApprovalGuard><AdminPanel /></ApprovalGuard>} />
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPanel /></ProtectedRoute>} />
             <Route path="/trainer" element={<ApprovalGuard><TrainerPanel /></ApprovalGuard>} />
             <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
             <Route path="/aviso-legal" element={<AvisoLegal />} />
