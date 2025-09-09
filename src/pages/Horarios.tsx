@@ -413,16 +413,10 @@ const Horarios = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center text-sm">
                               <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-boxing-red" />
                                 <span className="font-medium">{timeStr} - {endTimeStr}</span>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-xs text-muted-foreground">Plazas disponibles</div>
-                                <div className={`font-bold ${availableSpots > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {availableSpots}
-                                </div>
                               </div>
                             </div>
 

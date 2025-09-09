@@ -35,12 +35,13 @@ export const useBookingCounts = (dates: string[]) => {
         const countMap = new Map<string, number>();
 
         (data || []).forEach((booking) => {
-          const key = `${booking.class_id}-${booking.booking_date}`;
+          if (!booking.class_id) return;
+          const key = `${booking.class_id}|${booking.booking_date}`;
           countMap.set(key, (countMap.get(key) || 0) + 1);
         });
 
         countMap.forEach((count, key) => {
-          const [class_id, booking_date] = key.split('-');
+          const [class_id, booking_date] = key.split('|');
           counts.push({ class_id, booking_date, count });
         });
 
