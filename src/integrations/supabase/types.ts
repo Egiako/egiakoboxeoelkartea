@@ -145,6 +145,51 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_class_schedules: {
+        Row: {
+          class_date: string
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          instructor_name: string
+          is_enabled: boolean
+          max_students: number
+          notes: string | null
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_date: string
+          created_at?: string
+          created_by?: string | null
+          end_time: string
+          id?: string
+          instructor_name: string
+          is_enabled?: boolean
+          max_students?: number
+          notes?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_date?: string
+          created_at?: string
+          created_by?: string | null
+          end_time?: string
+          id?: string
+          instructor_name?: string
+          is_enabled?: boolean
+          max_students?: number
+          notes?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"]
@@ -459,6 +504,51 @@ export type Database = {
           year: number
         }
       }
+      create_manual_class_schedule: {
+        Args: {
+          p_class_date: string
+          p_end_time: string
+          p_instructor_name: string
+          p_is_enabled?: boolean
+          p_max_students?: number
+          p_notes?: string
+          p_start_time: string
+          p_title: string
+        }
+        Returns: {
+          class_date: string
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          instructor_name: string
+          is_enabled: boolean
+          max_students: number
+          notes: string | null
+          start_time: string
+          title: string
+          updated_at: string
+        }
+      }
+      delete_manual_class_schedule: {
+        Args: { schedule_id: string }
+        Returns: boolean
+      }
+      get_available_classes_for_date_range: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          class_date: string
+          current_bookings: number
+          end_time: string
+          id: string
+          instructor_name: string
+          is_enabled: boolean
+          max_students: number
+          notes: string
+          start_time: string
+          title: string
+        }[]
+      }
       get_booking_counts: {
         Args: { _dates: string[] }
         Returns: {
@@ -547,6 +637,29 @@ export type Database = {
           is_enabled: boolean
           notes: string | null
           override_date: string
+          updated_at: string
+        }
+      }
+      toggle_manual_class_schedule: {
+        Args: {
+          p_class_date: string
+          p_end_time: string
+          p_is_enabled: boolean
+          p_notes?: string
+          p_start_time: string
+        }
+        Returns: {
+          class_date: string
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          instructor_name: string
+          is_enabled: boolean
+          max_students: number
+          notes: string | null
+          start_time: string
+          title: string
           updated_at: string
         }
       }

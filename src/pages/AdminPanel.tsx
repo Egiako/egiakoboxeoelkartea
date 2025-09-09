@@ -15,7 +15,7 @@ import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX } from 'lucid
 import ClassManagement from '@/components/ClassManagement';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
-import TrainerScheduleManagement from '@/components/TrainerScheduleManagement';
+import ManualScheduleManagement from '@/components/ManualScheduleManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -42,30 +42,13 @@ interface BookingWithDetails {
 const AdminPanel = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
-  const [classes, setClasses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const {
     toast
   } = useToast();
-
-  const fetchClasses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('is_active', true)
-        .order('day_of_week', { ascending: true });
-
-      if (error) throw error;
-      setClasses(data || []);
-    } catch (error) {
-      console.error('Error fetching classes:', error);
-    }
-  };
   useEffect(() => {
     fetchData();
-    fetchClasses();
 
     // Set up real-time subscriptions
     const profilesSubscription = supabase.channel('profiles-changes').on('postgres_changes', {
@@ -521,7 +504,7 @@ const AdminPanel = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <TrainerScheduleManagement classes={classes} />
+                  <ManualScheduleManagement />
                 </CardContent>
               </Card>
             </TabsContent>
