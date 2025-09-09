@@ -135,27 +135,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     console.log('Attempting sign in for:', email);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    
+    // Handle network errors with retry
+    let attempt = 0;
+    const maxAttempts = 3;
+    
+    while (attempt < maxAttempts) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-    console.log('Sign in result:', { data, error });
+        console.log('Sign in result:', { data, error });
 
-    if (error) {
-      toast({
-        title: "Error al iniciar sesión",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "¡Bienvenido/a de vuelta!",
-        description: "Has iniciado sesión correctamente."
-      });
+        if (error) {
+          // Handle specific error types
+          if (error.message === "Load failed" || error.name === "AuthRetryableFetchError") {
+            attempt++;
+            if (attempt < maxAttempts) {
+              console.log(`Retry attempt ${attempt}/${maxAttempts}`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+              continue;
+            } else {
+              toast({
+                title: "Error de conexión",
+                description: "No se pudo conectar con el servidor. Verifica tu conexión a internet e inténtalo de nuevo.",
+                variant: "destructive"
+              });
+            }
+          } else {
+            toast({
+              title: "Error al iniciar sesión",
+              description: error.message,
+              variant: "destructive"
+            });
+          }
+          
+          return { error, data };
+        } else {
+          toast({
+            title: "¡Bienvenido/a de vuelta!",
+            description: "Has iniciado sesión correctamente."
+          });
+          
+          return { error, data };
+        }
+      } catch (networkError: any) {
+        attempt++;
+        if (attempt >= maxAttempts) {
+          toast({
+            title: "Error de conexión",
+            description: "No se pudo conectar con el servidor. Verifica tu conexión a internet e inténtalo de nuevo.",
+            variant: "destructive"
+          });
+          return { error: networkError, data: null };
+        }
+        console.log(`Network error, retry attempt ${attempt}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
     }
-
-    return { error, data };
+    
+    // This should never be reached, but TypeScript needs it
+    return { error: new Error("Maximum retry attempts exceeded"), data: null };
   };
 
   const signOut = async () => {
