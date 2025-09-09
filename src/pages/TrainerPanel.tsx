@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTrainerRole } from '@/hooks/useTrainerRole';
+import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,10 +8,33 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Users, Calendar, ClipboardList } from 'lucide-react';
 import { TrainerActiveUsers } from '@/components/TrainerActiveUsers';
 import { TrainerBookingManagement } from '@/components/TrainerBookingManagement';
-import { TrainerCalendarManagement } from '@/components/TrainerCalendarManagement';
+import TrainerScheduleManagement from '@/components/TrainerScheduleManagement';
 
 const TrainerPanel = () => {
   const { isTrainer, loading } = useTrainerRole();
+  const [classes, setClasses] = useState([]);
+
+  // Fetch classes for schedule management
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('is_active', true)
+          .order('day_of_week', { ascending: true });
+
+        if (error) throw error;
+        setClasses(data || []);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+      }
+    };
+
+    if (isTrainer) {
+      fetchClasses();
+    }
+  }, [isTrainer]);
 
   if (loading) {
     return (
@@ -86,7 +110,7 @@ const TrainerPanel = () => {
             </TabsContent>
 
             <TabsContent value="calendar">
-              <TrainerCalendarManagement />
+              <TrainerScheduleManagement classes={classes} />
             </TabsContent>
           </Tabs>
         </div>

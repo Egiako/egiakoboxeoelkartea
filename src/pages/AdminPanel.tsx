@@ -15,6 +15,7 @@ import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX } from 'lucid
 import ClassManagement from '@/components/ClassManagement';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
+import TrainerScheduleManagement from '@/components/TrainerScheduleManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -41,13 +42,30 @@ interface BookingWithDetails {
 const AdminPanel = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+  const [classes, setClasses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const {
     toast
   } = useToast();
+
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('is_active', true)
+        .order('day_of_week', { ascending: true });
+
+      if (error) throw error;
+      setClasses(data || []);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
   useEffect(() => {
     fetchData();
+    fetchClasses();
 
     // Set up real-time subscriptions
     const profilesSubscription = supabase.channel('profiles-changes').on('postgres_changes', {
@@ -251,7 +269,7 @@ const AdminPanel = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Usuarios Activos
@@ -271,6 +289,10 @@ const AdminPanel = () => {
               <TabsTrigger value="classes" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Gestionar Clases
+              </TabsTrigger>
+              <TabsTrigger value="schedule" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Gestión de Horarios
               </TabsTrigger>
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
@@ -485,7 +507,24 @@ const AdminPanel = () => {
 
               <TabsContent value="classes" className="space-y-6">
                 <ClassManagement />
-              </TabsContent>
+            </TabsContent>
+
+            <TabsContent value="schedule" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Gestión de Horarios y Profesores
+                  </CardTitle>
+                  <CardDescription>
+                    Gestiona los instructores y horarios especiales de las clases
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TrainerScheduleManagement classes={classes} />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="management" className="space-y-6">
               <Card>

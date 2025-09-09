@@ -65,6 +65,44 @@ export type Database = {
           },
         ]
       }
+      class_instructors: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_name: string
+          specific_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_name: string
+          specific_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_name?: string
+          specific_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_instructors_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -151,6 +189,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      schedule_overrides: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_override: string | null
+          is_enabled: boolean
+          notes: string | null
+          override_date: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_override?: string | null
+          is_enabled?: boolean
+          notes?: string | null
+          override_date: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_override?: string | null
+          is_enabled?: boolean
+          notes?: string | null
+          override_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_overrides_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_monthly_classes: {
         Row: {
@@ -385,6 +467,21 @@ export type Database = {
           count: number
         }[]
       }
+      get_class_schedule_for_date: {
+        Args: { target_date: string }
+        Returns: {
+          class_id: string
+          day_of_week: number
+          end_time: string
+          instructor: string
+          is_active: boolean
+          is_special_day: boolean
+          max_students: number
+          override_notes: string
+          start_time: string
+          title: string
+        }[]
+      }
       get_or_create_monthly_classes: {
         Args: { user_uuid: string }
         Returns: {
@@ -416,6 +513,42 @@ export type Database = {
       is_user_approved: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      set_class_instructor: {
+        Args: {
+          instructor_name: string
+          specific_date?: string
+          target_class_id: string
+        }
+        Returns: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_name: string
+          specific_date: string | null
+          updated_at: string
+        }
+      }
+      set_schedule_override: {
+        Args: {
+          instructor_override?: string
+          is_enabled: boolean
+          notes?: string
+          target_class_id: string
+          target_date: string
+        }
+        Returns: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_override: string | null
+          is_enabled: boolean
+          notes: string | null
+          override_date: string
+          updated_at: string
+        }
       }
       trainer_update_attendance: {
         Args: { attendance_status: boolean; booking_uuid: string }
