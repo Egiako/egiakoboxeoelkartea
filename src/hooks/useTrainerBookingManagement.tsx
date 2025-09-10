@@ -39,45 +39,110 @@ export const useTrainerBookingManagement = () => {
     try {
       setLoading(true);
       
+      // Get current user ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) throw new Error('No authenticated user');
+      
+      // Get trainer's profile to match with classes they teach
+      const { data: trainerProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Get all bookings with class details to filter later
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select('id, booking_date, attended, created_at, user_id, class_id')
+        .select(`
+          id, 
+          booking_date, 
+          attended, 
+          created_at, 
+          user_id, 
+          class_id,
+          manual_schedule_id,
+          classes (
+            id,
+            title,
+            start_time,
+            end_time,
+            day_of_week,
+            instructor
+          ),
+          manual_class_schedules (
+            id,
+            title,
+            class_date,
+            start_time,
+            end_time,
+            instructor_name
+          )
+        `)
         .eq('status', 'confirmed')
         .order('booking_date', { ascending: false });
 
       if (bookingsError) throw bookingsError;
 
-      // Batch fetch related profiles and classes
-      const userIds = Array.from(new Set((bookingsData || []).map((b: any) => b.user_id)));
-      const classIds = Array.from(new Set((bookingsData || []).map((b: any) => b.class_id)));
+      // Filter bookings for classes where this trainer teaches
+      const trainerName = `${trainerProfile.first_name} ${trainerProfile.last_name}`;
+      const relevantBookings = (bookingsData || []).filter((booking: any) => {
+        if (booking.classes) {
+          // Check regular classes - match by instructor name or check class_instructors table
+          const instructor = booking.classes.instructor || '';
+          return instructor.toLowerCase().includes(trainerProfile.first_name.toLowerCase()) ||
+                 instructor.toLowerCase().includes(trainerProfile.last_name.toLowerCase());
+        }
+        if (booking.manual_class_schedules) {
+          // Check manual schedules - match by instructor name
+          const instructor = booking.manual_class_schedules.instructor_name || '';
+          return instructor.toLowerCase().includes(trainerProfile.first_name.toLowerCase()) ||
+                 instructor.toLowerCase().includes(trainerProfile.last_name.toLowerCase());
+        }
+        return false;
+      });
 
-      const [profilesRes, classesRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, first_name, last_name, phone, email, user_id')
-          .in('user_id', userIds.length ? userIds : ['00000000-0000-0000-0000-000000000000']),
-        supabase
-          .from('classes')
-          .select('id, title, start_time, end_time, day_of_week, instructor')
-          .in('id', classIds.length ? classIds : ['00000000-0000-0000-0000-000000000000'])
-      ]);
+      // Batch fetch related profiles
+      const userIds = Array.from(new Set(relevantBookings.map((b: any) => b.user_id)));
 
-      const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p]));
-      const classMap = new Map((classesRes.data || []).map((c: any) => [c.id, c]));
+      const { data: profilesRes, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, phone, email, user_id')
+        .in('user_id', userIds.length ? userIds : ['00000000-0000-0000-0000-000000000000']);
+
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map((profilesRes || []).map((p: any) => [p.user_id, p]));
 
       // Get remaining classes for each user and assemble full objects
       const bookingsWithDetails = await Promise.all(
-        (bookingsData || []).map(async (booking: any) => {
+        relevantBookings.map(async (booking: any) => {
           const { data: monthlyData } = await supabase
             .rpc('get_or_create_monthly_classes', { user_uuid: booking.user_id });
 
           const profile = profileMap.get(booking.user_id);
-          const klass = classMap.get(booking.class_id);
-
+          
+          // Extract class info from the joined data
+          const classInfo = booking.classes || booking.manual_class_schedules;
+          
           return {
-            ...booking,
+            id: booking.id,
+            booking_date: booking.booking_date,
+            attended: booking.attended,
+            created_at: booking.created_at,
+            user_id: booking.user_id,
+            class_id: booking.class_id || booking.manual_schedule_id,
             profile,
-            class: klass,
+            class: classInfo ? {
+              id: classInfo.id,
+              title: classInfo.title,
+              start_time: classInfo.start_time,
+              end_time: classInfo.end_time,
+              day_of_week: classInfo.day_of_week || null,
+              instructor: classInfo.instructor || classInfo.instructor_name
+            } : null,
             user_monthly_classes: monthlyData || { remaining_classes: 0 }
           } as TrainerBookingWithDetails;
         })
@@ -132,13 +197,27 @@ export const useTrainerBookingManagement = () => {
   useEffect(() => {
     fetchBookings();
 
-    // Set up real-time subscription for booking changes
+    // Set up real-time subscriptions for booking changes and schedule changes
     const bookingsChannel = supabase
       .channel('trainer-bookings-management')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
         table: 'bookings' 
+      }, () => {
+        fetchBookings();
+      })
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'schedule_overrides' 
+      }, () => {
+        fetchBookings();
+      })
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'manual_class_schedules' 
       }, () => {
         fetchBookings();
       })

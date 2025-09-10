@@ -45,7 +45,35 @@ const Horarios = () => {
       loadUserData();
     }
     loadClasses();
+    loadScheduledClasses(selectedDate);
+
+    // Set up real-time subscriptions for schedule changes
+    const scheduleChannel = supabase
+      .channel('schedule-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'schedule_overrides' 
+      }, () => {
+        loadScheduledClasses(selectedDate);
+      })
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'manual_class_schedules' 
+      }, () => {
+        loadScheduledClasses(selectedDate);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(scheduleChannel);
+    };
   }, [user]);
+
+  useEffect(() => {
+    loadScheduledClasses(selectedDate);
+  }, [selectedDate]);
   const loadClasses = async () => {
     try {
       const {
@@ -95,10 +123,29 @@ const Horarios = () => {
     }
   };
 
+  // Get classes for selected date using schedule overrides
+  const [scheduledClasses, setScheduledClasses] = useState<any[]>([]);
+  
+  const loadScheduledClasses = async (date: Date) => {
+    try {
+      const { data, error } = await supabase.rpc('get_class_schedule_for_date', {
+        target_date: format(date, 'yyyy-MM-dd')
+      });
+
+      if (error) throw error;
+      
+      // Filter only active classes
+      const activeClasses = (data || []).filter((c: any) => c.is_active);
+      setScheduledClasses(activeClasses);
+    } catch (error) {
+      console.error('Error loading scheduled classes:', error);
+      setScheduledClasses([]);
+    }
+  };
+
   // Get classes for selected date
   const getSelectedDateClasses = () => {
-    const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    return classes.filter(c => c.day_of_week === dayOfWeek);
+    return scheduledClasses;
   };
 
   // Create booking
@@ -127,7 +174,7 @@ const Horarios = () => {
         error
       } = await supabase.from('bookings').insert([{
         user_id: user.id,
-        class_id: classItem.id,
+        class_id: classItem.class_id || classItem.id,
         booking_date: format(date, 'yyyy-MM-dd'),
         status: 'confirmed'
       }]);
@@ -183,13 +230,13 @@ const Horarios = () => {
   // Check if user already has a booking for this class
   const isAlreadyBooked = (classItem: any) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return userBookings.some(b => b.class_id === classItem.id && b.booking_date === dateStr);
+    return userBookings.some(b => b.class_id === (classItem.class_id || classItem.id) && b.booking_date === dateStr);
   };
 
   // Get booking ID for cancellation
   const getBookingId = (classItem: any) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const booking = userBookings.find(b => b.class_id === classItem.id && b.booking_date === dateStr);
+    const booking = userBookings.find(b => b.class_id === (classItem.class_id || classItem.id) && b.booking_date === dateStr);
     return booking?.id || '';
   };
 
@@ -362,13 +409,18 @@ const Horarios = () => {
               const isBooked = isAlreadyBooked(classItem);
               const timeStr = format(new Date(`2000-01-01T${classItem.start_time}`), 'HH:mm');
               const endTimeStr = format(new Date(`2000-01-01T${classItem.end_time}`), 'HH:mm');
-              const availableSpots = getAvailableSpots(classItem.id, dateStr, classItem.max_students);
-              const bookedSpots = getBookedSpots(classItem.id, dateStr);
+              const availableSpots = getAvailableSpots(classItem.class_id, dateStr, classItem.max_students);
+              const bookedSpots = getBookedSpots(classItem.class_id, dateStr);
               const isFull = availableSpots === 0;
-              return <Card key={classItem.id} className="shadow-boxing hover:shadow-lg transition-shadow">
+              return <Card key={classItem.class_id} className="shadow-boxing hover:shadow-lg transition-shadow">
                           <CardHeader>
                             <div className="flex items-center justify-between">
-                              <CardTitle className="font-oswald text-lg">{classItem.title}</CardTitle>
+                              <CardTitle className="font-oswald text-lg">
+                                {classItem.title}
+                                {classItem.is_special_day && (
+                                  <Badge variant="secondary" className="ml-2">Especial</Badge>
+                                )}
+                              </CardTitle>
                               <div className="flex items-center gap-2">
                                 <Badge variant={availableSpots > 0 ? "default" : "destructive"}>
                                   <Users className="h-3 w-3 mr-1" />
@@ -384,8 +436,25 @@ const Horarios = () => {
                                 <span className="font-medium">{timeStr} - {endTimeStr}</span>
                               </div>
                             </div>
+                            
+                            {/* Show instructor */}
+                            <div className="text-sm text-muted-foreground">
+                              Instructor: {classItem.instructor}
+                            </div>
 
-                            <Button onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking(classItem, selectedDate)} disabled={loading || !isBooked && (isFull || !monthlyClasses || monthlyClasses.remaining_classes <= 0)} variant={isBooked ? "destructive" : "default"} className="w-full">
+                            {/* Show notes if it's a special class */}
+                            {classItem.is_special_day && classItem.override_notes && (
+                              <div className="text-sm p-2 bg-muted rounded">
+                                {classItem.override_notes}
+                              </div>
+                            )}
+
+                            <Button 
+                              onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking({...classItem, id: classItem.class_id}, selectedDate)} 
+                              disabled={loading || !isBooked && (isFull || !monthlyClasses || monthlyClasses.remaining_classes <= 0)} 
+                              variant={isBooked ? "destructive" : "default"} 
+                              className="w-full"
+                            >
                               {loading ? "Procesando..." : isBooked ? "Cancelar reserva" : isFull ? "Clase completa" : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? "Sin clases disponibles" : "Reservar plaza"}
                             </Button>
                           </CardContent>
