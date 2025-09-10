@@ -348,6 +348,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_schedule_override: {
+        Args: {
+          instructor_name?: string
+          notes?: string
+          target_class_id: string
+          target_date: string
+        }
+        Returns: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_override: string | null
+          is_enabled: boolean
+          notes: string | null
+          override_date: string
+          updated_at: string
+        }
+      }
       admin_advance_all_to_next_month: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -565,6 +584,20 @@ export type Database = {
       delete_manual_class_schedule: {
         Args: { schedule_id: string }
         Returns: boolean
+      }
+      disable_schedule_class: {
+        Args: { notes?: string; target_class_id: string; target_date: string }
+        Returns: {
+          class_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_override: string | null
+          is_enabled: boolean
+          notes: string | null
+          override_date: string
+          updated_at: string
+        }
       }
       get_available_classes_for_date_range: {
         Args: { end_date: string; start_date: string }

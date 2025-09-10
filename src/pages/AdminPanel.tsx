@@ -11,9 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX } from 'lucide-react';
+import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX, UserCheck, ClipboardList, Clock, Settings } from 'lucide-react';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
+import ManualScheduleManagement from '@/components/ManualScheduleManagement';
+import { TrainerCalendarManagement } from '@/components/TrainerCalendarManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -249,29 +251,60 @@ const AdminPanel = () => {
             <p className="text-muted-foreground">Gestiona usuarios y reservas del club de boxeo</p>
           </div>
 
-          <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Usuarios Activos
-              </TabsTrigger>
-              <TabsTrigger value="inactive" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Usuarios Inactivos
-              </TabsTrigger>
+          <Tabs defaultValue="requests" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="requests" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+                <UserCheck className="h-4 w-4" />
                 Solicitudes
               </TabsTrigger>
-              <TabsTrigger value="bookings" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Reservas por Clase
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Usuarios
               </TabsTrigger>
-              <TabsTrigger value="management" className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
-                Gestión de Estado
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                Reservas
+              </TabsTrigger>
+              <TabsTrigger value="classes" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Clases
+              </TabsTrigger>
+              <TabsTrigger value="schedules" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Horarios Especiales
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Gestión de Horarios
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="requests" className="space-y-6">
+              <RegistrationRequests />
+            </TabsContent>
+
+            <TabsContent value="bookings" className="space-y-6">
+              <BookingManagement />
+            </TabsContent>
+
+            <TabsContent value="classes" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gestión de Clases</CardTitle>
+                  <CardDescription>
+                    Próximamente: herramientas para gestionar las clases regulares
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="schedules" className="space-y-6">
+              <ManualScheduleManagement />
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-6">
+              <TrainerCalendarManagement />
+            </TabsContent>
 
             <TabsContent value="users" className="space-y-6">
               <Card>
