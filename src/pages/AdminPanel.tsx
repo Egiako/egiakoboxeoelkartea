@@ -139,17 +139,17 @@ const AdminPanel = () => {
   };
   const deactivateUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.rpc('admin_deactivate_user', {
+      const {
+        data,
+        error
+      } = await supabase.rpc('admin_deactivate_user', {
         target_user_id: userId
       });
-
       if (error) throw error;
-
-              toast({
+      toast({
         title: "Usuario desactivado",
-        description: `${userName} ha sido desactivado. Ya no podrá acceder al sistema.`,
+        description: `${userName} ha sido desactivado. Ya no podrá acceder al sistema.`
       });
-      
       fetchData(); // Refresh data
     } catch (error: any) {
       console.error('Error deactivating user:', error);
@@ -160,20 +160,19 @@ const AdminPanel = () => {
       });
     }
   };
-
   const reactivateUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.rpc('admin_reactivate_user', {
+      const {
+        data,
+        error
+      } = await supabase.rpc('admin_reactivate_user', {
         target_user_id: userId
       });
-
       if (error) throw error;
-
       toast({
         title: "Usuario reactivado",
-        description: `${userName} vuelve a estar activo y puede acceder al sistema.`,
+        description: `${userName} vuelve a estar activo y puede acceder al sistema.`
       });
-      
       fetchData(); // Refresh data
     } catch (error: any) {
       console.error('Error reactivating user:', error);
@@ -184,20 +183,22 @@ const AdminPanel = () => {
       });
     }
   };
-
   const expelUser = async (userId: string, userName: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('admin-expel-user', {
-        body: { target_user_id: userId, delete_auth: true }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('admin-expel-user', {
+        body: {
+          target_user_id: userId,
+          delete_auth: true
+        }
       });
-
       if (error) throw error;
-
       toast({
         title: "Usuario expulsado",
-        description: `${userName} ha sido expulsado y su cuenta ha sido desactivada. Podrá solicitar re-registro si lo desea.`,
+        description: `${userName} ha sido expulsado y su cuenta ha sido desactivada. Podrá solicitar re-registro si lo desea.`
       });
-      
       fetchData(); // Refresh data
     } catch (error: any) {
       console.error('Error expelling user:', error);
@@ -208,33 +209,13 @@ const AdminPanel = () => {
       });
     }
   };
-  const filteredUsers = users.filter(user => 
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.phone.includes(searchTerm)
-  );
-
+  const filteredUsers = users.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
   const approvedUsers = users.filter(user => user.approval_status === 'approved');
   const activeUsers = approvedUsers.filter(user => user.is_active);
   const inactiveUsers = approvedUsers.filter(user => !user.is_active);
-  
-  const filteredActiveUsers = activeUsers.filter(user => 
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.phone.includes(searchTerm)
-  );
-  
-  const filteredInactiveUsers = inactiveUsers.filter(user => 
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.phone.includes(searchTerm)
-  );
-  
-  const filteredApprovedUsers = approvedUsers.filter(user => 
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.phone.includes(searchTerm)
-  );
+  const filteredActiveUsers = activeUsers.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
+  const filteredInactiveUsers = inactiveUsers.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
+  const filteredApprovedUsers = approvedUsers.filter(user => user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm));
   const filteredBookings = bookings.filter(booking => booking.profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) || booking.profile.phone.includes(searchTerm) || booking.class.title.toLowerCase().includes(searchTerm.toLowerCase()));
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -269,10 +250,7 @@ const AdminPanel = () => {
                 <Calendar className="h-4 w-4" />
                 Clases
               </TabsTrigger>
-              <TabsTrigger value="schedules" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Horarios Especiales
-              </TabsTrigger>
+              
               <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Gestión de Horarios
@@ -361,18 +339,15 @@ const AdminPanel = () => {
                             </TableCell>
                             <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                             </TableCell>
                           </TableRow>)}
                         {filteredActiveUsers.length === 0 && <TableRow>
                             <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                              {activeUsers.length === 0 
-                                ? "No hay usuarios activos en el sistema"
-                                : "No se encontraron usuarios activos que coincidan con la búsqueda"
-                              }
+                              {activeUsers.length === 0 ? "No hay usuarios activos en el sistema" : "No se encontraron usuarios activos que coincidan con la búsqueda"}
                             </TableCell>
                           </TableRow>}
                       </TableBody>
@@ -451,10 +426,10 @@ const AdminPanel = () => {
                             </TableCell>
                             <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                             </TableCell>
                             <TableCell>
                               <AlertDialog>
@@ -474,9 +449,7 @@ const AdminPanel = () => {
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
-                                    >
+                                    <AlertDialogAction onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}>
                                       Reactivar Usuario
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
@@ -486,10 +459,7 @@ const AdminPanel = () => {
                           </TableRow>)}
                         {filteredInactiveUsers.length === 0 && <TableRow>
                             <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                              {inactiveUsers.length === 0 
-                                ? "No hay usuarios inactivos en el sistema"
-                                : "No se encontraron usuarios inactivos que coincidan con la búsqueda"
-                              }
+                              {inactiveUsers.length === 0 ? "No hay usuarios inactivos en el sistema" : "No se encontraron usuarios inactivos que coincidan con la búsqueda"}
                             </TableCell>
                           </TableRow>}
                       </TableBody>
@@ -558,8 +528,7 @@ const AdminPanel = () => {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
-                                {user.is_active ? (
-                                  <>
+                                {user.is_active ? <>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <Button variant="outline" size="sm">
@@ -578,10 +547,7 @@ const AdminPanel = () => {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                          <AlertDialogAction 
-                                            onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
-                                            className="bg-orange-600 text-white hover:bg-orange-700"
-                                          >
+                                          <AlertDialogAction onClick={() => deactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)} className="bg-orange-600 text-white hover:bg-orange-700">
                                             Desactivar
                                           </AlertDialogAction>
                                         </AlertDialogFooter>
@@ -613,18 +579,13 @@ const AdminPanel = () => {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                          <AlertDialogAction 
-                                            onClick={() => expelUser(user.user_id, `${user.first_name} ${user.last_name}`)} 
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                          >
+                                          <AlertDialogAction onClick={() => expelUser(user.user_id, `${user.first_name} ${user.last_name}`)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                             Sí, expulsar usuario
                                           </AlertDialogAction>
                                         </AlertDialogFooter>
                                       </AlertDialogContent>
                                     </AlertDialog>
-                                  </>
-                                ) : (
-                                  <AlertDialog>
+                                  </> : <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                       <Button variant="outline" size="sm">
                                         Reactivar
@@ -641,24 +602,18 @@ const AdminPanel = () => {
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction 
-                                          onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}
-                                        >
+                                        <AlertDialogAction onClick={() => reactivateUser(user.user_id, `${user.first_name} ${user.last_name}`)}>
                                           Reactivar Usuario
                                         </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
-                                  </AlertDialog>
-                                )}
+                                  </AlertDialog>}
                               </div>
                             </TableCell>
                           </TableRow>)}
                         {filteredApprovedUsers.length === 0 && <TableRow>
                             <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                              {approvedUsers.length === 0 
-                                ? "No hay usuarios aprobados en el sistema"
-                                : "No se encontraron usuarios aprobados que coincidan con la búsqueda"
-                              }
+                              {approvedUsers.length === 0 ? "No hay usuarios aprobados en el sistema" : "No se encontraron usuarios aprobados que coincidan con la búsqueda"}
                             </TableCell>
                           </TableRow>}
                       </TableBody>
