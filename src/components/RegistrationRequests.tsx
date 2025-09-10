@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { UserCheck, UserX, Clock, Search, RefreshCw, Mail, Phone, User } from 'lucide-react';
+import { UserCheck, UserX, Clock, Search, RefreshCw, Mail, Phone, User, DatabaseBackup } from 'lucide-react';
 
 interface PendingUser {
   id: string;
@@ -27,32 +27,60 @@ const RegistrationRequests = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [processingUser, setProcessingUser] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPendingUsers();
     
-    // Set up real-time subscription for profile changes
+    // Configurar múltiples suscripciones en tiempo real para garantizar actualizaciones
     const profilesChannel = supabase
       .channel('pending-profiles-realtime')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
-        table: 'profiles',
-        filter: 'approval_status=eq.pending'
-      }, () => {
+        table: 'profiles'
+      }, (payload) => {
+        console.log('Profiles realtime update:', payload);
+        setLastUpdate(new Date());
         fetchPendingUsers();
       })
       .subscribe();
 
+    // Intervalo de actualización automática cada 30 segundos
+    const refreshInterval = setInterval(() => {
+      console.log('Auto-refresh pending users');
+      fetchPendingUsers();
+    }, 30000);
+
+    // Verificar nuevos perfiles pendientes cada 10 segundos
+    const checkInterval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact' })
+          .eq('approval_status', 'pending');
+
+        if (!error && data && data.length !== pendingUsers.length) {
+          console.log(`Pending users count changed: ${pendingUsers.length} -> ${data.length}`);
+          fetchPendingUsers();
+        }
+      } catch (error) {
+        console.error('Error checking pending users count:', error);
+      }
+    }, 10000);
+
     return () => {
       supabase.removeChannel(profilesChannel);
+      clearInterval(refreshInterval);
+      clearInterval(checkInterval);
     };
-  }, []);
+  }, [pendingUsers.length]);
 
   const fetchPendingUsers = async () => {
     try {
       setLoading(true);
+      console.log('Fetching pending users...');
       
       const { data, error } = await supabase
         .from('profiles')
@@ -60,9 +88,14 @@ const RegistrationRequests = () => {
         .eq('approval_status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching pending users:', error);
+        throw error;
+      }
 
+      console.log('Fetched pending users:', data?.length || 0);
       setPendingUsers(data || []);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Error fetching pending users:', error);
       toast({
@@ -117,7 +150,10 @@ const RegistrationRequests = () => {
         description: `${user.first_name} ${user.last_name} ha sido aprobado exitosamente`,
       });
 
-      fetchPendingUsers();
+      // Actualización inmediata y forzada
+      setTimeout(() => {
+        fetchPendingUsers();
+      }, 500);
     } catch (error: any) {
       console.error('Error approving user:', error);
       toast({
@@ -148,7 +184,10 @@ const RegistrationRequests = () => {
         description: `La solicitud de ${user.first_name} ${user.last_name} ha sido rechazada`,
       });
 
-      fetchPendingUsers();
+      // Actualización inmediata y forzada
+      setTimeout(() => {
+        fetchPendingUsers();
+      }, 500);
     } catch (error: any) {
       console.error('Error rejecting user:', error);
       toast({
@@ -189,6 +228,14 @@ const RegistrationRequests = () => {
               {pendingUsers.length} pendientes
             </Badge>
           )}
+          <Badge variant="outline" className="ml-auto text-xs">
+            <DatabaseBackup className="h-3 w-3 mr-1" />
+            Actualizado: {lastUpdate.toLocaleTimeString('es-ES', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit' 
+            })}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -202,8 +249,15 @@ const RegistrationRequests = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline" onClick={fetchPendingUsers}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              console.log('Manual refresh requested');
+              fetchPendingUsers();
+            }}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
           </Button>
         </div>
