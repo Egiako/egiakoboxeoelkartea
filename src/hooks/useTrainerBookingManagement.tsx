@@ -86,23 +86,8 @@ export const useTrainerBookingManagement = () => {
 
       if (bookingsError) throw bookingsError;
 
-      // Filter bookings for classes where this trainer teaches
-      const trainerName = `${trainerProfile.first_name} ${trainerProfile.last_name}`;
-      const relevantBookings = (bookingsData || []).filter((booking: any) => {
-        if (booking.classes) {
-          // Check regular classes - match by instructor name or check class_instructors table
-          const instructor = booking.classes.instructor || '';
-          return instructor.toLowerCase().includes(trainerProfile.first_name.toLowerCase()) ||
-                 instructor.toLowerCase().includes(trainerProfile.last_name.toLowerCase());
-        }
-        if (booking.manual_class_schedules) {
-          // Check manual schedules - match by instructor name
-          const instructor = booking.manual_class_schedules.instructor_name || '';
-          return instructor.toLowerCase().includes(trainerProfile.first_name.toLowerCase()) ||
-                 instructor.toLowerCase().includes(trainerProfile.last_name.toLowerCase());
-        }
-        return false;
-      });
+      // For trainers, show ALL bookings (like admin panel)
+      const relevantBookings = bookingsData || [];
 
       // Batch fetch related profiles
       const userIds = Array.from(new Set(relevantBookings.map((b: any) => b.user_id)));

@@ -242,15 +242,18 @@ const AdminPanel = () => {
                 <Users className="h-4 w-4" />
                 Usuarios
               </TabsTrigger>
+              <TabsTrigger value="management" className="flex items-center gap-2">
+                <UserX className="h-4 w-4" />
+                Gestión
+              </TabsTrigger>
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <ClipboardList className="h-4 w-4" />
                 Reservas
               </TabsTrigger>
-              <TabsTrigger value="classes" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Clases
+              <TabsTrigger value="schedules" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Clases Manuales
               </TabsTrigger>
-              
               <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Gestión de Horarios
@@ -263,17 +266,6 @@ const AdminPanel = () => {
 
             <TabsContent value="bookings" className="space-y-6">
               <BookingManagement />
-            </TabsContent>
-
-            <TabsContent value="classes" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestión de Clases</CardTitle>
-                  <CardDescription>
-                    Próximamente: herramientas para gestionar las clases regulares
-                  </CardDescription>
-                </CardHeader>
-              </Card>
             </TabsContent>
 
             <TabsContent value="schedules" className="space-y-6">
@@ -473,13 +465,6 @@ const AdminPanel = () => {
               </Card>
             </TabsContent>
 
-              <TabsContent value="requests" className="space-y-6">
-                <RegistrationRequests />
-              </TabsContent>
-
-              <TabsContent value="bookings" className="space-y-6">
-                <BookingManagement />
-              </TabsContent>
 
 
             <TabsContent value="management" className="space-y-6">
