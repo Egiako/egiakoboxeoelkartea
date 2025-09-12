@@ -43,6 +43,7 @@ const AdminPanel = () => {
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('requests');
   const {
     toast
   } = useToast();
@@ -221,7 +222,6 @@ const AdminPanel = () => {
         <div className="animate-pulse text-muted-foreground">Cargando panel de administración...</div>
       </div>;
   }
-const [activeTab, setActiveTab] = useState('requests');
 
   return <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-background">
