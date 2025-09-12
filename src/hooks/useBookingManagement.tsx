@@ -39,10 +39,14 @@ export const useBookingManagement = () => {
     try {
       setLoading(true);
       
+      // Only fetch bookings from today onwards (automatic cleanup of old lists)
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select('id, booking_date, attended, created_at, user_id, class_id')
         .eq('status', 'confirmed')
+        .gte('booking_date', today)
         .order('booking_date', { ascending: false });
 
       if (bookingsError) throw bookingsError;

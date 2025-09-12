@@ -240,15 +240,24 @@ const Horarios = () => {
     return booking?.id || '';
   };
 
-  // Check if date can be booked (today or tomorrow only)
+  // Check if date can be booked (monthly booking - full current month)
   const canBookDate = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    
     const targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0);
-    return targetDate >= today && targetDate <= tomorrow;
+    
+    // Can't book past dates
+    if (targetDate < today) return false;
+    
+    // Check if it's the same month and year as today
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const targetMonth = targetDate.getMonth();
+    const targetYear = targetDate.getFullYear();
+    
+    return targetYear === currentYear && targetMonth === currentMonth;
   };
 
   // Get day name for display

@@ -133,7 +133,7 @@ export const UnifiedScheduleManagement = () => {
 
   // A. Sumar clases esporádicas
   const handleAddSporadicClass = async () => {
-    if (!sporadicForm.title || !sporadicForm.instructor || !sporadicForm.date || !sporadicForm.startTime || !sporadicForm.endTime) {
+    if (!sporadicForm.title || !sporadicForm.date || !sporadicForm.startTime || !sporadicForm.endTime) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -184,7 +184,7 @@ export const UnifiedScheduleManagement = () => {
 
   // B. Sumar clases periódicas
   const handleAddPeriodicClass = async () => {
-    if (!periodicForm.title || !periodicForm.instructor || !periodicForm.dayOfWeek || !periodicForm.startTime || !periodicForm.endTime) {
+    if (!periodicForm.title || !periodicForm.dayOfWeek || !periodicForm.startTime || !periodicForm.endTime) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -351,15 +351,15 @@ export const UnifiedScheduleManagement = () => {
                         placeholder="Ej: Clase especial de sábado"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sporadic-instructor">Instructor *</Label>
-                      <Input
-                        id="sporadic-instructor"
-                        value={sporadicForm.instructor}
-                        onChange={(e) => setSporadicForm(prev => ({ ...prev, instructor: e.target.value }))}
-                        placeholder="Nombre del instructor"
-                      />
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="sporadic-instructor">Instructor</Label>
+                       <Input
+                         id="sporadic-instructor"
+                         value={sporadicForm.instructor}
+                         onChange={(e) => setSporadicForm(prev => ({ ...prev, instructor: e.target.value }))}
+                         placeholder="Nombre del instructor (opcional)"
+                       />
+                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="sporadic-date">Fecha *</Label>
                       <Input
@@ -439,15 +439,15 @@ export const UnifiedScheduleManagement = () => {
                         placeholder="Ej: Boxeo Avanzado"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="periodic-instructor">Instructor *</Label>
-                      <Input
-                        id="periodic-instructor"
-                        value={periodicForm.instructor}
-                        onChange={(e) => setPeriodicForm(prev => ({ ...prev, instructor: e.target.value }))}
-                        placeholder="Nombre del instructor"
-                      />
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="periodic-instructor">Instructor</Label>
+                       <Input
+                         id="periodic-instructor"
+                         value={periodicForm.instructor}
+                         onChange={(e) => setPeriodicForm(prev => ({ ...prev, instructor: e.target.value }))}
+                         placeholder="Nombre del instructor (opcional)"
+                       />
+                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="periodic-day">Día de la semana *</Label>
                       <Select value={periodicForm.dayOfWeek} onValueChange={(value) => setPeriodicForm(prev => ({ ...prev, dayOfWeek: value }))}>
