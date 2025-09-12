@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Users, ClipboardList, Calendar } from 'lucide-react';
 import { TrainerActiveUsers } from '@/components/TrainerActiveUsers';
 import TrainerBookingManagement from '@/components/TrainerBookingManagement';
-import { TrainerCalendarManagement } from '@/components/TrainerCalendarManagement';
+import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagement';
 
 const TrainerPanel = () => {
   const { isTrainer, loading } = useTrainerRole();
@@ -85,7 +85,7 @@ const TrainerPanel = () => {
             </TabsContent>
 
             <TabsContent value="calendar">
-              <TrainerCalendarManagement />
+              <UnifiedScheduleManagement />
             </TabsContent>
           </Tabs>
         </div>

@@ -14,8 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX, UserCheck, ClipboardList, Clock, Settings } from 'lucide-react';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
-import ManualScheduleManagement from '@/components/ManualScheduleManagement';
-import { TrainerCalendarManagement } from '@/components/TrainerCalendarManagement';
+import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -222,6 +221,8 @@ const AdminPanel = () => {
         <div className="animate-pulse text-muted-foreground">Cargando panel de administración...</div>
       </div>;
   }
+const [activeTab, setActiveTab] = useState('requests');
+
   return <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -232,8 +233,8 @@ const AdminPanel = () => {
             <p className="text-muted-foreground">Gestiona usuarios y reservas del club de boxeo</p>
           </div>
 
-          <Tabs defaultValue="requests" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="requests" className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
                 Solicitudes
@@ -251,10 +252,6 @@ const AdminPanel = () => {
                 Reservas
               </TabsTrigger>
               <TabsTrigger value="schedules" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Clases Manuales
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Gestión de Horarios
               </TabsTrigger>
@@ -269,11 +266,7 @@ const AdminPanel = () => {
             </TabsContent>
 
             <TabsContent value="schedules" className="space-y-6">
-              <ManualScheduleManagement />
-            </TabsContent>
-
-            <TabsContent value="calendar" className="space-y-6">
-              <TrainerCalendarManagement />
+              <UnifiedScheduleManagement />
             </TabsContent>
 
             <TabsContent value="users" className="space-y-6">
