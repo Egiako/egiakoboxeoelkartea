@@ -53,6 +53,9 @@ export const useTrainerBookingManagement = () => {
 
       if (profileError) throw profileError;
 
+      // Only fetch bookings from today onwards (automatic cleanup of old lists)
+      const today = new Date().toISOString().split('T')[0];
+      
       // Get all bookings with class details to filter later
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
@@ -82,6 +85,7 @@ export const useTrainerBookingManagement = () => {
           )
         `)
         .eq('status', 'confirmed')
+        .gte('booking_date', today)
         .order('booking_date', { ascending: false });
 
       if (bookingsError) throw bookingsError;
