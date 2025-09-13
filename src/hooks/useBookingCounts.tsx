@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BookingCount {
@@ -10,53 +10,55 @@ interface BookingCount {
 export const useBookingCounts = (dates: string[]) => {
   const [bookingCounts, setBookingCounts] = useState<BookingCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const debounceRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
+  const fetchBookingCounts = useCallback(async () => {
     if (dates.length === 0) {
       setBookingCounts([]);
       setLoading(false);
       return;
     }
 
-    const fetchBookingCounts = async () => {
-      try {
-        setLoading(true);
-        
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('class_id, booking_date')
-          .eq('status', 'confirmed')
-          .in('booking_date', dates);
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('class_id, booking_date, manual_schedule_id')
+        .eq('status', 'confirmed')
+        .in('booking_date', dates);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Count bookings by class_id and booking_date
-        const counts: BookingCount[] = [];
-        const countMap = new Map<string, number>();
+      // Count bookings by class_id/manual_schedule_id and booking_date
+      const counts: BookingCount[] = [];
+      const countMap = new Map<string, number>();
 
-        (data || []).forEach((booking) => {
-          if (!booking.class_id) return;
-          const key = `${booking.class_id}|${booking.booking_date}`;
-          countMap.set(key, (countMap.get(key) || 0) + 1);
-        });
+      (data || []).forEach((booking) => {
+        const id = booking.class_id || booking.manual_schedule_id;
+        if (!id) return;
+        const key = `${id}|${booking.booking_date}`;
+        countMap.set(key, (countMap.get(key) || 0) + 1);
+      });
 
-        countMap.forEach((count, key) => {
-          const [class_id, booking_date] = key.split('|');
-          counts.push({ class_id, booking_date, count });
-        });
+      countMap.forEach((count, key) => {
+        const [class_id, booking_date] = key.split('|');
+        counts.push({ class_id, booking_date, count });
+      });
 
-        setBookingCounts(counts);
-      } catch (error) {
-        console.error('Error fetching booking counts:', error);
-        setBookingCounts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setBookingCounts(counts);
+    } catch (error) {
+      console.error('Error fetching booking counts:', error);
+      setBookingCounts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [dates]);
 
+  useEffect(() => {
     fetchBookingCounts();
 
-    // Set up real-time subscription for booking changes
+    // Debounced real-time subscription to prevent rapid updates
     const subscription = supabase
       .channel('booking-counts')
       .on('postgres_changes', {
@@ -64,14 +66,25 @@ export const useBookingCounts = (dates: string[]) => {
         schema: 'public',
         table: 'bookings'
       }, () => {
-        fetchBookingCounts();
+        // Clear existing timeout
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+        
+        // Set new timeout to debounce updates
+        debounceRef.current = setTimeout(() => {
+          fetchBookingCounts();
+        }, 500); // 500ms debounce
       })
       .subscribe();
 
     return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
       supabase.removeChannel(subscription);
     };
-  }, [dates]);
+  }, [fetchBookingCounts]);
 
   const getAvailableSpots = (classId: string, date: string, maxStudents: number) => {
     const booking = bookingCounts.find(

@@ -47,24 +47,31 @@ const Horarios = () => {
     loadClasses();
     loadScheduledClasses(selectedDate);
 
-    // Set up real-time subscriptions for schedule changes
-    const scheduleChannel = supabase
-      .channel('schedule-changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'schedule_overrides' 
-      }, () => {
-        loadScheduledClasses(selectedDate);
-      })
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'manual_class_schedules' 
-      }, () => {
-        loadScheduledClasses(selectedDate);
-      })
-      .subscribe();
+      // Set up real-time subscriptions for schedule changes
+      const scheduleChannel = supabase
+        .channel('schedule-changes')
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'schedule_overrides' 
+        }, () => {
+          loadScheduledClasses(selectedDate);
+        })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'manual_class_schedules' 
+        }, () => {
+          loadScheduledClasses(selectedDate);
+        })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'classes' 
+        }, () => {
+          loadScheduledClasses(selectedDate);
+        })
+        .subscribe();
 
     return () => {
       supabase.removeChannel(scheduleChannel);

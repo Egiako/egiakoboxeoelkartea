@@ -234,7 +234,13 @@ export const UnifiedScheduleManagement = () => {
   };
 
   // C. Suprimir clases
-  const handleTogglePeriodicClass = async (classId: string, isActive: boolean) => {
+  const handleTogglePeriodicClass = async (classId: string, isActive: boolean, event?: React.MouseEvent) => {
+    // Prevent any default behavior that might cause scrolling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     try {
       const { data, error } = await supabase
         .from('classes')
@@ -248,7 +254,8 @@ export const UnifiedScheduleManagement = () => {
         description: `Clase ${!isActive ? 'activada' : 'desactivada'} correctamente`,
       });
 
-      fetchData();
+      // Refresh data without changing focus or scroll position
+      await fetchData();
     } catch (error: any) {
       console.error('Error toggling periodic class:', error);
       toast({
@@ -541,25 +548,25 @@ export const UnifiedScheduleManagement = () => {
                                 {cls.is_active ? "Activa" : "Desactivada"}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <Button
-                                variant={cls.is_active ? "outline" : "default"}
-                                size="sm"
-                                onClick={() => handleTogglePeriodicClass(cls.id, cls.is_active)}
-                              >
-                                {cls.is_active ? (
-                                  <>
-                                    <EyeOff className="h-3 w-3 mr-1" />
-                                    Desactivar
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="h-3 w-3 mr-1" />
-                                    Activar
-                                  </>
-                                )}
-                              </Button>
-                            </TableCell>
+                             <TableCell>
+                               <Button
+                                 variant={cls.is_active ? "outline" : "default"}
+                                 size="sm"
+                                 onClick={(e) => handleTogglePeriodicClass(cls.id, cls.is_active, e)}
+                               >
+                                 {cls.is_active ? (
+                                   <>
+                                     <EyeOff className="h-3 w-3 mr-1" />
+                                     Desactivar
+                                   </>
+                                 ) : (
+                                   <>
+                                     <Eye className="h-3 w-3 mr-1" />
+                                     Activar
+                                   </>
+                                 )}
+                               </Button>
+                             </TableCell>
                           </TableRow>
                         ))}
                         {classes.length === 0 && (
