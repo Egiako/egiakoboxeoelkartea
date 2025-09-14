@@ -108,7 +108,7 @@ const Horarios = () => {
       if (profileError) throw profileError;
       setUserProfile(profile);
 
-      // Fetch user bookings with class details
+      // Fetch user bookings with class details (both regular and manual schedules)
       const {
         data: bookings,
         error: bookingsError
@@ -119,6 +119,13 @@ const Horarios = () => {
             start_time,
             end_time,
             day_of_week
+          ),
+          manual_class_schedules (
+            title,
+            start_time,
+            end_time,
+            class_date,
+            instructor_name
           )
         `).eq('user_id', user.id).eq('status', 'confirmed').gte('booking_date', format(new Date(), 'yyyy-MM-dd')).order('booking_date', {
         ascending: true
@@ -566,8 +573,12 @@ const Horarios = () => {
               <CardContent>
                 <div className="grid gap-4">
                   {userBookings.map(booking => {
-                const timeStr = format(new Date(`2000-01-01T${booking.classes.start_time}`), 'HH:mm');
-                const endTimeStr = format(new Date(`2000-01-01T${booking.classes.end_time}`), 'HH:mm');
+                // Handle both regular classes and manual schedules
+                const classData = booking.classes || booking.manual_class_schedules;
+                if (!classData) return null; // Skip if no class data
+                
+                const timeStr = format(new Date(`2000-01-01T${classData.start_time}`), 'HH:mm');
+                const endTimeStr = format(new Date(`2000-01-01T${classData.end_time}`), 'HH:mm');
                 const bookingDate = new Date(booking.booking_date);
                 const dayName = format(bookingDate, 'EEEE', {
                   locale: es
@@ -582,10 +593,16 @@ const Horarios = () => {
                           </div>
                           <div>
                             <div className="font-oswald font-semibold text-lg">
-                              {booking.classes.title}
+                              {classData.title}
+                              {booking.manual_class_schedules && (
+                                <Badge variant="secondary" className="ml-2 text-xs">Especial</Badge>
+                              )}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {dayName} {dateStr} • {timeStr} - {endTimeStr}
+                              {booking.manual_class_schedules?.instructor_name && (
+                                <span> • {booking.manual_class_schedules.instructor_name}</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -594,7 +611,7 @@ const Horarios = () => {
                           Cancelar
                         </Button>
                       </div>;
-              })}
+              }).filter(Boolean)}
                 </div>
               </CardContent>
             </Card>
