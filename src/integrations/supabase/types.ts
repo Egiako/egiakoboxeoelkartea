@@ -585,6 +585,10 @@ export type Database = {
         Args: { schedule_id: string }
         Returns: boolean
       }
+      delete_periodic_class: {
+        Args: { target_class_id: string }
+        Returns: boolean
+      }
       disable_schedule_class: {
         Args: { notes?: string; target_class_id: string; target_date: string }
         Returns: {

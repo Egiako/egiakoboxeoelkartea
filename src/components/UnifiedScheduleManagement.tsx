@@ -78,7 +78,7 @@ export const UnifiedScheduleManagement = () => {
   const [periodicForm, setPeriodicForm] = useState({
     title: '',
     instructor: '',
-    dayOfWeek: '',
+    selectedDays: [] as number[],
     startTime: '',
     endTime: '',
     maxStudents: 10
@@ -184,7 +184,7 @@ export const UnifiedScheduleManagement = () => {
 
   // B. Sumar clases periódicas
   const handleAddPeriodicClass = async () => {
-    if (!periodicForm.title || !periodicForm.dayOfWeek || !periodicForm.startTime || !periodicForm.endTime) {
+    if (!periodicForm.title || periodicForm.selectedDays.length === 0 || !periodicForm.startTime || !periodicForm.endTime) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -194,29 +194,32 @@ export const UnifiedScheduleManagement = () => {
     }
 
     try {
+      // Create classes for all selected days
+      const classesToCreate = periodicForm.selectedDays.map(dayOfWeek => ({
+        title: periodicForm.title,
+        instructor: periodicForm.instructor,
+        day_of_week: dayOfWeek,
+        start_time: periodicForm.startTime,
+        end_time: periodicForm.endTime,
+        max_students: periodicForm.maxStudents,
+        is_active: true
+      }));
+
       const { data, error } = await supabase
         .from('classes')
-        .insert({
-          title: periodicForm.title,
-          instructor: periodicForm.instructor,
-          day_of_week: parseInt(periodicForm.dayOfWeek),
-          start_time: periodicForm.startTime,
-          end_time: periodicForm.endTime,
-          max_students: periodicForm.maxStudents,
-          is_active: true
-        });
+        .insert(classesToCreate);
 
       if (error) throw error;
 
       toast({
         title: "Éxito",
-        description: "Clase periódica agregada correctamente",
+        description: `${periodicForm.selectedDays.length} clase(s) periódica(s) agregada(s) correctamente`,
       });
 
       setPeriodicForm({
         title: '',
         instructor: '',
-        dayOfWeek: '',
+        selectedDays: [],
         startTime: '',
         endTime: '',
         maxStudents: 10
@@ -290,6 +293,30 @@ export const UnifiedScheduleManagement = () => {
     }
   };
 
+  const handleDeletePeriodicClass = async (classId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('delete_periodic_class', {
+        target_class_id: classId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Éxito",
+        description: "Clase periódica eliminada correctamente",
+      });
+
+      fetchData();
+    } catch (error: any) {
+      console.error('Error deleting periodic class:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo eliminar la clase periódica",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (time: string) => {
     return time.substring(0, 5); // Remove seconds
   };
@@ -319,8 +346,13 @@ export const UnifiedScheduleManagement = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="sporadic" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs defaultValue="sporadic" className="space-y-6" onValueChange={(value) => {
+            // Prevent automatic scrolling when switching tabs
+            setTimeout(() => {
+              document.getElementById('schedule-management-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }}>
+            <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-3">
               <TabsTrigger value="sporadic" className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
                 Clases Esporádicas
@@ -455,21 +487,30 @@ export const UnifiedScheduleManagement = () => {
                          placeholder="Nombre del instructor (opcional)"
                        />
                      </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="periodic-day">Día de la semana *</Label>
-                      <Select value={periodicForm.dayOfWeek} onValueChange={(value) => setPeriodicForm(prev => ({ ...prev, dayOfWeek: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un día" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {daysOfWeek.map(day => (
-                            <SelectItem key={day.value} value={day.value.toString()}>
-                              {day.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="periodic-days">Días de la semana *</Label>
+                       <div className="grid grid-cols-2 gap-2">
+                         {daysOfWeek.slice(1, 6).map(day => ( // Skip Sunday and Saturday
+                           <label key={day.value} className="flex items-center space-x-2 cursor-pointer">
+                             <input
+                               type="checkbox"
+                               checked={periodicForm.selectedDays.includes(day.value)}
+                               onChange={(e) => {
+                                 const selectedDays = e.target.checked
+                                   ? [...periodicForm.selectedDays, day.value]
+                                   : periodicForm.selectedDays.filter(d => d !== day.value);
+                                 setPeriodicForm(prev => ({ ...prev, selectedDays }));
+                               }}
+                               className="rounded border-gray-300"
+                             />
+                             <span className="text-sm">{day.label}</span>
+                           </label>
+                         ))}
+                       </div>
+                       <p className="text-xs text-muted-foreground">
+                         Selecciona uno o varios días para la clase
+                       </p>
+                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="periodic-max">Máximo estudiantes</Label>
                       <Input
@@ -548,25 +589,52 @@ export const UnifiedScheduleManagement = () => {
                                 {cls.is_active ? "Activa" : "Desactivada"}
                               </Badge>
                             </TableCell>
-                             <TableCell>
-                               <Button
-                                 variant={cls.is_active ? "outline" : "default"}
-                                 size="sm"
-                                 onClick={(e) => handleTogglePeriodicClass(cls.id, cls.is_active, e)}
-                               >
-                                 {cls.is_active ? (
-                                   <>
-                                     <EyeOff className="h-3 w-3 mr-1" />
-                                     Desactivar
-                                   </>
-                                 ) : (
-                                   <>
-                                     <Eye className="h-3 w-3 mr-1" />
-                                     Activar
-                                   </>
-                                 )}
-                               </Button>
-                             </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant={cls.is_active ? "outline" : "default"}
+                                    size="sm"
+                                    onClick={(e) => handleTogglePeriodicClass(cls.id, cls.is_active, e)}
+                                  >
+                                    {cls.is_active ? (
+                                      <>
+                                        <EyeOff className="h-3 w-3 mr-1" />
+                                        Desactivar
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        Activar
+                                      </>
+                                    )}
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="destructive" size="sm">
+                                        <Trash2 className="h-3 w-3 mr-1" />
+                                        Eliminar
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Eliminar clase periódica?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          ¿Estás seguro de que quieres eliminar permanentemente la clase "{cls.title}" de {getDayName(cls.day_of_week)}? Esta acción no se puede deshacer y se cancelarán todas las reservas futuras.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeletePeriodicClass(cls.id)}
+                                          className="bg-destructive hover:bg-destructive/90"
+                                        >
+                                          Eliminar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
                           </TableRow>
                         ))}
                         {classes.length === 0 && (

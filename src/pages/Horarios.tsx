@@ -155,7 +155,7 @@ const Horarios = () => {
     return scheduledClasses;
   };
 
-  // Create booking
+  // Create booking for regular or manual classes
   const createBooking = async (classItem: any, date: Date) => {
     if (!user || !userProfile) {
       toast({
@@ -177,15 +177,25 @@ const Horarios = () => {
     }
     setLoading(true);
     try {
-      const {
-        error
-      } = await supabase.from('bookings').insert([{
+      let bookingData: any = {
         user_id: user.id,
-        class_id: classItem.class_id || classItem.id,
         booking_date: format(date, 'yyyy-MM-dd'),
         status: 'confirmed'
-      }]);
+      };
+
+      // Check if it's a manual schedule (sporadic class) or regular class
+      if (classItem.day_of_week === null || classItem.day_of_week === undefined) {
+        // This is a manual/sporadic class - use manual_schedule_id
+        bookingData.manual_schedule_id = classItem.class_id || classItem.id;
+      } else {
+        // This is a regular class - use class_id
+        bookingData.class_id = classItem.class_id || classItem.id;
+      }
+
+      const { error } = await supabase.from('bookings').insert([bookingData]);
+      
       if (error) throw error;
+      
       toast({
         title: "¡Reserva confirmada!",
         description: "Tu plaza ha sido reservada exitosamente"
