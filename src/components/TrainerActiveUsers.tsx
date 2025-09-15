@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, User, Phone, Calendar, Activity } from 'lucide-react';
+import { Search, User, Calendar, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ActiveUser {
@@ -12,8 +12,6 @@ interface ActiveUser {
   user_id: string;
   first_name: string;
   last_name: string;
-  phone: string;
-  email: string | null;
   created_at: string;
   is_active: boolean;
   approval_status: string;
@@ -29,10 +27,8 @@ export const TrainerActiveUsers = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('profiles')
+        .from('trainer_user_view')
         .select('*')
-        .eq('is_active', true)
-        .eq('approval_status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -54,9 +50,7 @@ export const TrainerActiveUsers = () => {
   }, []);
 
   const filteredUsers = users.filter(user =>
-    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone.includes(searchTerm) ||
-    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatDate = (dateString: string) => {
@@ -98,7 +92,7 @@ export const TrainerActiveUsers = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Buscar por nombre, teléfono o email..."
+            placeholder="Buscar por nombre..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -116,12 +110,6 @@ export const TrainerActiveUsers = () => {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Apellidos</TableHead>
-                  <TableHead>
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      Teléfono
-                    </div>
-                  </TableHead>
                   <TableHead>
                     <div className="flex items-center gap-1">
                       <Activity className="h-4 w-4" />
@@ -143,7 +131,6 @@ export const TrainerActiveUsers = () => {
                       {user.first_name}
                     </TableCell>
                     <TableCell>{user.last_name}</TableCell>
-                    <TableCell>{user.phone}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         Activo
