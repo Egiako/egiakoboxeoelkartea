@@ -13,8 +13,6 @@ export interface TrainerBookingWithDetails {
     id: string;
     first_name: string;
     last_name: string;
-    phone: string;
-    email: string | null;
     user_id: string;
   };
   class: {
@@ -97,8 +95,8 @@ export const useTrainerBookingManagement = () => {
       const userIds = Array.from(new Set(relevantBookings.map((b: any) => b.user_id)));
 
       const { data: profilesRes, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, phone, email, user_id')
+        .from('trainer_user_view')
+        .select('id, first_name, last_name, user_id')
         .in('user_id', userIds.length ? userIds : ['00000000-0000-0000-0000-000000000000']);
 
       if (profilesError) throw profilesError;

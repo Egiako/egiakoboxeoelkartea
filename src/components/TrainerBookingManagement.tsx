@@ -131,9 +131,6 @@ const TrainerBookingManagement = () => {
                             <strong>Alumno:</strong> {booking.profile?.first_name} {booking.profile?.last_name}
                           </span>
                           <span>
-                            <strong>Teléfono:</strong> {booking.profile?.phone}
-                          </span>
-                          <span>
                             <strong>Clases restantes:</strong> {booking.user_monthly_classes?.remaining_classes || 0}
                           </span>
                         </div>
