@@ -15,6 +15,7 @@ import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX, UserCheck, C
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
 import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagement';
+import ClassManagement from '@/components/ClassManagement';
 interface UserProfile {
   id: string;
   first_name: string;
@@ -234,7 +235,7 @@ const AdminPanel = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="requests" className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
                 Solicitudes
@@ -246,6 +247,10 @@ const AdminPanel = () => {
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <UserX className="h-4 w-4" />
                 Gestión
+              </TabsTrigger>
+              <TabsTrigger value="classes" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Clases
               </TabsTrigger>
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <ClipboardList className="h-4 w-4" />
@@ -259,6 +264,10 @@ const AdminPanel = () => {
 
             <TabsContent value="requests" className="space-y-6">
               <RegistrationRequests />
+            </TabsContent>
+
+            <TabsContent value="classes" className="space-y-6">
+              <ClassManagement />
             </TabsContent>
 
             <TabsContent value="bookings" className="space-y-6">
