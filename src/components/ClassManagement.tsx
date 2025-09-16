@@ -49,10 +49,12 @@ const ClassManagement = () => {
     try {
       setLoading(true);
       
-      // Get all user profiles
+      // Get only active and approved user profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
+        .eq('is_active', true)
+        .eq('approval_status', 'approved')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -144,8 +146,8 @@ const ClassManagement = () => {
 
   const openEditDialog = (user: UserWithClasses) => {
     setEditingUser(user);
-    setNewRemaining(user.monthly_classes?.remaining_classes ?? 12);
-    setNewMax(user.monthly_classes?.max_monthly_classes ?? 12);
+    setNewRemaining(user.monthly_classes?.remaining_classes ?? 10);
+    setNewMax(user.monthly_classes?.max_monthly_classes ?? 10);
   };
 
   const filteredUsers = users.filter(user =>
@@ -198,8 +200,8 @@ const ClassManagement = () => {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => {
-                  const remainingClasses = user.monthly_classes?.remaining_classes ?? 12;
-                  const maxClasses = user.monthly_classes?.max_monthly_classes ?? 12;
+                  const remainingClasses = user.monthly_classes?.remaining_classes ?? 10;
+                  const maxClasses = user.monthly_classes?.max_monthly_classes ?? 10;
                   const hasClasses = remainingClasses > 0;
                   
                   return (
@@ -290,7 +292,7 @@ const ClassManagement = () => {
                                   min="1"
                                   max="50"
                                   value={newMax}
-                                  onChange={(e) => setNewMax(parseInt(e.target.value) || 12)}
+                                  onChange={(e) => setNewMax(parseInt(e.target.value) || 10)}
                                   className="col-span-3"
                                 />
                               </div>
