@@ -791,6 +791,14 @@ export type Database = {
         Args: { target_user_id: string; trainer_id: string }
         Returns: boolean
       }
+      trainer_get_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          first_name: string
+          last_name: string
+          user_id: string
+        }[]
+      }
       trainer_update_attendance: {
         Args: { attendance_status: boolean; booking_uuid: string }
         Returns: {
@@ -805,6 +813,15 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      verify_profiles_security: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          policy_command: string
+          policy_name: string
+          policy_qual: string
+          status: string
+        }[]
       }
     }
     Enums: {

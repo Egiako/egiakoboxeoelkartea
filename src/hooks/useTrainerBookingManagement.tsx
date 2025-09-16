@@ -42,14 +42,7 @@ export const useTrainerBookingManagement = () => {
       
       if (userError || !user) throw new Error('No authenticated user');
       
-      // Get trainer's profile to match with classes they teach
-      const { data: trainerProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('first_name, last_name')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
+      // No longer need trainer's profile - function is secured by RLS and auth
 
       // Only fetch bookings from today onwards (automatic cleanup of old lists)
       const today = new Date().toISOString().split('T')[0];
