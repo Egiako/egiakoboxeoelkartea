@@ -58,7 +58,7 @@ export const useBookingCounts = (dates: string[]) => {
   useEffect(() => {
     fetchBookingCounts();
 
-    // Debounced real-time subscription to prevent rapid updates
+    // Reduced debounce and immediate local state updates to prevent vibrating
     const subscription = supabase
       .channel('booking-counts')
       .on('postgres_changes', {
@@ -71,10 +71,10 @@ export const useBookingCounts = (dates: string[]) => {
           clearTimeout(debounceRef.current);
         }
         
-        // Set new timeout to debounce updates
+        // Reduced debounce to prevent vibrating counter
         debounceRef.current = setTimeout(() => {
           fetchBookingCounts();
-        }, 500); // 500ms debounce
+        }, 100); // Reduced from 500ms to 100ms
       })
       .subscribe();
 
