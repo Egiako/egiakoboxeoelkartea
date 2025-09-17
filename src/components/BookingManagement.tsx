@@ -13,20 +13,31 @@ const BookingManagement = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [updating, setUpdating] = useState<string | null>(null);
 
-  // Group bookings by date
+  // Group bookings by date and time
   const groupedBookings = bookings.reduce((acc, booking) => {
     const date = booking.booking_date;
-    if (!acc[date]) {
-      acc[date] = [];
+    const timeKey = booking.class?.start_time || '00:00';
+    const key = `${date}-${timeKey}`;
+    
+    if (!acc[key]) {
+      acc[key] = {
+        date,
+        time: timeKey,
+        bookings: []
+      };
     }
-    acc[date].push(booking);
+    acc[key].bookings.push(booking);
     return acc;
-  }, {} as Record<string, typeof bookings>);
+  }, {} as Record<string, { date: string; time: string; bookings: typeof bookings }>);
 
-  // Sort dates
-  const sortedDates = Object.keys(groupedBookings).sort((a, b) => 
-    new Date(a).getTime() - new Date(b).getTime()
-  );
+  // Sort by date then by time
+  const sortedKeys = Object.keys(groupedBookings).sort((a, b) => {
+    const [dateA, timeA] = a.split('-');
+    const [dateB, timeB] = b.split('-');
+    const dateCompare = new Date(dateA).getTime() - new Date(dateB).getTime();
+    if (dateCompare !== 0) return dateCompare;
+    return timeA.localeCompare(timeB);
+  });
 
   const handleAttendanceUpdate = async (bookingId: string, attended: boolean) => {
     setUpdating(bookingId);
@@ -61,7 +72,7 @@ const BookingManagement = () => {
     );
   }
 
-  if (sortedDates.length === 0) {
+  if (sortedKeys.length === 0) {
     return (
       <Card className="shadow-boxing">
         <CardHeader>
@@ -87,25 +98,31 @@ const BookingManagement = () => {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        {sortedDates.map((date) => {
-          const dateBookings = groupedBookings[date];
+        {sortedKeys.map((key, index) => {
+          const { date, time, bookings: classBookings } = groupedBookings[key];
           const isEditable = isBookingEditable(date);
           
           return (
-            <div key={date} className="space-y-4">
-              <div className="flex items-center gap-2">
+            <div key={key} className="space-y-4">
+              <div className="flex items-center gap-4">
                 <Calendar className="h-5 w-5 text-boxing-red" />
                 <h3 className="font-oswald font-bold text-lg">
                   {format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}
                 </h3>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-boxing-red" />
+                  <span className="font-oswald font-semibold">
+                    {format(new Date(`2000-01-01T${time}`), 'HH:mm')}
+                  </span>
+                </div>
                 <Badge variant={isEditable ? "default" : "secondary"}>
                   {isEditable ? "Editable" : "Finalizada"}
                 </Badge>
               </div>
               
               <div className="grid gap-4">
-                {dateBookings
-                  .sort((a, b) => a.class?.start_time.localeCompare(b.class?.start_time))
+                {classBookings
+                  .sort((a, b) => (a.profile?.first_name || '').localeCompare(b.profile?.first_name || ''))
                   .map((booking) => (
                     <div
                       key={booking.id}
@@ -113,13 +130,6 @@ const BookingManagement = () => {
                     >
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-boxing-red" />
-                            <span className="font-oswald font-semibold">
-                              {format(new Date(`2000-01-01T${booking.class?.start_time}`), 'HH:mm')} - 
-                              {format(new Date(`2000-01-01T${booking.class?.end_time}`), 'HH:mm')}
-                            </span>
-                          </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-boxing-red" />
                             <span className="text-sm font-medium">{booking.class?.title}</span>
@@ -212,7 +222,7 @@ const BookingManagement = () => {
                   ))}
               </div>
               
-              {date !== sortedDates[sortedDates.length - 1] && <Separator />}
+              {index !== sortedKeys.length - 1 && <Separator />}
             </div>
           );
         })}
