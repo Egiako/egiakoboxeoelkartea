@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Users, ClipboardList, Calendar } from 'lucide-react';
-import { TrainerActiveUsers } from '@/components/TrainerActiveUsers';
+
 import TrainerBookingManagement from '@/components/TrainerBookingManagement';
 import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagement';
 
@@ -60,12 +60,8 @@ const TrainerPanel = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Usuarios Activos
-              </TabsTrigger>
+          <Tabs defaultValue="bookings" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <ClipboardList className="h-4 w-4" />
                 Gestión de Asistencia
@@ -75,10 +71,6 @@ const TrainerPanel = () => {
                 Gestión de Horarios
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="users">
-              <TrainerActiveUsers />
-            </TabsContent>
 
             <TabsContent value="bookings">
               <TrainerBookingManagement />

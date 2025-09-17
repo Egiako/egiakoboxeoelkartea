@@ -9,8 +9,10 @@ import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import heroImage from '@/assets/hero-boxing.jpg';
 import gymInterior from '@/assets/gym-interior.jpg';
-import boxingRing from '@/assets/boxing-ring.jpg';
+import boxingRing from '@/assets/ring.jpg';
 import coachTraining from '@/assets/coach-training.jpg';
+import fuerzaImage from '@/assets/fuerza.jpg';
+import sacosImage from '@/assets/sacos.jpg';
 const Index = () => {
   const beneficios = [{
     icon: <Target className="h-8 w-8" />,
@@ -34,10 +36,10 @@ const Index = () => {
     imagen: boxingRing
   }, {
     nombre: 'Zona de sacos',
-    imagen: gymInterior
+    imagen: sacosImage
   }, {
     nombre: 'Área de fuerza',
-    imagen: coachTraining
+    imagen: fuerzaImage
   }];
   const entrenadores = [{
     nombre: 'Xabi Burgueño',
