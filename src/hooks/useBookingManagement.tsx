@@ -107,16 +107,18 @@ export const useBookingManagement = () => {
 
   const updateAttendance = async (bookingId: string, attended: boolean) => {
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ attended })
-        .eq('id', bookingId);
+      const { error } = await supabase.rpc('admin_update_attendance', {
+        booking_uuid: bookingId,
+        attendance_status: attended
+      });
 
       if (error) throw error;
 
       toast({
         title: "Asistencia actualizada",
-        description: `Se ha marcado como ${attended ? 'asistido' : 'no asistido'}`,
+        description: `Se ha marcado como ${attended ? 'asistido' : 'no asistido'}${
+          !attended ? ' y se ha descontado 1 clase' : ''
+        }`,
       });
 
       // Refresh bookings

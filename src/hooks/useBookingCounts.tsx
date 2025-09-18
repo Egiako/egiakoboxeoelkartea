@@ -58,11 +58,27 @@ export const useBookingCounts = (dates: string[]) => {
   useEffect(() => {
     fetchBookingCounts();
 
-    // Reduced debounce and immediate local state updates to prevent vibrating
+    // Only listen to INSERT and DELETE to avoid unnecessary updates
     const subscription = supabase
-      .channel('booking-counts')
+      .channel('booking-counts-stable')
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
+        schema: 'public',
+        table: 'bookings',
+        filter: `status=eq.confirmed`
+      }, () => {
+        // Clear existing timeout
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+        
+        // Stable update with longer debounce
+        debounceRef.current = setTimeout(() => {
+          fetchBookingCounts();
+        }, 300);
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
         schema: 'public',
         table: 'bookings'
       }, () => {
@@ -71,10 +87,10 @@ export const useBookingCounts = (dates: string[]) => {
           clearTimeout(debounceRef.current);
         }
         
-        // Reduced debounce to prevent vibrating counter
+        // Stable update with longer debounce
         debounceRef.current = setTimeout(() => {
           fetchBookingCounts();
-        }, 100); // Reduced from 500ms to 100ms
+        }, 300);
       })
       .subscribe();
 
