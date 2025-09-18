@@ -355,7 +355,7 @@ export const UnifiedScheduleManagement = () => {
               document.getElementById('schedule-management-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
           }}>
-            <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-4">
+            <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-3">
               <TabsTrigger value="sporadic" className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
                 Clases Esporádicas
@@ -367,10 +367,6 @@ export const UnifiedScheduleManagement = () => {
               <TabsTrigger value="manage" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Gestionar Clases
-              </TabsTrigger>
-              <TabsTrigger value="attendance" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Alumnos y Asistencia
               </TabsTrigger>
             </TabsList>
 
@@ -746,141 +742,7 @@ export const UnifiedScheduleManagement = () => {
             </TabsContent>
 
             {/* D. Alumnos y Asistencia */}
-            <TabsContent value="attendance" className="space-y-6">
-              <AttendanceManagementTab 
-                classes={classes}
-                manualSchedules={manualSchedules}
-              />
-            </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-// Component for attendance management tab
-const AttendanceManagementTab = ({ classes, manualSchedules }: { 
-  classes: Class[], 
-  manualSchedules: ManualSchedule[] 
-}) => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [todayClasses, setTodayClasses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const loadClassesForDate = async (date: Date) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.rpc('get_class_schedule_for_date', {
-        target_date: format(date, 'yyyy-MM-dd')
-      });
-
-      if (error) throw error;
-      
-      // Filter only active classes and sort by time
-      const activeClasses = (data || [])
-        .filter((c: any) => c.is_active)
-        .sort((a: any, b: any) => a.start_time.localeCompare(b.start_time));
-      
-      setTodayClasses(activeClasses);
-    } catch (error) {
-      console.error('Error loading classes for date:', error);
-      setTodayClasses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadClassesForDate(selectedDate);
-  }, [selectedDate]);
-
-  const formatDate = (date: Date) => {
-    return format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
-  };
-
-  const getDayButtons = () => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    return [
-      { date: yesterday, label: 'Ayer' },
-      { date: today, label: 'Hoy' },
-      { date: tomorrow, label: 'Mañana' }
-    ];
-  };
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Gestión de Alumnos y Asistencia
-          </CardTitle>
-          <CardDescription>
-            Visualiza los alumnos inscritos y gestiona la asistencia por clase y horario
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Date Selection */}
-          <div className="mb-6">
-            <Label className="text-base font-medium mb-3 block">Seleccionar día</Label>
-            <div className="flex gap-2 flex-wrap">
-              {getDayButtons().map(({ date, label }) => (
-                <Button
-                  key={label}
-                  variant={format(selectedDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'default' : 'outline'}
-                  onClick={() => setSelectedDate(date)}
-                >
-                  {label}
-                  <br />
-                  <span className="text-xs opacity-70">
-                    {format(date, 'd/M')}
-                  </span>
-                </Button>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Día seleccionado: {formatDate(selectedDate)}
-            </p>
-          </div>
-
-          {/* Classes List */}
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-pulse text-muted-foreground">
-                Cargando clases del día...
-              </div>
-            </div>
-          ) : todayClasses.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-medium text-lg mb-2">No hay clases programadas</h3>
-                <p className="text-muted-foreground">
-                  No hay clases activas para el día {formatDate(selectedDate)}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {todayClasses.map((classItem) => (
-                <ClassEnrollmentList
-                  key={`${classItem.class_id}-${selectedDate.toISOString().split('T')[0]}`}
-                  classId={classItem.class_id}
-                  date={format(selectedDate, 'yyyy-MM-dd')}
-                  className={classItem.title}
-                  startTime={classItem.start_time}
-                  endTime={classItem.end_time}
-                  maxStudents={classItem.max_students}
-                />
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
