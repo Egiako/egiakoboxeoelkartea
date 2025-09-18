@@ -791,6 +791,32 @@ export type Database = {
         Args: { target_user_id: string; trainer_id: string }
         Returns: boolean
       }
+      trainer_get_all_bookings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          attended: boolean
+          booking_date: string
+          class_day_of_week: number
+          class_end_time: string
+          class_id: string
+          class_instructor: string
+          class_start_time: string
+          class_title: string
+          created_at: string
+          id: string
+          manual_class_date: string
+          manual_end_time: string
+          manual_instructor_name: string
+          manual_schedule_id: string
+          manual_start_time: string
+          manual_title: string
+          profile_first_name: string
+          profile_last_name: string
+          remaining_classes: number
+          status: string
+          user_id: string
+        }[]
+      }
       trainer_get_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
