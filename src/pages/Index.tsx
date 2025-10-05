@@ -162,28 +162,14 @@ const Index = () => {
                   <div className="text-center mb-6">
                     <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Mañana</h3>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={`morning1-${index}`} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
-                        <CardContent className="p-4 text-center">
-                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
-                          <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-boxing-red" />
-                            <span className="font-inter font-semibold text-boxing-red">9:00 - 10:00</span>
-                          </div>
-                          <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
-                      <Card key={`morning2-${index}`} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                      <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
                             <Clock className="h-4 w-4 text-boxing-red" />
-                            <span className="font-inter font-semibold text-boxing-red">10:00 - 11:00</span>
+                            <span className="font-inter font-semibold text-boxing-red text-sm">9:00–10:00 o 10:00–11:00</span>
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
                         </CardContent>
