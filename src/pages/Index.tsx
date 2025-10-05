@@ -146,18 +146,25 @@ const Index = () => {
         {/* Mini-horario */}
         <section className="py-20 bg-boxing-grey/30">
           <div className="container mx-auto px-4">
-            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horarios </h2>
+            <h2 className="font-oswald font-bold text-4xl text-center mb-16">Horarios </h2>
             
             <Card className="max-w-5xl mx-auto shadow-boxing">
               <CardContent className="p-8">
+                {/* Aviso aclaratorio */}
+                <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <p className="font-inter text-sm text-center text-yellow-900 dark:text-yellow-100">
+                    ⚠️ El servicio de mañana es de una hora por día. El horario podrá variar entre 9:00–10:00 o 10:00–11:00, según el día.
+                  </p>
+                </div>
+
                 {/* Horarios de Mañana */}
                 <div className="mb-8">
                   <div className="text-center mb-6">
                     <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Mañana</h3>
-                    <p className="font-inter text-muted-foreground">9:00 - 10:00</p>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => <Card key={index} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={`morning1-${index}`} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
@@ -166,7 +173,22 @@ const Index = () => {
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
                         </CardContent>
-                      </Card>)}
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => (
+                      <Card key={`morning2-${index}`} className="bg-gradient-to-br from-boxing-red/10 to-boxing-red/20 border-boxing-red/30 hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-4 text-center">
+                          <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <Clock className="h-4 w-4 text-boxing-red" />
+                            <span className="font-inter font-semibold text-boxing-red">10:00 - 11:00</span>
+                          </div>
+                          <p className="font-inter text-sm text-muted-foreground">Técnica mañana</p>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </div>
 
@@ -176,8 +198,9 @@ const Index = () => {
                     <h3 className="font-oswald font-bold text-2xl text-boxing-red mb-2">Horarios de Tarde</h3>
                     <p className="font-inter text-muted-foreground">18:00 - 19:00</p>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves'].map((dia, index) => <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
+                  <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                    {['Lunes', 'Miércoles'].map((dia, index) => (
+                      <Card key={index} className="bg-gradient-to-br from-boxing-black/10 to-boxing-black/20 border-boxing-black/30 hover:shadow-lg transition-all duration-300">
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
@@ -186,7 +209,8 @@ const Index = () => {
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
                         </CardContent>
-                      </Card>)}
+                      </Card>
+                    ))}
                   </div>
                 </div>
 
