@@ -746,8 +746,11 @@ export type Database = {
           class_id: string
           day_of_week: number
           end_time: string
+          exception_id: string
           instructor: string
           is_active: boolean
+          is_cancelled: boolean
+          is_exception: boolean
           is_special_day: boolean
           max_students: number
           override_notes: string

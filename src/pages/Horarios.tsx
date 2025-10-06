@@ -71,6 +71,13 @@ const Horarios = () => {
         }, () => {
           loadScheduledClasses(selectedDate);
         })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'class_exceptions' 
+        }, () => {
+          loadScheduledClasses(selectedDate);
+        })
         .subscribe();
 
     return () => {
