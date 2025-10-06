@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Calendar, Plus, Trash2, Clock, Repeat, CalendarDays, Eye, EyeOff, Users } from 'lucide-react';
 import { ClassEnrollmentList } from './ClassEnrollmentList';
+import { ClassExceptionsManagement } from './ClassExceptionsManagement';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -355,7 +356,7 @@ export const UnifiedScheduleManagement = () => {
               document.getElementById('schedule-management-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
           }}>
-            <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-3">
+            <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-4">
               <TabsTrigger value="sporadic" className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
                 Clases Esporádicas
@@ -367,6 +368,10 @@ export const UnifiedScheduleManagement = () => {
               <TabsTrigger value="manage" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Gestionar Clases
+              </TabsTrigger>
+              <TabsTrigger value="exceptions" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Excepciones
               </TabsTrigger>
             </TabsList>
 
@@ -741,7 +746,10 @@ export const UnifiedScheduleManagement = () => {
               </Card>
             </TabsContent>
 
-            {/* D. Alumnos y Asistencia */}
+            {/* D. Excepciones de clases periódicas */}
+            <TabsContent value="exceptions" className="space-y-4">
+              <ClassExceptionsManagement />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>

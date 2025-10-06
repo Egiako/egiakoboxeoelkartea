@@ -82,6 +82,62 @@ export type Database = {
           },
         ]
       }
+      class_exceptions: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          created_by: string
+          exception_date: string
+          id: string
+          is_cancelled: boolean | null
+          migrate_bookings: boolean | null
+          notes: string | null
+          override_end_time: string | null
+          override_instructor: string | null
+          override_max_students: number | null
+          override_start_time: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          created_by: string
+          exception_date: string
+          id?: string
+          is_cancelled?: boolean | null
+          migrate_bookings?: boolean | null
+          notes?: string | null
+          override_end_time?: string | null
+          override_instructor?: string | null
+          override_max_students?: number | null
+          override_start_time?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          created_by?: string
+          exception_date?: string
+          id?: string
+          is_cancelled?: boolean | null
+          migrate_bookings?: boolean | null
+          notes?: string | null
+          override_end_time?: string | null
+          override_instructor?: string | null
+          override_max_students?: number | null
+          override_start_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_exceptions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_instructors: {
         Row: {
           class_id: string
@@ -595,6 +651,20 @@ export type Database = {
           user_id: string
         }
       }
+      create_class_exception: {
+        Args: {
+          p_class_id: string
+          p_exception_date: string
+          p_is_cancelled?: boolean
+          p_migrate_bookings?: boolean
+          p_notes?: string
+          p_override_end_time?: string
+          p_override_instructor?: string
+          p_override_max_students?: number
+          p_override_start_time?: string
+        }
+        Returns: Json
+      }
       create_manual_class_schedule: {
         Args: {
           p_class_date: string
@@ -620,6 +690,10 @@ export type Database = {
           title: string
           updated_at: string
         }
+      }
+      delete_class_exception: {
+        Args: { p_exception_id: string }
+        Returns: boolean
       }
       delete_manual_class_schedule: {
         Args: { schedule_id: string }
@@ -708,6 +782,23 @@ export type Database = {
           user_id: string
           year: number
         }
+      }
+      get_schedule_with_exceptions: {
+        Args: { p_end_date: string; p_start_date: string }
+        Returns: {
+          class_id: string
+          day_of_week: number
+          end_time: string
+          exception_date: string
+          exception_id: string
+          instructor: string
+          is_cancelled: boolean
+          is_exception: boolean
+          max_students: number
+          notes: string
+          start_time: string
+          title: string
+        }[]
       }
       has_role: {
         Args: {
