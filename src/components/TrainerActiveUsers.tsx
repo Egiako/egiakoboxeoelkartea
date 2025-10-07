@@ -4,17 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, User, Calendar, Activity } from 'lucide-react';
+import { Search, User, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ActiveUser {
-  id: string;
   user_id: string;
   first_name: string;
   last_name: string;
-  created_at: string;
-  is_active: boolean;
-  approval_status: string;
 }
 
 export const TrainerActiveUsers = () => {
@@ -27,9 +23,7 @@ export const TrainerActiveUsers = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('trainer_user_view')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('trainer_get_profiles');
 
       if (error) throw error;
       setUsers(data || []);
@@ -53,9 +47,6 @@ export const TrainerActiveUsers = () => {
     `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES');
-  };
 
   if (loading) {
     return (
@@ -116,17 +107,11 @@ export const TrainerActiveUsers = () => {
                       Estado
                     </div>
                   </TableHead>
-                  <TableHead>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      Fecha de Registro
-                    </div>
-                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.user_id}>
                     <TableCell className="font-medium">
                       {user.first_name}
                     </TableCell>
@@ -135,9 +120,6 @@ export const TrainerActiveUsers = () => {
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         Activo
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDate(user.created_at)}
                     </TableCell>
                   </TableRow>
                 ))}
