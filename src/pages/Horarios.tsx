@@ -80,8 +80,25 @@ const Horarios = () => {
         })
         .subscribe();
 
+      // Set up real-time subscription for user bookings to prevent flickering
+      const bookingsChannel = user ? supabase
+        .channel('user-bookings-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `user_id=eq.${user.id}`
+        }, () => {
+          // Refresh user bookings when there's a change
+          loadUserData();
+        })
+        .subscribe() : null;
+
     return () => {
       supabase.removeChannel(scheduleChannel);
+      if (bookingsChannel) {
+        supabase.removeChannel(bookingsChannel);
+      }
     };
   }, [user]);
 
@@ -189,11 +206,25 @@ const Horarios = () => {
       });
       return;
     }
+
+    // Check available spots before booking to prevent overbooking
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const availableSpots = getAvailableSpots(classItem.class_id || classItem.id, dateStr, classItem.max_students);
+    
+    if (availableSpots <= 0) {
+      toast({
+        title: "Plazas agotadas",
+        description: "Esta clase ya está completa. Todas las plazas están reservadas.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       let bookingData: any = {
         user_id: user.id,
-        booking_date: format(date, 'yyyy-MM-dd'),
+        booking_date: dateStr,
         status: 'confirmed'
       };
 
@@ -214,12 +245,14 @@ const Horarios = () => {
         title: "¡Reserva confirmada!",
         description: "Tu plaza ha sido reservada exitosamente"
       });
-      await loadUserData();
+      
+      // Don't call loadUserData() - let real-time subscription handle the update
+      // This prevents flickering caused by duplicate state updates
       refreshMonthlyClasses();
     } catch (error: any) {
       let errorMessage = "No se pudo crear la reserva";
       if (error.message.includes('está completa')) {
-        errorMessage = "Esta clase ya tiene el máximo de personas";
+        errorMessage = "Plazas agotadas - Esta clase ya tiene el máximo de personas";
       } else if (error.message.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
       } else if (error.message.includes('antelación')) {
@@ -246,7 +279,9 @@ const Horarios = () => {
         title: "Reserva cancelada",
         description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
       });
-      await loadUserData();
+      
+      // Don't call loadUserData() - let real-time subscription handle the update
+      // This prevents flickering caused by duplicate state updates
       refreshMonthlyClasses();
     } catch (error) {
       toast({
