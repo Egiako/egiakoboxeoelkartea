@@ -10,6 +10,7 @@ interface BookingCount {
 export const useBookingCounts = (dates: string[]) => {
   const [bookingCounts, setBookingCounts] = useState<BookingCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
 
   const fetchBookingCounts = useCallback(async () => {
@@ -20,6 +21,7 @@ export const useBookingCounts = (dates: string[]) => {
     }
 
     try {
+      setIsUpdating(true);
       setLoading(true);
       
       const { data, error } = await supabase
@@ -49,9 +51,10 @@ export const useBookingCounts = (dates: string[]) => {
       setBookingCounts(counts);
     } catch (error) {
       console.error('Error fetching booking counts:', error);
-      setBookingCounts([]);
+      // Keep previous counts to avoid UI flicker on transient errors
     } finally {
       setLoading(false);
+      setIsUpdating(false);
     }
   }, [dates]);
 
@@ -71,6 +74,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) {
           clearTimeout(debounceRef.current);
         }
+        // Mark updating to prevent UI flicker
+        setIsUpdating(true);
         
         // Stable update with longer debounce
         debounceRef.current = setTimeout(() => {
@@ -86,6 +91,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) {
           clearTimeout(debounceRef.current);
         }
+        // Mark updating to prevent UI flicker
+        setIsUpdating(true);
         
         // Stable update with longer debounce
         debounceRef.current = setTimeout(() => {
@@ -120,6 +127,7 @@ export const useBookingCounts = (dates: string[]) => {
   return {
     bookingCounts,
     loading,
+    isUpdating,
     getAvailableSpots,
     getBookedSpots
   };

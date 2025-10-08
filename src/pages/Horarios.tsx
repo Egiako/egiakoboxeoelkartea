@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, MapPin, Phone, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,11 +35,12 @@ const Horarios = () => {
 
   // Get booking counts for the selected date
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
+  const bookingDates = useMemo(() => [dateStr], [dateStr]);
   const {
     getAvailableSpots,
     getBookedSpots,
     loading: countsLoading
-  } = useBookingCounts([dateStr]);
+  } = useBookingCounts(bookingDates);
   useEffect(() => {
     if (user) {
       loadUserData();
