@@ -401,6 +401,34 @@ export type Database = {
       }
     }
     Views: {
+      public_profiles: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["approval_status"] | null
+          first_name: string | null
+          is_active: boolean | null
+          last_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          first_name?: string | null
+          is_active?: boolean | null
+          last_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          first_name?: string | null
+          is_active?: boolean | null
+          last_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       trainer_visible_classes: {
         Row: {
           attended: boolean | null
