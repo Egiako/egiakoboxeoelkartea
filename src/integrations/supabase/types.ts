@@ -857,6 +857,7 @@ export type Database = {
           class_start_time: string
           class_title: string
           created_at: string
+          has_classes_available: boolean
           id: string
           manual_class_date: string
           manual_end_time: string
@@ -866,7 +867,6 @@ export type Database = {
           manual_title: string
           profile_first_name: string
           profile_last_name: string
-          remaining_classes: number
           status: string
           user_id: string
         }[]

@@ -141,7 +141,11 @@ const TrainerBookingManagement = () => {
                             <strong>Alumno:</strong> {booking.profile?.first_name} {booking.profile?.last_name}
                           </span>
                           <span>
-                            <strong>Clases restantes:</strong> {booking.user_monthly_classes?.remaining_classes || 0}
+                            {booking.has_classes_available ? (
+                              <span className="text-green-600 font-medium">✓ Tiene clases disponibles</span>
+                            ) : (
+                              <span className="text-orange-600 font-medium">⚠ Sin clases disponibles</span>
+                            )}
                           </span>
                         </div>
                       </div>

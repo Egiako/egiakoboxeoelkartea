@@ -23,9 +23,7 @@ export interface TrainerBookingWithDetails {
     day_of_week: number;
     instructor: string | null;
   };
-  user_monthly_classes: {
-    remaining_classes: number;
-  } | null;
+  has_classes_available: boolean;
 }
 
 export const useTrainerBookingManagement = () => {
@@ -70,9 +68,7 @@ export const useTrainerBookingManagement = () => {
           day_of_week: booking.class_day_of_week || null,
           instructor: booking.class_instructor || booking.manual_instructor_name
         },
-        user_monthly_classes: {
-          remaining_classes: booking.remaining_classes
-        }
+        has_classes_available: booking.has_classes_available || false
       })) as TrainerBookingWithDetails[];
 
       setBookings(bookingsWithDetails);
