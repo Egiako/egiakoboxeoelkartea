@@ -401,7 +401,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      trainer_visible_classes: {
+        Row: {
+          attended: boolean | null
+          booking_date: string | null
+          booking_id: string | null
+          class_id: string | null
+          manual_schedule_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attended?: boolean | null
+          booking_date?: string | null
+          booking_id?: string | null
+          class_id?: string | null
+          manual_schedule_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attended?: boolean | null
+          booking_date?: string | null
+          booking_id?: string | null
+          class_id?: string | null
+          manual_schedule_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_manual_schedule_id_fkey"
+            columns: ["manual_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "manual_class_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_schedule_override: {
