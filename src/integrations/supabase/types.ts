@@ -73,6 +73,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bookings_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "safe_trainer_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_exceptions: {
@@ -401,7 +408,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_trainer_profiles: {
+        Row: {
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+        }
+        Insert: {
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+        }
+        Update: {
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_schedule_override: {
