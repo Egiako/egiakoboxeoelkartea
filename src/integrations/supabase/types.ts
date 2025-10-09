@@ -429,48 +429,6 @@ export type Database = {
         }
         Relationships: []
       }
-      trainer_visible_classes: {
-        Row: {
-          attended: boolean | null
-          booking_date: string | null
-          booking_id: string | null
-          class_id: string | null
-          manual_schedule_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          attended?: boolean | null
-          booking_date?: string | null
-          booking_id?: string | null
-          class_id?: string | null
-          manual_schedule_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          attended?: boolean | null
-          booking_date?: string | null
-          booking_id?: string | null
-          class_id?: string | null
-          manual_schedule_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_manual_schedule_id_fkey"
-            columns: ["manual_schedule_id"]
-            isOneToOne: false
-            referencedRelation: "manual_class_schedules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Functions: {
       add_schedule_override: {
@@ -830,6 +788,17 @@ export type Database = {
           notes: string
           start_time: string
           title: string
+        }[]
+      }
+      get_trainer_visible_bookings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          attended: boolean
+          booking_date: string
+          booking_id: string
+          class_id: string
+          manual_schedule_id: string
+          user_id: string
         }[]
       }
       has_role: {
