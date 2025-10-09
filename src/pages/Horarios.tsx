@@ -32,6 +32,7 @@ const Horarios = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [datesWithClasses, setDatesWithClasses] = useState<Set<string>>(new Set());
 
   // Get booking counts for the selected date
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -47,6 +48,7 @@ const Horarios = () => {
     }
     loadClasses();
     loadScheduledClasses(selectedDate);
+    loadDatesWithClasses(); // Load dates with classes for calendar coloring
 
       // Set up real-time subscriptions for schedule changes
       const scheduleChannel = supabase
@@ -57,6 +59,7 @@ const Horarios = () => {
           table: 'schedule_overrides' 
         }, () => {
           loadScheduledClasses(selectedDate);
+          loadDatesWithClasses(); // Refresh dates when overrides change
         })
         .on('postgres_changes', { 
           event: '*', 
@@ -64,6 +67,7 @@ const Horarios = () => {
           table: 'manual_class_schedules' 
         }, () => {
           loadScheduledClasses(selectedDate);
+          loadDatesWithClasses(); // Refresh dates when manual schedules change
         })
         .on('postgres_changes', { 
           event: '*', 
@@ -71,6 +75,7 @@ const Horarios = () => {
           table: 'classes' 
         }, () => {
           loadScheduledClasses(selectedDate);
+          loadDatesWithClasses(); // Refresh dates when classes change
         })
         .on('postgres_changes', { 
           event: '*', 
@@ -78,6 +83,7 @@ const Horarios = () => {
           table: 'class_exceptions' 
         }, () => {
           loadScheduledClasses(selectedDate);
+          loadDatesWithClasses(); // Refresh dates when exceptions change
         })
         .subscribe();
 
@@ -179,6 +185,46 @@ const Horarios = () => {
     } catch (error) {
       console.error('Error loading scheduled classes:', error);
       setScheduledClasses([]);
+    }
+  };
+
+  // Load all dates in current month that have classes
+  const loadDatesWithClasses = async () => {
+    try {
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      
+      const startDate = format(firstDayOfMonth, 'yyyy-MM-dd');
+      const endDate = format(lastDayOfMonth, 'yyyy-MM-dd');
+
+      // Get all dates in the month
+      const datesInMonth: string[] = [];
+      for (let d = new Date(firstDayOfMonth); d <= lastDayOfMonth; d.setDate(d.getDate() + 1)) {
+        datesInMonth.push(format(new Date(d), 'yyyy-MM-dd'));
+      }
+
+      // Check each date for classes
+      const datesWithClassesSet = new Set<string>();
+      
+      await Promise.all(
+        datesInMonth.map(async (dateStr) => {
+          const { data, error } = await supabase.rpc('get_class_schedule_for_date', {
+            target_date: dateStr
+          });
+          
+          if (!error && data && data.length > 0) {
+            const hasActiveClasses = data.some((c: any) => c.is_active);
+            if (hasActiveClasses) {
+              datesWithClassesSet.add(dateStr);
+            }
+          }
+        })
+      );
+
+      setDatesWithClasses(datesWithClassesSet);
+    } catch (error) {
+      console.error('Error loading dates with classes:', error);
     }
   };
 
@@ -440,7 +486,12 @@ const Horarios = () => {
                   <CalendarComponent mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} className="rounded-md border scale-110 pointer-events-auto" locale={es} modifiers={{
                 weekend: date => {
                   const day = date.getDay();
-                  return day === 0 || day === 5 || day === 6; // Sunday, Friday, Saturday
+                  const isWeekendDay = day === 0 || day === 5 || day === 6; // Sunday, Friday, Saturday
+                  const dateStr = format(date, 'yyyy-MM-dd');
+                  const hasClasses = datesWithClasses.has(dateStr);
+                  
+                  // Only mark as weekend (red) if it's a weekend day AND has no classes
+                  return isWeekendDay && !hasClasses;
                 }
               }} modifiersStyles={{
                 weekend: {
