@@ -1,5 +1,4 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
-import LocationMap from '@/components/LocationMap';
 
 const Footer = () => {
   return (
@@ -52,9 +51,19 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Mapa con ubicación real */}
+          {/* Ubicación */}
           <div>
-            <LocationMap />
+            <h4 className="font-oswald font-semibold text-lg mb-4">Ubicación</h4>
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!4v1760036963634!6m8!1m7!1sre7GfAfpgp-Zwbm3SfSREg!2m2!1d43.3164278967476!2d-1.971383167159462!3f320.4956414575747!4f-28.554973194118922!5f0.7820865974627469" 
+              width="100%" 
+              height="350" 
+              style={{ border: 0, borderRadius: '12px' }} 
+              allowFullScreen={true}
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Ubicación Egia K.O. Boxeo Elkartea"
+            />
           </div>
         </div>
 
