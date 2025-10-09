@@ -401,34 +401,7 @@ export type Database = {
       }
     }
     Views: {
-      public_profiles: {
-        Row: {
-          approval_status: Database["public"]["Enums"]["approval_status"] | null
-          first_name: string | null
-          is_active: boolean | null
-          last_name: string | null
-          user_id: string | null
-        }
-        Insert: {
-          approval_status?:
-            | Database["public"]["Enums"]["approval_status"]
-            | null
-          first_name?: string | null
-          is_active?: boolean | null
-          last_name?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          approval_status?:
-            | Database["public"]["Enums"]["approval_status"]
-            | null
-          first_name?: string | null
-          is_active?: boolean | null
-          last_name?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       add_schedule_override: {
@@ -772,6 +745,16 @@ export type Database = {
           user_id: string
           year: number
         }
+      }
+      get_public_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          first_name: string
+          is_active: boolean
+          last_name: string
+          user_id: string
+        }[]
       }
       get_schedule_with_exceptions: {
         Args: { p_end_date: string; p_start_date: string }
