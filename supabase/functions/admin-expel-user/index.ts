@@ -13,6 +13,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || '';
 
 export const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
@@ -115,19 +116,26 @@ export const handler = async (req: Request): Promise<Response> => {
 
     console.log('Expelling user:', target_user_id, 'delete_auth:', delete_auth);
 
-    // Step 1: Update profile and cancel bookings via RPC
-    console.log('Calling admin_expel_user RPC...');
-    const { data: expelledProfile, error: rpcErr } = await supabaseAdmin.rpc('admin_expel_user', {
-      target_user_id,
-    });
+// Step 1: Update profile and cancel bookings via RPC with user context
+console.log('Calling admin_expel_user RPC with user JWT...');
+const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || SERVICE_ROLE_KEY, {
+  global: { headers: { Authorization: `Bearer ${token}` } },
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
-    if (rpcErr) {
-      console.error('RPC error:', rpcErr);
-      return new Response(JSON.stringify({ error: 'Error al expulsar usuario', details: rpcErr.message }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
+const { data: expelledProfile, error: rpcErr } = await supabaseUser.rpc('admin_expel_user', {
+  target_user_id,
+});
+
+if (rpcErr) {
+  console.error('RPC error:', rpcErr);
+  const msg = rpcErr.message || '';
+  const status = msg.includes('Usuario no encontrado') ? 404 : (msg.includes('Solo los administradores') ? 403 : 400);
+  return new Response(JSON.stringify({ error: 'Error en expulsión', details: msg }), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
+}
 
     console.log('Profile updated successfully');
 
@@ -172,20 +180,27 @@ export const handler = async (req: Request): Promise<Response> => {
       const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(target_user_id);
       
       if (delErr) {
-        console.error('Delete user error:', delErr, '- attempting to rename instead');
-        // If deletion fails, rename email and flag to free the original email
-        try {
-          await renameAndFlag();
-          authAction = 'flagged';
-        } catch (e: any) {
-          console.error('Failed to rename after delete failure:', e);
-          return new Response(JSON.stringify({ 
-            error: 'No se pudo eliminar ni renombrar al usuario', 
-            details: `Delete error: ${delErr.message}, Rename error: ${e.message}` 
-          }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          });
+        const delMsg = delErr.message || '';
+        const delStatus = (delErr as any).status;
+        if (delStatus === 404 || delMsg.toLowerCase().includes('not found')) {
+          console.warn('Auth user not found, skipping deletion');
+          authAction = 'skipped';
+        } else {
+          console.error('Delete user error:', delErr, '- attempting to rename instead');
+          // If deletion fails, rename email and flag to free the original email
+          try {
+            await renameAndFlag();
+            authAction = 'flagged';
+          } catch (e: any) {
+            console.error('Failed to rename after delete failure:', e);
+            return new Response(JSON.stringify({ 
+              error: 'No se pudo eliminar ni renombrar al usuario', 
+              details: `Delete error: ${delMsg}, Rename error: ${e.message}` 
+            }), {
+              status: 500,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
         }
       } else {
         console.log('Auth user deleted successfully');
