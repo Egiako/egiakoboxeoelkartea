@@ -340,16 +340,43 @@ const Horarios = () => {
     setLoading(false);
   };
 
-  // Check if user already has a booking for this class
+  // Check if user already has a booking for this class (both regular and manual schedules)
   const isAlreadyBooked = (classItem: any) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return userBookings.some(b => b.class_id === (classItem.class_id || classItem.id) && b.booking_date === dateStr);
+    const classIdToCheck = classItem.class_id || classItem.id;
+    
+    // Check if it's a manual schedule (sporadic class) or regular class
+    const isManualSchedule = classItem.day_of_week === null || classItem.day_of_week === undefined;
+    
+    return userBookings.some(b => {
+      if (isManualSchedule) {
+        // For manual schedules, check manual_schedule_id
+        return b.manual_schedule_id === classIdToCheck && b.booking_date === dateStr;
+      } else {
+        // For regular classes, check class_id
+        return b.class_id === classIdToCheck && b.booking_date === dateStr;
+      }
+    });
   };
 
-  // Get booking ID for cancellation
+  // Get booking ID for cancellation (both regular and manual schedules)
   const getBookingId = (classItem: any) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const booking = userBookings.find(b => b.class_id === (classItem.class_id || classItem.id) && b.booking_date === dateStr);
+    const classIdToCheck = classItem.class_id || classItem.id;
+    
+    // Check if it's a manual schedule (sporadic class) or regular class
+    const isManualSchedule = classItem.day_of_week === null || classItem.day_of_week === undefined;
+    
+    const booking = userBookings.find(b => {
+      if (isManualSchedule) {
+        // For manual schedules, check manual_schedule_id
+        return b.manual_schedule_id === classIdToCheck && b.booking_date === dateStr;
+      } else {
+        // For regular classes, check class_id
+        return b.class_id === classIdToCheck && b.booking_date === dateStr;
+      }
+    });
+    
     return booking?.id || '';
   };
 
