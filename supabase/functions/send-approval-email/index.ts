@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -20,6 +21,48 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify JWT and admin role
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      console.error('Authentication failed:', userErr);
+      return new Response(JSON.stringify({ error: 'No autorizado' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // Check admin role
+    const { data: roles, error: rolesErr } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userData.user.id);
+
+    if (rolesErr) {
+      console.error('Error checking roles:', rolesErr);
+      return new Response(JSON.stringify({ error: 'Error verificando permisos' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    const isAdmin = (roles || []).some((r: any) => r.role === 'admin');
+    if (!isAdmin) {
+      console.error('User is not admin:', userData.user.id);
+      return new Response(JSON.stringify({ error: 'Solo administradores pueden enviar emails de aprobación' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // User is authenticated admin, proceed with email
     const { email, name, status }: EmailRequest = await req.json();
 
     const isApproved = status === 'approved';
@@ -120,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailContent,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully by admin:", userData.user.email, "to:", email);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
