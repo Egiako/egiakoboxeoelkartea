@@ -45,7 +45,6 @@ const Footer = () => {
                 <div>
                   <div>L–V: 10:00–13:00</div>
                   <div className="ml-6">17:00–21:00</div>
-                  <div>S: 10:00–13:00</div>
                 </div>
               </div>
             </div>

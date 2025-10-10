@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Target, Shield, TrendingUp } from 'lucide-react';
+import { Users, Target, Shield, TrendingUp, Award } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import coachImage from '@/assets/coach-training.jpg';
 
 const SobreNosotros = () => {
 
@@ -140,27 +139,50 @@ const SobreNosotros = () => {
         </section>
 
         {/* Equipo */}
-        <section className="py-20">
+        <section className="py-20 bg-boxing-grey/30 relative overflow-hidden">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 -z-10 opacity-10">
+            <div className="absolute top-20 left-10 w-40 h-40 border-2 border-boxing-red rotate-45"></div>
+            <div className="absolute bottom-20 right-10 w-40 h-40 border-2 border-boxing-red rotate-45"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 border border-boxing-red/30 rotate-12"></div>
+          </div>
+
           <div className="container mx-auto px-4">
             <h2 className="font-oswald font-bold text-4xl text-center mb-16">Nuestro Equipo</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {equipo.map((miembro, index) => (
-                <Card key={index} className="shadow-boxing hover:shadow-glow transition-all duration-300">
-                  <CardContent className="p-8 text-center">
-                    <div className="w-32 h-32 mx-auto mb-6 bg-boxing-grey rounded-full overflow-hidden">
-                      <img 
-                        src={coachImage} 
-                        alt={miembro.nombre}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {equipo.map((miembro, index) => (
+                  <Card key={index} className="shadow-boxing hover:shadow-glow transition-all duration-300 group relative overflow-hidden">
+                    {/* Decorative corner accent */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-boxing-red/10 to-transparent"></div>
                     
-                    <h3 className="font-oswald font-bold text-xl mb-2">{miembro.nombre}</h3>
-                    <p className="font-inter text-boxing-red font-semibold">{miembro.especialidad}</p>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="p-10 text-center relative">
+                      {/* Icon container with animated background */}
+                      <div className="relative mx-auto mb-6 w-24 h-24 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-gradient-to-br from-boxing-red/20 to-boxing-red/5 rounded-full group-hover:scale-110 transition-transform duration-300"></div>
+                        <div className="absolute inset-2 bg-background rounded-full"></div>
+                        <Award className="h-12 w-12 text-boxing-red relative z-10 group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      
+                      <h3 className="font-oswald font-bold text-2xl mb-2">{miembro.nombre}</h3>
+                      <p className="font-inter text-boxing-red font-semibold text-lg">{miembro.especialidad}</p>
+                      
+                      {/* Bottom accent line */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-transparent via-boxing-red to-transparent group-hover:w-full transition-all duration-500"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Central divider with boxing gloves icon */}
+              <div className="flex items-center justify-center gap-4 mt-12">
+                <div className="h-px bg-gradient-to-r from-transparent via-boxing-red to-boxing-red flex-1"></div>
+                <div className="w-12 h-12 rounded-full bg-boxing-red/10 flex items-center justify-center">
+                  <Target className="h-6 w-6 text-boxing-red" />
+                </div>
+                <div className="h-px bg-gradient-to-r from-boxing-red to-transparent flex-1"></div>
+              </div>
             </div>
           </div>
         </section>
