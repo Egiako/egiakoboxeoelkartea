@@ -87,11 +87,31 @@ const AdminPanel = () => {
     try {
       setLoading(true);
 
-      // Fetch all user profiles
+      // Fetch all user profiles with explicit fields
       const {
         data: profilesData,
         error: profilesError
-      } = await supabase.from('profiles').select('*').order('created_at', {
+      } = await supabase.from('profiles').select(`
+        id,
+        user_id,
+        first_name,
+        last_name,
+        phone,
+        email,
+        dni,
+        birth_date,
+        objective,
+        created_at,
+        approval_status,
+        is_active,
+        consent_signed,
+        consent_signed_at,
+        consent_signature_url,
+        consent_method,
+        consent_signed_ip,
+        consent_user_agent,
+        consent_text_version
+      `).order('created_at', {
         ascending: false
       });
       if (profilesError) throw profilesError;
