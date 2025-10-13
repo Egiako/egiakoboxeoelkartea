@@ -45,8 +45,7 @@ const Registrate = () => {
     const { error, data } = await signUp(email, password, {
       first_name: firstName,
       last_name: lastName,
-      phone,
-      objective
+      phone
     });
 
     console.log('Registration result:', { error, data });
@@ -59,6 +58,7 @@ const Registrate = () => {
           .update({
             dni,
             birth_date: birthDate,
+            objective,
             consent_signed: true,
             consent_signed_at: new Date().toISOString()
           })
@@ -67,7 +67,7 @@ const Registrate = () => {
         if (updateError) {
           console.error('Error updating profile with consent:', updateError);
         } else {
-          console.log('Profile updated with consent data');
+          console.log('Profile updated with consent and objective data');
         }
       }, 1000);
 

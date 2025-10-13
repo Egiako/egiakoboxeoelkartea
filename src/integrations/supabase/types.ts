@@ -270,6 +270,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string
@@ -288,6 +289,7 @@ export type Database = {
           is_active?: boolean
           is_reregistration?: boolean | null
           last_name: string
+          objective?: string | null
           phone: string
           previous_status?: string | null
           updated_at?: string
@@ -306,6 +308,7 @@ export type Database = {
           is_active?: boolean
           is_reregistration?: boolean | null
           last_name?: string
+          objective?: string | null
           phone?: string
           previous_status?: string | null
           updated_at?: string
@@ -476,6 +479,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string
@@ -497,6 +501,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string
@@ -522,6 +527,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string
@@ -554,6 +560,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string
@@ -575,6 +582,7 @@ export type Database = {
           is_active: boolean
           is_reregistration: boolean | null
           last_name: string
+          objective: string | null
           phone: string
           previous_status: string | null
           updated_at: string

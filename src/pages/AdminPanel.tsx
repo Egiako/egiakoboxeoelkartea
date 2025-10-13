@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX, UserCheck, ClipboardList, Clock, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Users, Trash2, Search, Calendar, Phone, Mail, User, UserX, UserCheck, ClipboardList, Clock, Settings, Eye, Download, FileText } from 'lucide-react';
 import BookingManagement from '@/components/BookingManagement';
 import RegistrationRequests from '@/components/RegistrationRequests';
 import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagement';
@@ -30,6 +31,7 @@ interface UserProfile {
   birth_date?: string;
   consent_signed?: boolean;
   consent_signed_at?: string;
+  objective?: string;
 }
 interface BookingWithDetails {
   id: string;
@@ -49,6 +51,7 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('requests');
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const {
     toast
   } = useToast();
@@ -528,6 +531,132 @@ const AdminPanel = () => {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={() => setSelectedUser(user)}>
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      Ver detalles
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-2xl">Información del Alumno</DialogTitle>
+                                      <DialogDescription>
+                                        Información completa de {user.first_name} {user.last_name}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    
+                                    <div className="space-y-6 py-4">
+                                      {/* Datos Personales */}
+                                      <div className="space-y-3">
+                                        <h3 className="font-semibold text-lg border-b pb-2">Datos Personales</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Nombre completo</p>
+                                            <p className="font-medium">{user.first_name} {user.last_name}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">DNI</p>
+                                            <p className="font-medium">{user.dni || 'No proporcionado'}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Email</p>
+                                            <p className="font-medium">{user.email || 'No disponible'}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Teléfono</p>
+                                            <p className="font-medium">{user.phone}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Fecha de nacimiento</p>
+                                            <p className="font-medium">
+                                              {user.birth_date 
+                                                ? new Date(user.birth_date).toLocaleDateString('es-ES', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                  })
+                                                : 'No proporcionada'}
+                                            </p>
+                                          </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Fecha de registro</p>
+                                            <p className="font-medium">
+                                              {new Date(user.created_at).toLocaleDateString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                              })}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Objetivo */}
+                                      <div className="space-y-3">
+                                        <h3 className="font-semibold text-lg border-b pb-2">Objetivo de Entrenamiento</h3>
+                                        <div className="bg-muted/50 rounded-lg p-4">
+                                          <p className="font-medium">
+                                            {user.objective === 'forma' && '🎯 Ponerme en forma'}
+                                            {user.objective === 'competir' && '🥊 Competir'}
+                                            {user.objective === 'tecnica' && '📚 Aprender técnica'}
+                                            {!user.objective && 'No especificado'}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      {/* Consentimiento */}
+                                      <div className="space-y-3">
+                                        <h3 className="font-semibold text-lg border-b pb-2">Consentimiento Informado</h3>
+                                        <div className="space-y-3">
+                                          <div className="flex items-center justify-between bg-muted/50 rounded-lg p-4">
+                                            <div className="flex items-center gap-3">
+                                              <FileText className="h-5 w-5 text-muted-foreground" />
+                                              <div>
+                                                <p className="font-medium">Estado del consentimiento</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                  {user.consent_signed 
+                                                    ? `Firmado el ${new Date(user.consent_signed_at || '').toLocaleDateString('es-ES')}`
+                                                    : 'No firmado'}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <Badge variant={user.consent_signed ? "default" : "secondary"} className={user.consent_signed ? "bg-green-600" : ""}>
+                                              {user.consent_signed ? '✓ Firmado' : 'Sin firmar'}
+                                            </Badge>
+                                          </div>
+                                          
+                                          {user.consent_signed && (
+                                            <Button 
+                                              variant="outline" 
+                                              className="w-full"
+                                              onClick={() => window.open('/documents/consentimiento-informado.pdf', '_blank')}
+                                            >
+                                              <Download className="h-4 w-4 mr-2" />
+                                              Descargar documento de consentimiento
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Estado de la cuenta */}
+                                      <div className="space-y-3">
+                                        <h3 className="font-semibold text-lg border-b pb-2">Estado de la Cuenta</h3>
+                                        <div className="flex gap-4">
+                                          <Badge variant={user.is_active ? "default" : "destructive"}>
+                                            {user.is_active ? "✓ Cuenta Activa" : "✗ Cuenta Inactiva"}
+                                          </Badge>
+                                          <Badge variant="outline">
+                                            {user.approval_status === 'approved' && '✓ Aprobado'}
+                                            {user.approval_status === 'pending' && '⏳ Pendiente'}
+                                            {user.approval_status === 'rejected' && '✗ Rechazado'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+
                                 {user.is_active ? <>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
