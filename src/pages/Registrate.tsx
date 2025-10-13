@@ -6,12 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mail, Lock, User, Phone, Target, CheckCircle, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Mail, Lock, User, Phone, Target, CheckCircle, Clock, Calendar, FileText, ExternalLink } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 const Registrate = () => {
   const { user, signUp, signIn } = useAuth();
@@ -34,20 +36,41 @@ const Registrate = () => {
     const firstName = formData.get('nombre') as string;
     const lastName = formData.get('apellidos') as string;
     const phone = formData.get('telefono') as string;
+    const dni = formData.get('dni') as string;
+    const birthDate = formData.get('birth_date') as string;
     const objective = formData.get('objetivo') as string;
 
     console.log('Registering user:', email);
 
-    const { error } = await signUp(email, password, {
+    const { error, data } = await signUp(email, password, {
       first_name: firstName,
       last_name: lastName,
       phone,
       objective
     });
 
-    console.log('Registration result:', { error });
+    console.log('Registration result:', { error, data });
 
-    if (!error) {
+    if (!error && data?.user) {
+      // Wait a bit for the trigger to create the profile, then update it with consent data
+      setTimeout(async () => {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            dni,
+            birth_date: birthDate,
+            consent_signed: true,
+            consent_signed_at: new Date().toISOString()
+          })
+          .eq('user_id', data.user.id);
+
+        if (updateError) {
+          console.error('Error updating profile with consent:', updateError);
+        } else {
+          console.log('Profile updated with consent data');
+        }
+      }, 1000);
+
       setRegistrationSuccess(true);
       console.log('Registration successful, showing approval message...');
     }
@@ -228,6 +251,36 @@ const Registrate = () => {
                       </div>
 
                       <div>
+                        <Label htmlFor="dni" className="font-inter font-semibold">DNI / Documento de identidad *</Label>
+                        <div className="relative">
+                          <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                           <Input 
+                             id="dni"
+                             name="dni"
+                             type="text"
+                             placeholder="12345678A"
+                             className="pl-10"
+                             required
+                           />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="birth_date" className="font-inter font-semibold">Fecha de nacimiento *</Label>
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                           <Input 
+                             id="birth_date"
+                             name="birth_date"
+                             type="date"
+                             className="pl-10"
+                             required
+                             max={new Date().toISOString().split('T')[0]}
+                           />
+                        </div>
+                      </div>
+
+                      <div>
                         <Label htmlFor="password" className="font-inter font-semibold">Contraseña *</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -257,6 +310,67 @@ const Registrate = () => {
                                <SelectItem value="tecnica">Aprender técnica</SelectItem>
                              </SelectContent>
                            </Select>
+                        </div>
+                      </div>
+
+                      {/* Consentimiento informado */}
+                      <div className="border border-border rounded-lg p-4 bg-muted/20 space-y-3">
+                        <div className="flex items-start gap-2">
+                          <FileText className="h-5 w-5 text-boxing-red mt-0.5 flex-shrink-0" />
+                          <div className="space-y-2 flex-1">
+                            <h4 className="font-semibold font-oswald text-sm">Consentimiento Informado</h4>
+                            <p className="text-xs text-muted-foreground font-inter leading-relaxed">
+                              Al participar en actividades de boxeo, reconozco los riesgos inherentes a este deporte de contacto. 
+                              Me comprometo a seguir las normas de seguridad y las instrucciones de los entrenadores en todo momento.
+                            </p>
+                            
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full font-inter text-xs mt-2"
+                                >
+                                  <ExternalLink className="h-3 w-3 mr-2" />
+                                  Ver documento completo (PDF)
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[90vh]">
+                                <DialogHeader>
+                                  <DialogTitle className="font-oswald">Consentimiento Informado - EgiaK.O. Boxeo</DialogTitle>
+                                  <DialogDescription className="font-inter">
+                                    Lee detenidamente el documento completo antes de aceptar
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="overflow-auto max-h-[70vh] border rounded-lg">
+                                  <iframe 
+                                    src="/documents/consentimiento-informado.pdf" 
+                                    className="w-full h-[70vh]"
+                                    title="Consentimiento Informado"
+                                  />
+                                </div>
+                                <div className="flex justify-center gap-2 pt-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => window.open('/documents/consentimiento-informado.pdf', '_blank')}
+                                    className="font-inter text-sm"
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Abrir en nueva pestaña
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+
+                            <div className="flex items-start space-x-2 mt-3">
+                              <Checkbox id="consent" required />
+                              <Label htmlFor="consent" className="text-xs font-inter leading-relaxed cursor-pointer">
+                                He leído y acepto el consentimiento informado para la práctica de boxeo *
+                              </Label>
+                            </div>
+                          </div>
                         </div>
                       </div>
 

@@ -259,7 +259,11 @@ export type Database = {
       profiles: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string
@@ -273,7 +277,11 @@ export type Database = {
         }
         Insert: {
           approval_status?: Database["public"]["Enums"]["approval_status"]
+          birth_date?: string | null
+          consent_signed?: boolean | null
+          consent_signed_at?: string | null
           created_at?: string
+          dni?: string | null
           email?: string | null
           first_name: string
           id?: string
@@ -287,7 +295,11 @@ export type Database = {
         }
         Update: {
           approval_status?: Database["public"]["Enums"]["approval_status"]
+          birth_date?: string | null
+          consent_signed?: boolean | null
+          consent_signed_at?: string | null
           created_at?: string
+          dni?: string | null
           email?: string | null
           first_name?: string
           id?: string
@@ -453,7 +465,11 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string
@@ -470,7 +486,11 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string
@@ -491,7 +511,11 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string
@@ -519,7 +543,11 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string
@@ -536,7 +564,11 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
+          birth_date: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
           created_at: string
+          dni: string | null
           email: string | null
           first_name: string
           id: string

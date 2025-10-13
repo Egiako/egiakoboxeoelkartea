@@ -26,6 +26,10 @@ interface UserProfile {
   email?: string;
   approval_status: 'pending' | 'approved' | 'rejected';
   is_active: boolean;
+  dni?: string;
+  birth_date?: string;
+  consent_signed?: boolean;
+  consent_signed_at?: string;
 }
 interface BookingWithDetails {
   id: string;
@@ -314,6 +318,8 @@ const AdminPanel = () => {
                             </div>
                           </TableHead>
                           <TableHead>Estado</TableHead>
+                          <TableHead>DNI</TableHead>
+                          <TableHead>Consentimiento</TableHead>
                           <TableHead>
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
@@ -328,8 +334,15 @@ const AdminPanel = () => {
                               {user.first_name} {user.last_name}
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
+                            <TableCell>{user.dni || '-'}</TableCell>
                             <TableCell>
-                              <Badge variant="default">Activo</Badge>
+                              {user.consent_signed ? (
+                                <Badge variant="default" className="bg-green-600">
+                                  ✓ Firmado
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">Sin firmar</Badge>
+                              )}
                             </TableCell>
                             <TableCell>
                               {new Date(user.created_at).toLocaleDateString('es-ES', {
@@ -340,7 +353,7 @@ const AdminPanel = () => {
                             </TableCell>
                           </TableRow>)}
                         {filteredActiveUsers.length === 0 && <TableRow>
-                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               {activeUsers.length === 0 ? "No hay usuarios activos en el sistema" : "No se encontraron usuarios activos que coincidan con la búsqueda"}
                             </TableCell>
                           </TableRow>}
