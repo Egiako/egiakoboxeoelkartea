@@ -566,7 +566,7 @@ const Horarios = () => {
                     <p className="text-muted-foreground font-inter">
                       {new Date().getDay() === 0 
                         ? 'Los domingos se habilitan las reservas para la semana siguiente. Selecciona una fecha de esta semana o la próxima.'
-                        : `Las reservas para esta semana están disponibles hasta el ${format(new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 7)), 'EEEE d', { locale: es })}. Las reservas para la próxima semana se habilitan el domingo.`}
+                        : 'Las reservas para la fecha seleccionada se habilitan el domingo.'}
                     </p>
                   </CardContent>
                 </Card> : <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
