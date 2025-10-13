@@ -4,12 +4,14 @@ import { Menu, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useTrainerLanguage } from "@/hooks/useTrainerLanguage";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isAdmin, isTrainer } = useUserRole();
+  const { language } = useTrainerLanguage();
 
   const navItems = [
     { name: 'Inicio', href: '/' },
@@ -80,7 +82,7 @@ const Navigation = () => {
                   >
                     <div className="flex items-center gap-2">
                       <Settings className="h-4 w-4" />
-                      Entrenador
+                      {language === 'en' ? 'Coach' : 'Entrenador'}
                     </div>
                   </Link>
                 )}
@@ -162,7 +164,7 @@ const Navigation = () => {
                     >
                       <div className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
-                        Entrenador
+                        {language === 'en' ? 'Coach' : 'Entrenador'}
                       </div>
                     </Link>
                   )}

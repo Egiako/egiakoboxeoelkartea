@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTrainerLanguage } from '@/hooks/useTrainerLanguage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +68,7 @@ export const UnifiedScheduleManagement = () => {
   const [scheduleOverrides, setScheduleOverrides] = useState<ScheduleOverride[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { t, language } = useTrainerLanguage();
 
   // Form states
   const [sporadicForm, setSporadicForm] = useState({
@@ -139,8 +141,8 @@ export const UnifiedScheduleManagement = () => {
   const handleAddSporadicClass = async () => {
     if (!sporadicForm.title || !sporadicForm.date || !sporadicForm.startTime || !sporadicForm.endTime) {
       toast({
-        title: "Error",
-        description: "Por favor completa todos los campos obligatorios",
+        title: t.scheduleManagement.errorRequired,
+        description: t.scheduleManagement.errorRequired,
         variant: "destructive",
       });
       return;
@@ -161,8 +163,8 @@ export const UnifiedScheduleManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Clase esporádica agregada correctamente",
+        title: language === 'en' ? 'Success' : 'Éxito',
+        description: t.scheduleManagement.successAdded,
       });
 
       setSporadicForm({
@@ -179,8 +181,8 @@ export const UnifiedScheduleManagement = () => {
     } catch (error: any) {
       console.error('Error adding sporadic class:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo agregar la clase esporádica",
+        title: language === 'en' ? 'Error' : 'Error',
+        description: error.message || t.scheduleManagement.errorGeneric,
         variant: "destructive",
       });
     }
@@ -190,8 +192,8 @@ export const UnifiedScheduleManagement = () => {
   const handleAddPeriodicClass = async () => {
     if (!periodicForm.title || periodicForm.selectedDays.length === 0 || !periodicForm.startTime || !periodicForm.endTime) {
       toast({
-        title: "Error",
-        description: "Por favor completa todos los campos obligatorios",
+        title: t.scheduleManagement.errorRequired,
+        description: t.scheduleManagement.errorRequired,
         variant: "destructive",
       });
       return;
@@ -216,8 +218,8 @@ export const UnifiedScheduleManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `${periodicForm.selectedDays.length} clase(s) periódica(s) agregada(s) correctamente`,
+        title: language === 'en' ? 'Success' : 'Éxito',
+        description: `${periodicForm.selectedDays.length} ${language === 'en' ? 'recurring class(es) added successfully' : 'clase(s) periódica(s) agregada(s) correctamente'}`,
       });
 
       setPeriodicForm({
@@ -233,8 +235,8 @@ export const UnifiedScheduleManagement = () => {
     } catch (error: any) {
       console.error('Error adding periodic class:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo agregar la clase periódica",
+        title: language === 'en' ? 'Error' : 'Error',
+        description: error.message || t.scheduleManagement.errorGeneric,
         variant: "destructive",
       });
     }
@@ -257,8 +259,8 @@ export const UnifiedScheduleManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `Clase ${!isActive ? 'activada' : 'desactivada'} correctamente`,
+        title: language === 'en' ? 'Success' : 'Éxito',
+        description: `${language === 'en' ? 'Class' : 'Clase'} ${!isActive ? (language === 'en' ? 'activated' : 'activada') : (language === 'en' ? 'deactivated' : 'desactivada')} ${language === 'en' ? 'successfully' : 'correctamente'}`,
       });
 
       // Refresh data without changing focus or scroll position
@@ -266,8 +268,8 @@ export const UnifiedScheduleManagement = () => {
     } catch (error: any) {
       console.error('Error toggling periodic class:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo modificar la clase",
+        title: language === 'en' ? 'Error' : 'Error',
+        description: error.message || t.scheduleManagement.errorGeneric,
         variant: "destructive",
       });
     }
@@ -282,16 +284,16 @@ export const UnifiedScheduleManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Clase esporádica eliminada correctamente",
+        title: language === 'en' ? 'Success' : 'Éxito',
+        description: t.scheduleManagement.successDeleted,
       });
 
       fetchData();
     } catch (error: any) {
       console.error('Error deleting sporadic class:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo eliminar la clase esporádica",
+        title: language === 'en' ? 'Error' : 'Error',
+        description: error.message || t.scheduleManagement.errorGeneric,
         variant: "destructive",
       });
     }
@@ -306,16 +308,16 @@ export const UnifiedScheduleManagement = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Clase periódica eliminada correctamente",
+        title: language === 'en' ? 'Success' : 'Éxito',
+        description: t.scheduleManagement.successDeleted,
       });
 
       fetchData();
     } catch (error: any) {
       console.error('Error deleting periodic class:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo eliminar la clase periódica",
+        title: language === 'en' ? 'Error' : 'Error',
+        description: error.message || t.scheduleManagement.errorGeneric,
         variant: "destructive",
       });
     }
@@ -332,7 +334,7 @@ export const UnifiedScheduleManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-pulse text-muted-foreground">Cargando gestión de horarios...</div>
+        <div className="animate-pulse text-muted-foreground">{t.scheduleManagement.loading}</div>
       </div>
     );
   }
@@ -343,10 +345,10 @@ export const UnifiedScheduleManagement = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Gestión de Horarios
+            {t.scheduleManagement.title}
           </CardTitle>
           <CardDescription>
-            Administra clases esporádicas, periódicas y suprime clases existentes
+            {t.scheduleManagement.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -359,19 +361,19 @@ export const UnifiedScheduleManagement = () => {
             <TabsList id="schedule-management-tabs" className="grid w-full grid-cols-4">
               <TabsTrigger value="sporadic" className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4" />
-                Clases Esporádicas
+                {t.scheduleManagement.sporadicTab}
               </TabsTrigger>
               <TabsTrigger value="periodic" className="flex items-center gap-2">
                 <Repeat className="h-4 w-4" />
-                Clases Periódicas
+                {t.scheduleManagement.periodicTab}
               </TabsTrigger>
               <TabsTrigger value="manage" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Gestionar Clases
+                {t.scheduleManagement.manageTab}
               </TabsTrigger>
               <TabsTrigger value="exceptions" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Excepciones
+                {t.scheduleManagement.exceptionsTab}
               </TabsTrigger>
             </TabsList>
 
@@ -381,10 +383,10 @@ export const UnifiedScheduleManagement = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Plus className="h-4 w-4" />
-                    Agregar Clase Esporádica
+                    {t.scheduleManagement.addSporadic}
                   </CardTitle>
                   <CardDescription>
-                    Añadir una clase puntual en cualquier día y hora
+                    {t.scheduleManagement.sporadicDescription}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

@@ -302,9 +302,10 @@ const Horarios = () => {
         errorMessage = "Plazas agotadas - Esta clase ya tiene el máximo de personas";
       } else if (error.message.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
-      } else if (error.message.includes('antelación')) {
-        errorMessage = "Solo puedes reservar clases de la próxima semana. Cada domingo se abren las reservas.";
-      }
+  // Check if booking_date is within the allowed window
+  IF NEW.booking_date < v_next_monday OR NEW.booking_date > v_next_sunday THEN
+    RAISE EXCEPTION 'Las reservas solo están disponibles para la próxima semana (del % al %). Cada domingo se habilitan las reservas para la semana siguiente.', 
+      v_next_monday, v_next_sunday;
       toast({
         title: "Error al reservar",
         description: errorMessage,
