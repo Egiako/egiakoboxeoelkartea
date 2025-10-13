@@ -204,17 +204,54 @@ serve(async (req) => {
 
     if (profile.consent_signature_url) {
       try {
-        let imageBytes: Uint8Array;
+        let imageBytes: Uint8Array | null = null;
         const sigUrl: string = profile.consent_signature_url as string;
+
         if (sigUrl.startsWith('data:')) {
+          // Data URL (base64)
           const base64 = sigUrl.split(',')[1] ?? '';
           const bin = atob(base64);
-          imageBytes = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) imageBytes[i] = bin.charCodeAt(i);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          imageBytes = bytes;
         } else {
-          const res = await fetch(sigUrl);
-          const ab = await res.arrayBuffer();
-          imageBytes = new Uint8Array(ab);
+          // Try direct fetch first (works for public URLs and valid signed URLs)
+          try {
+            const res = await fetch(sigUrl);
+            if (res.ok) {
+              const ab = await res.arrayBuffer();
+              imageBytes = new Uint8Array(ab);
+            }
+          } catch (_) {
+            // ignore and try storage fallback
+          }
+
+          // Fallback: derive bucket/path from Supabase Storage URL and download with admin client
+          if (!imageBytes) {
+            try {
+              const url = new URL(sigUrl);
+              // Matches /storage/v1/object/(public|sign)/:bucket/:path?...
+              const match = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
+              if (match) {
+                const bucket = match[1];
+                const pathWithQuery = match[2];
+                const path = decodeURIComponent(pathWithQuery.split('?')[0]);
+                const { data: blob, error: dlError } = await supabaseAdmin.storage.from(bucket).download(path);
+                if (dlError) {
+                  console.error('Storage download error:', dlError);
+                } else if (blob) {
+                  const ab = await blob.arrayBuffer();
+                  imageBytes = new Uint8Array(ab);
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing storage URL for signature:', e);
+            }
+          }
+        }
+
+        if (!imageBytes) {
+          throw new Error('No image bytes for signature');
         }
 
         let image: any;
@@ -242,7 +279,8 @@ serve(async (req) => {
         y2 -= 18;
         page.drawText(info2, { x: margin, y: y2, size: 12, font });
         y2 -= 18;
-      } catch {
+      } catch (e) {
+        console.error('Error embedding signature image:', e);
         page.drawText('Firma no disponible (error al cargar la imagen).', { x: margin, y: y2, size: 12, font });
       }
     } else {
