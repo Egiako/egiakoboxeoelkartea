@@ -302,10 +302,9 @@ const Horarios = () => {
         errorMessage = "Plazas agotadas - Esta clase ya tiene el máximo de personas";
       } else if (error.message.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
-  // Check if booking_date is within the allowed window
-  IF NEW.booking_date < v_next_monday OR NEW.booking_date > v_next_sunday THEN
-    RAISE EXCEPTION 'Las reservas solo están disponibles para la próxima semana (del % al %). Cada domingo se habilitan las reservas para la semana siguiente.', 
-      v_next_monday, v_next_sunday;
+      } else if (error.message.includes('próxima semana')) {
+        errorMessage = "Solo se permiten reservas para la próxima semana";
+      }
       toast({
         title: "Error al reservar",
         description: errorMessage,
@@ -423,7 +422,8 @@ const Horarios = () => {
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     return days[dayOfWeek];
   };
-  return <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
@@ -771,6 +771,8 @@ const Horarios = () => {
       </main>
 
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Horarios;
