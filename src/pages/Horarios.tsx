@@ -380,7 +380,7 @@ const Horarios = () => {
     return booking?.id || '';
   };
 
-  // Check if date can be booked (monthly booking - current month only)
+  // Check if date can be booked (weekly booking with Sunday unlock)
   const canBookDate = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -391,12 +391,35 @@ const Horarios = () => {
     // Can't book past dates
     if (targetDate < today) return false;
     
-    // Calculate last day of current month
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    lastDayOfMonth.setHours(0, 0, 0, 0);
+    // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const currentDayOfWeek = today.getDay();
     
-    // Allow bookings from today to end of current month
-    return targetDate >= today && targetDate <= lastDayOfMonth;
+    // Calculate Monday of current week
+    const currentWeekMonday = new Date(today);
+    currentWeekMonday.setDate(today.getDate() - ((currentDayOfWeek + 6) % 7));
+    currentWeekMonday.setHours(0, 0, 0, 0);
+    
+    // Calculate Sunday of current week
+    const currentWeekSunday = new Date(currentWeekMonday);
+    currentWeekSunday.setDate(currentWeekMonday.getDate() + 6);
+    currentWeekSunday.setHours(0, 0, 0, 0);
+    
+    // Calculate next week's Monday and Sunday
+    const nextWeekMonday = new Date(currentWeekMonday);
+    nextWeekMonday.setDate(currentWeekMonday.getDate() + 7);
+    nextWeekMonday.setHours(0, 0, 0, 0);
+    
+    const nextWeekSunday = new Date(currentWeekSunday);
+    nextWeekSunday.setDate(currentWeekSunday.getDate() + 7);
+    nextWeekSunday.setHours(0, 0, 0, 0);
+    
+    // If today is Sunday, allow bookings for current week AND next week
+    if (currentDayOfWeek === 0) {
+      return targetDate >= currentWeekMonday && targetDate <= nextWeekSunday;
+    }
+    
+    // If not Sunday, only allow bookings for current week (from today to Sunday)
+    return targetDate >= today && targetDate <= currentWeekSunday;
   };
 
   // Get day name for display
@@ -459,7 +482,7 @@ const Horarios = () => {
                 {user ? <>
                        <span className="text-white font-semibold">Selecciona el día y la clase</span> que prefieras.
                       <br className="hidden md:block" />
-                      <span className="text-white/80">Puedes reservar cualquier día del mes actual.</span>
+                      <span className="text-white/80">Cada domingo se habilitan las reservas para la semana siguiente.</span>
                     </> : <>
                       Consulta nuestros <span className="text-white font-semibold">horarios</span>.
                       <br className="hidden md:block" />
@@ -536,12 +559,14 @@ const Horarios = () => {
                   <CardContent className="p-6 text-center">
                     <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-oswald font-bold text-lg mb-2">
-                      Solo se puede reservar para el mes actual
+                      {new Date().getDay() === 0 
+                        ? 'Reservas disponibles para esta semana y la próxima'
+                        : 'Solo puedes reservar para esta semana'}
                     </h3>
                     <p className="text-muted-foreground font-inter">
-                      Selecciona una fecha desde hoy hasta el final del mes {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), 'd \'de\' MMMM', {
-                  locale: es
-                })} para hacer una reserva.
+                      {new Date().getDay() === 0 
+                        ? 'Los domingos se habilitan las reservas para la semana siguiente. Selecciona una fecha de esta semana o la próxima.'
+                        : `Las reservas para esta semana están disponibles hasta el ${format(new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 7)), 'EEEE d', { locale: es })}. Las reservas para la próxima semana se habilitan el domingo.`}
                     </p>
                   </CardContent>
                 </Card> : <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
