@@ -64,27 +64,30 @@ export const ConsentModal = ({ open, onOpenChange, onAccept }: ConsentModalProps
           {/* Consent Text */}
           <div className="bg-muted/30 rounded-lg p-6 space-y-4 font-inter text-sm leading-relaxed">
             <p className="font-semibold text-base">
-              Al participar en actividades de boxeo en EgiaK.O. Boxeo Elkartea, declaro que:
+              EGIAK.O. BOXEO ELKARTEA
             </p>
             
             <ol className="space-y-3 list-decimal list-inside">
               <li>
-                <strong>Conozco los riesgos:</strong> Entiendo que el boxeo es un deporte de contacto que conlleva riesgos inherentes de lesión, incluyendo pero no limitado a contusiones, esguinces, fracturas y otras lesiones físicas.
+                <strong>ACEPTACIÓN DE RIESGOS:</strong> El/la abajo firmante declara que participa voluntariamente en las actividades, entrenamientos y competiciones organizadas por EgiaK.O. Boxeo Elkartea, siendo plenamente consciente de que el boxeo y la actividad física implican riesgos inherentes como lesiones musculares, contusiones, fracturas u otros daños físicos. El/la participante asume dichos riesgos bajo su propia responsabilidad, eximiendo expresamente a EgiaK.O. Boxeo Elkartea, a sus monitores, entrenadores, directivos y colaboradores de cualquier tipo de responsabilidad civil, penal o económica derivada de accidentes o lesiones que pudieran producirse durante la práctica o participación en las actividades de la asociación, salvo en casos de negligencia demostrable.
               </li>
               <li>
-                <strong>Estado de salud:</strong> Confirmo que gozo de buena salud y no tengo ninguna condición médica que me impida practicar boxeo de manera segura. En caso de tener alguna condición médica, me comprometo a informar al instructor antes de comenzar.
+                <strong>ESTADO DE SALUD:</strong> El/la participante declara que se encuentra en buen estado de salud física y mental para la práctica del boxeo, y que no padece enfermedades o limitaciones que puedan poner en riesgo su integridad o la de otros participantes. Asimismo, se compromete a informar a la asociación de cualquier cambio relevante en su estado de salud.
               </li>
               <li>
-                <strong>Seguro médico:</strong> Cuento con cobertura médica adecuada y asumo la responsabilidad de cualquier gasto médico derivado de mi participación en las actividades del club.
+                <strong>MENORES DE EDAD:</strong> En caso de que el/la participante sea menor de 18 años, el/la padre/madre/tutor/a legal deberá firmar este documento, manifestando su consentimiento expreso para la participación del menor en las actividades de la asociación y aceptando las condiciones aquí descritas.
               </li>
               <li>
-                <strong>Compromiso con las normas:</strong> Me comprometo a seguir todas las normas de seguridad establecidas por el club, usar el equipo de protección requerido, y seguir las instrucciones de los entrenadores en todo momento.
+                <strong>USO DE IMAGEN:</strong> Autorizo a EgiaK.O. Boxeo Elkartea a tomar y utilizar imágenes o vídeos en los que pueda aparecer durante entrenamientos, competiciones o eventos, con fines promocionales, informativos o de difusión en redes sociales, web o material divulgativo de la asociación, sin derecho a contraprestación económica alguna. El/la participante podrá revocar esta autorización por escrito en cualquier momento.
               </li>
               <li>
-                <strong>Exención de responsabilidad:</strong> Acepto participar bajo mi propio riesgo y libero a EgiaK.O. Boxeo Elkartea, sus instructores, empleados y voluntarios de cualquier responsabilidad por lesiones o daños que pudiera sufrir durante mi participación.
+                <strong>PROTECCIÓN DE DATOS:</strong> Los datos personales recogidos serán tratados conforme a la legislación vigente en materia de protección de datos personales (Reglamento (UE) 2016/679 y LOPDGDD), siendo el responsable del tratamiento EgiaK.O. Boxeo Elkartea. Los datos se utilizarán únicamente para la gestión administrativa y deportiva de la asociación.
               </li>
               <li>
-                <strong>Uso de imagen:</strong> Autorizo al club a utilizar fotografías o videos en los que aparezca para fines promocionales y de difusión de las actividades del club, salvo que exprese lo contrario por escrito.
+                <strong>COMPROMISO CON LAS NORMAS:</strong> Me comprometo a seguir todas las normas de seguridad establecidas por la asociación, usar el equipo de protección requerido, y seguir las instrucciones de los entrenadores en todo momento.
+              </li>
+              <li>
+                <strong>DECLARACIÓN FINAL:</strong> He leído y comprendido todo lo anterior. Firmo este documento de manera libre y voluntaria, manifestando que acepto todas las condiciones descritas y libero de responsabilidad a EgiaK.O. Boxeo Elkartea en los términos expuestos.
               </li>
             </ol>
 
