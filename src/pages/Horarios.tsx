@@ -380,7 +380,7 @@ const Horarios = () => {
     return booking?.id || '';
   };
 
-  // Check if date can be booked (weekly booking - next week starting from Sunday)
+  // Check if date can be booked (monthly booking - current month only)
   const canBookDate = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -391,30 +391,12 @@ const Horarios = () => {
     // Can't book past dates
     if (targetDate < today) return false;
     
-    // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-    const currentDayOfWeek = today.getDay();
+    // Calculate last day of current month
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    lastDayOfMonth.setHours(0, 0, 0, 0);
     
-    // Calculate next Monday and Sunday
-    let nextMonday: Date;
-    let nextSunday: Date;
-    
-    if (currentDayOfWeek === 0) {
-      // It's Sunday, available week is next week (Monday to Sunday)
-      nextMonday = new Date(today);
-      nextMonday.setDate(today.getDate() + 1);
-      nextSunday = new Date(nextMonday);
-      nextSunday.setDate(nextMonday.getDate() + 6);
-    } else {
-      // Not Sunday, calculate next Monday
-      const daysUntilNextMonday = 8 - currentDayOfWeek;
-      nextMonday = new Date(today);
-      nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-      nextSunday = new Date(nextMonday);
-      nextSunday.setDate(nextMonday.getDate() + 6);
-    }
-    
-    // Check if target date is within the bookable week
-    return targetDate >= nextMonday && targetDate <= nextSunday;
+    // Allow bookings from today to end of current month
+    return targetDate >= today && targetDate <= lastDayOfMonth;
   };
 
   // Get day name for display
@@ -477,7 +459,7 @@ const Horarios = () => {
                 {user ? <>
                        <span className="text-white font-semibold">Selecciona el día y la clase</span> que prefieras.
                       <br className="hidden md:block" />
-                      <span className="text-white/80">Cada domingo se habilitan las reservas para la semana siguiente.</span>
+                      <span className="text-white/80">Puedes reservar cualquier día del mes actual.</span>
                     </> : <>
                       Consulta nuestros <span className="text-white font-semibold">horarios</span>.
                       <br className="hidden md:block" />
@@ -550,16 +532,14 @@ const Horarios = () => {
 
             {/* Classes for selected day */}
             <div className="mb-8">
-              {!canBookDate(selectedDate) ? <Card className="max-w-md mx-auto">
+            {!canBookDate(selectedDate) ? <Card className="max-w-md mx-auto">
                   <CardContent className="p-6 text-center">
                     <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-oswald font-bold text-lg mb-2">
-                      Solo se puede reservar para hoy y mañana
+                      Solo se puede reservar para el mes actual
                     </h3>
                     <p className="text-muted-foreground font-inter">
-                      Selecciona hoy {format(new Date(), 'EEEE d', {
-                  locale: es
-                })} o mañana {format(addDays(new Date(), 1), 'EEEE d', {
+                      Selecciona una fecha desde hoy hasta el final del mes {format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), 'd \'de\' MMMM', {
                   locale: es
                 })} para hacer una reserva.
                     </p>
