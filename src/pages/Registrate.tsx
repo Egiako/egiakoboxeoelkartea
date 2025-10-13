@@ -344,11 +344,17 @@ const Registrate = () => {
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="overflow-auto max-h-[70vh] border rounded-lg">
-                                  <iframe 
-                                    src="/documents/consentimiento-informado.pdf" 
+                                  <object 
+                                    data="/documents/consentimiento-informado.pdf#toolbar=0" 
+                                    type="application/pdf" 
                                     className="w-full h-[70vh]"
-                                    title="Consentimiento Informado"
-                                  />
+                                  >
+                                    <p className="p-4 text-sm text-muted-foreground">
+                                      No se pudo visualizar el PDF en tu navegador. 
+                                      <a href="/documents/consentimiento-informado.pdf" download className="underline">Descargar PDF</a> o 
+                                      <a href="/documents/consentimiento-informado.pdf" target="_blank" rel="noopener noreferrer" className="underline ml-1">abrir en nueva pestaña</a>.
+                                    </p>
+                                  </object>
                                 </div>
                                 <div className="flex justify-center gap-2 pt-2">
                                   <Button

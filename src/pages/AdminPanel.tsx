@@ -628,12 +628,14 @@ const AdminPanel = () => {
                                           
                                           {user.consent_signed && (
                                             <Button 
+                                              asChild
                                               variant="outline" 
                                               className="w-full"
-                                              onClick={() => window.open('/documents/consentimiento-informado.pdf', '_blank')}
                                             >
-                                              <Download className="h-4 w-4 mr-2" />
-                                              Descargar documento de consentimiento
+                                              <a href="/documents/consentimiento-informado.pdf" download>
+                                                <Download className="h-4 w-4 mr-2" />
+                                                Descargar documento de consentimiento
+                                              </a>
                                             </Button>
                                           )}
                                         </div>
