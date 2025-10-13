@@ -114,8 +114,34 @@ serve(async (req) => {
     body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
     h1 { color: #333; text-align: center; }
     .info { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
-    .signature { margin-top: 30px; text-align: center; }
-    .signature img { max-width: 300px; border: 1px solid #ccc; padding: 10px; }
+    .signature { margin-top: 40px; page-break-inside: avoid; }
+    .signature-box { 
+      display: inline-block;
+      border: 2px solid #333; 
+      padding: 20px; 
+      margin: 20px 0;
+      background: white;
+      min-height: 150px;
+      min-width: 400px;
+    }
+    .signature-box img { 
+      max-width: 100%; 
+      max-height: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+    .signature-info { 
+      margin-top: 15px; 
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .no-signature { 
+      color: #999; 
+      font-style: italic; 
+      text-align: center;
+      padding: 20px;
+    }
     .footer { margin-top: 40px; font-size: 12px; color: #666; }
     pre { white-space: pre-wrap; }
   </style>
@@ -136,12 +162,23 @@ serve(async (req) => {
   <pre>${CONSENT_TEXT}</pre>
 
   <div class="signature">
-    <strong>Firma Digital:</strong><br>
-    ${profile.consent_signature_url ? `<img src="${profile.consent_signature_url}" alt="Firma" />` : 'No disponible'}
+    <p><strong>Firma del participante:</strong></p>
+    ${profile.consent_signature_url ? `
+      <div class="signature-box">
+        <img src="${profile.consent_signature_url}" alt="Firma del participante" />
+      </div>
+      <p class="signature-info">
+        <strong>${profile.first_name} ${profile.last_name}</strong><br>
+        Firmado el: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { 
+          dateStyle: 'long', 
+          timeStyle: 'short' 
+        }) : 'N/A'}
+      </p>
+    ` : '<p class="no-signature">Sin firma</p>'}
   </div>
 
   <div class="footer">
-    <strong>Información de Firma:</strong><br>
+    <strong>Información técnica de la firma:</strong><br>
     Método: ${profile.consent_method || 'N/A'}<br>
     Fecha y Hora: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES') : 'N/A'}<br>
     IP: ${profile.consent_signed_ip || 'N/A'}<br>
