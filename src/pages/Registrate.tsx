@@ -68,11 +68,14 @@ const Registrate = () => {
 
     if (!error && data?.user) {
       try {
-        // Get user's session token
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        // Ensure we have a valid session/token after sign up
+        let session = data.session ?? (await supabase.auth.getSession()).data.session;
+
+        // Fallback: try to sign in to obtain a session if needed (some projects require email confirmation off)
         if (!session) {
-          throw new Error('No session available');
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInErr) throw new Error('No session available');
+          session = signInData.session;
         }
 
         // Convert base64 signature to blob
@@ -83,55 +86,59 @@ const Registrate = () => {
         const signatureFormData = new FormData();
         signatureFormData.append('signature', blob, 'signature.png');
         signatureFormData.append('method', signatureMethod);
-        signatureFormData.append('ip', 'client-ip'); // Will be captured server-side
+        signatureFormData.append('ip', ''); // IP opcional: el servidor puede capturarla
         signatureFormData.append('userAgent', navigator.userAgent);
         signatureFormData.append('textVersion', 'v1');
 
-        // Call edge function to save signature
-        const { data: consentData, error: consentError } = await supabase.functions.invoke('save-consent', {
-          body: signatureFormData,
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
+        // Call edge function to save signature (multipart/form-data)
+        const response = await fetch(
+          `https://qdpvgbnkewxrervdoexg.supabase.co/functions/v1/save-consent`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session!.access_token}`
+            },
+            body: signatureFormData
           }
-        });
+        );
 
-        if (consentError) {
-          console.error('Error saving consent:', consentError);
+        if (!response.ok) {
+          const errJson = await response.json().catch(() => ({}));
+          console.error('Error saving consent:', errJson);
           toast({
-            title: "Error al guardar la firma",
-            description: "Tu cuenta se creó pero hubo un problema guardando la firma. Contacta con el administrador.",
-            variant: "destructive"
+            title: 'Error al guardar la firma',
+            description: 'Tu cuenta se creó pero hubo un problema guardando la firma. Contacta con el administrador.',
+            variant: 'destructive'
           });
         }
 
-        // Update profile with additional data
-        setTimeout(async () => {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-              dni,
-              birth_date: birthDate,
-              objective
-            })
-            .eq('user_id', data.user.id);
+        // Update profile with additional data (dni, birth_date, objective)
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            dni,
+            birth_date: birthDate,
+            objective
+          })
+          .eq('user_id', data.user.id);
 
-          if (updateError) {
-            console.error('Error updating profile:', updateError);
-          }
-        }, 1000);
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+        }
 
       } catch (err) {
         console.error('Error in registration process:', err);
         toast({
-          title: "Error",
-          description: "Hubo un problema completando tu registro. Por favor, contacta con el administrador.",
-          variant: "destructive"
+          title: 'Error',
+          description: 'Hubo un problema completando tu registro. Por favor, contacta con el administrador.',
+          variant: 'destructive'
         });
       }
 
       setRegistrationSuccess(true);
       console.log('Registration successful, showing approval message...');
     }
+
 
     setIsLoading(false);
   };
