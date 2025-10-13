@@ -414,6 +414,22 @@ const Registrate = () => {
                               Al participar en actividades de boxeo, reconozco los riesgos inherentes a este deporte de contacto. 
                               Me comprometo a seguir las normas de seguridad y las instrucciones de los entrenadores en todo momento.
                             </p>
+
+                            {/* Campo de firma directamente bajo el texto */}
+                            <div className="mt-3">
+                              <SignatureCanvasComponent onSignatureChange={handleSignatureChange} />
+                              <div className="flex items-start space-x-2 mt-3 p-3 bg-muted/30 rounded-lg">
+                                <Checkbox 
+                                  id="consent-outside" 
+                                  checked={consentAccepted}
+                                  onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
+                                  required 
+                                />
+                                <Label htmlFor="consent-outside" className="text-xs font-inter leading-relaxed cursor-pointer">
+                                  He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
+                                </Label>
+                              </div>
+                            </div>
                             
                             <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
                               <DialogTrigger asChild>
@@ -450,10 +466,6 @@ const Registrate = () => {
                                     </object>
                                   </div>
 
-                                  {/* Signature Component */}
-                                  <div className="border-t pt-4">
-                                    <SignatureCanvasComponent onSignatureChange={handleSignatureChange} />
-                                  </div>
 
                                   {/* Consent Checkbox */}
                                    <div className="flex items-start space-x-2 p-4 bg-muted/30 rounded-lg">

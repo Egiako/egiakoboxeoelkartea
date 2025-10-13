@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,98 +104,178 @@ serve(async (req) => {
       throw new Error('User profile not found');
     }
 
-    // Generate simple HTML for PDF (we'll use a simple text-based approach)
-    // In production, you might want to use a proper PDF library
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
-    h1 { color: #333; text-align: center; }
-    .info { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
-    .signature { margin-top: 40px; page-break-inside: avoid; }
-    .signature-box { 
-      display: inline-block;
-      border: 2px solid #333; 
-      padding: 20px; 
-      margin: 20px 0;
-      background: white;
-      min-height: 150px;
-      min-width: 400px;
-    }
-    .signature-box img { 
-      max-width: 100%; 
-      max-height: 120px;
-      display: block;
-      margin: 0 auto;
-    }
-    .signature-info { 
-      margin-top: 15px; 
-      text-align: center;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .no-signature { 
-      color: #999; 
-      font-style: italic; 
-      text-align: center;
-      padding: 20px;
-    }
-    .footer { margin-top: 40px; font-size: 12px; color: #666; }
-    pre { white-space: pre-wrap; }
-  </style>
-</head>
-<body>
-  <h1>CONSENTIMIENTO INFORMADO - EGIAK.O. BOXEO</h1>
-  
-  <div class="info">
-    <strong>Datos del Participante:</strong><br>
-    Nombre: ${profile.first_name} ${profile.last_name}<br>
-    Email: ${profile.email}<br>
-    Teléfono: ${profile.phone}<br>
-    ${profile.dni ? `DNI: ${profile.dni}<br>` : ''}
-    ${profile.birth_date ? `Fecha de Nacimiento: ${new Date(profile.birth_date).toLocaleDateString('es-ES')}<br>` : ''}
-    ${profile.objective ? `Objetivo: ${profile.objective}<br>` : ''}
-  </div>
+    // Generate a proper PDF with embedded signature using pdf-lib
+    const pdfDoc = await PDFDocument.create();
 
-  <pre>${CONSENT_TEXT}</pre>
+    // A4 size in points
+    const pageWidth = 595;
+    const pageHeight = 842;
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    const { width, height } = page.getSize();
+    const margin = 50;
+    let cursorY = height - margin;
 
-  <div class="signature">
-    <p><strong>Firma del participante:</strong></p>
-    ${profile.consent_signature_url ? `
-      <div class="signature-box">
-        <img src="${profile.consent_signature_url}" alt="Firma del participante" />
-      </div>
-      <p class="signature-info">
-        <strong>${profile.first_name} ${profile.last_name}</strong><br>
-        Firmado el: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { 
-          dateStyle: 'long', 
-          timeStyle: 'short' 
-        }) : 'N/A'}
-      </p>
-    ` : '<p class="no-signature">Sin firma</p>'}
-  </div>
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  <div class="footer">
-    <strong>Información técnica de la firma:</strong><br>
-    Método: ${profile.consent_method || 'N/A'}<br>
-    Fecha y Hora: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES') : 'N/A'}<br>
-    IP: ${profile.consent_signed_ip || 'N/A'}<br>
-    Versión del Documento: ${profile.consent_text_version || 'v1'}<br>
-    User Agent: ${profile.consent_user_agent || 'N/A'}
-  </div>
-</body>
-</html>`;
+    const drawTitle = (text: string) => {
+      const size = 16;
+      const textWidth = fontBold.widthOfTextAtSize(text, size);
+      page.drawText(text, {
+        x: (width - textWidth) / 2,
+        y: cursorY,
+        size,
+        font: fontBold,
+        color: rgb(0, 0, 0),
+      });
+      cursorY -= 28;
+    };
 
-    return new Response(htmlContent, {
+    const ensureSpace = (needed: number) => {
+      if (cursorY - needed < margin) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        cursorY = page.getSize().height - margin;
+      }
+    };
+
+    const drawWrappedText = (text: string, size = 11, lineHeight = 16) => {
+      const maxWidth = width - margin * 2;
+      const words = text.split(/\s+/);
+      let line = '';
+      for (const word of words) {
+        const testLine = line ? `${line} ${word}` : word;
+        const w = font.widthOfTextAtSize(testLine, size);
+        if (w > maxWidth) {
+          ensureSpace(lineHeight);
+          page.drawText(line, { x: margin, y: cursorY, size, font, color: rgb(0, 0, 0) });
+          cursorY -= lineHeight;
+          line = word;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line) {
+        ensureSpace(lineHeight);
+        page.drawText(line, { x: margin, y: cursorY, size, font, color: rgb(0, 0, 0) });
+        cursorY -= lineHeight;
+      }
+    };
+
+    // Title
+    drawTitle('CONSENTIMIENTO INFORMADO - EGIAK.O. BOXEO');
+
+    // Participant info box
+    const infoLines: string[] = [
+      `Nombre: ${profile.first_name} ${profile.last_name}`,
+      profile.email ? `Email: ${profile.email}` : '',
+      profile.phone ? `Teléfono: ${profile.phone}` : '',
+      profile.dni ? `DNI: ${profile.dni}` : '',
+      profile.birth_date ? `Fecha de Nacimiento: ${new Date(profile.birth_date).toLocaleDateString('es-ES')}` : '',
+      profile.objective ? `Objetivo: ${profile.objective}` : '',
+    ].filter(Boolean);
+
+    // Draw shaded box background
+    const boxTop = cursorY + 8;
+    const boxHeight = infoLines.length * 16 + 20;
+    ensureSpace(boxHeight + 10);
+    page.drawRectangle({ x: margin - 6, y: cursorY - boxHeight + 6, width: width - margin * 2 + 12, height: boxHeight, color: rgb(0.96, 0.96, 0.96) });
+    page.drawText('Datos del Participante:', { x: margin, y: cursorY - 14, size: 12, font: fontBold });
+    cursorY -= 26;
+    for (const line of infoLines) {
+      drawWrappedText(line, 11, 16);
+    }
+    cursorY -= 10;
+
+    // Consent text paragraphs
+    const paragraphs = (CONSENT_TEXT as string).split('\n');
+    for (const p of paragraphs) {
+      if (p.trim() === '') { cursorY -= 6; continue; }
+      drawWrappedText(p, 11, 16);
+    }
+
+    // Signature page
+    page = pdfDoc.addPage([pageWidth, pageHeight]);
+    const sigWidthMax = 240;
+    const title2 = 'Firma del participante';
+    let y2 = page.getSize().height - margin;
+    const t2w = fontBold.widthOfTextAtSize(title2, 14);
+    page.drawText(title2, { x: (page.getSize().width - t2w) / 2, y: y2, size: 14, font: fontBold });
+    y2 -= 30;
+
+    if (profile.consent_signature_url) {
+      try {
+        let imageBytes: Uint8Array;
+        const sigUrl: string = profile.consent_signature_url as string;
+        if (sigUrl.startsWith('data:')) {
+          const base64 = sigUrl.split(',')[1] ?? '';
+          const bin = atob(base64);
+          imageBytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) imageBytes[i] = bin.charCodeAt(i);
+        } else {
+          const res = await fetch(sigUrl);
+          const ab = await res.arrayBuffer();
+          imageBytes = new Uint8Array(ab);
+        }
+
+        let image: any;
+        try {
+          image = await pdfDoc.embedPng(imageBytes);
+        } catch {
+          image = await pdfDoc.embedJpg(imageBytes);
+        }
+
+        const scale = sigWidthMax / image.width;
+        const drawW = image.width * scale;
+        const drawH = image.height * scale;
+        const x = (page.getSize().width - drawW) / 2;
+        const y = y2 - drawH;
+        page.drawImage(image, { x, y, width: drawW, height: drawH });
+        y2 = y - 14;
+
+        const fullName = `${profile.first_name} ${profile.last_name}`.trim();
+        const signedAt = profile.consent_signed_at
+          ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
+          : 'N/A';
+        const info1 = `Firmado digitalmente por ${fullName}`;
+        const info2 = `Fecha: ${signedAt}`;
+        page.drawText(info1, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(info2, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+      } catch {
+        page.drawText('Firma no disponible (error al cargar la imagen).', { x: margin, y: y2, size: 12, font });
+      }
+    } else {
+      page.drawText('Firma no disponible', { x: margin, y: y2, size: 12, font });
+    }
+
+    // Technical info footer
+    y2 -= 20;
+    const techTitle = 'Información técnica de la firma:';
+    page.drawText(techTitle, { x: margin, y: y2, size: 12, font: fontBold });
+    y2 -= 16;
+    const techLines: string[] = [
+      `Método: ${profile.consent_method || 'N/A'}`,
+      `Fecha y Hora: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES') : 'N/A'}`,
+      `IP: ${profile.consent_signed_ip || 'N/A'}`,
+      `Versión del Documento: ${profile.consent_text_version || 'v1'}`,
+      `User Agent: ${profile.consent_user_agent || 'N/A'}`,
+    ];
+    for (const line of techLines) {
+      page.drawText(line, { x: margin, y: y2, size: 10, font });
+      y2 -= 14;
+    }
+
+    const pdfBytes = await pdfDoc.save();
+
+    return new Response(pdfBytes, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'text/html',
-        'Content-Disposition': `attachment; filename="consentimiento-${profile.first_name}-${profile.last_name}.html"`
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="consentimiento-${profile.first_name}-${profile.last_name}.pdf"`
       }
     });
+
 
   } catch (error) {
     console.error('Error in generate-consent-pdf:', error);
