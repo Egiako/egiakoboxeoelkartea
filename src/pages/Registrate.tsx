@@ -46,6 +46,15 @@ const Registrate = () => {
       return;
     }
 
+    if (!consentAccepted) {
+      toast({
+        title: "Debes aceptar el consentimiento",
+        description: "Marca la casilla de aceptación del consentimiento informado.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
@@ -63,7 +72,13 @@ const Registrate = () => {
     const { error, data } = await signUp(email, password, {
       first_name: firstName,
       last_name: lastName,
-      phone
+      phone,
+      dni,
+      birth_date: birthDate,
+      training_goal: objective,
+      consent_signed: true,
+      consent_signed_at: new Date().toISOString(),
+      consent_method: signatureMethod
     });
 
     console.log('Registration result:', { error, data });
@@ -372,16 +387,20 @@ const Registrate = () => {
                         <Label htmlFor="objetivo" className="font-inter font-semibold">Objetivo (opcional)</Label>
                         <div className="relative">
                           <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                           <Select name="objetivo">
-                             <SelectTrigger className="pl-10">
-                               <SelectValue placeholder="¿Qué te gustaría conseguir?" />
-                             </SelectTrigger>
-                             <SelectContent>
-                               <SelectItem value="forma">Ponerme en forma</SelectItem>
-                               <SelectItem value="competir">Competir</SelectItem>
-                               <SelectItem value="tecnica">Aprender técnica</SelectItem>
-                             </SelectContent>
-                           </Select>
+                            <Select 
+                              name="objetivo"
+                              value={trainingGoal}
+                              onValueChange={setTrainingGoal}
+                            >
+                              <SelectTrigger className="pl-10">
+                                <SelectValue placeholder="¿Qué te gustaría conseguir?" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="forma">Ponerme en forma</SelectItem>
+                                <SelectItem value="competir">Competir</SelectItem>
+                                <SelectItem value="tecnica">Aprender técnica</SelectItem>
+                              </SelectContent>
+                            </Select>
                         </div>
                       </div>
 
@@ -437,11 +456,16 @@ const Registrate = () => {
                                   </div>
 
                                   {/* Consent Checkbox */}
-                                  <div className="flex items-start space-x-2 p-4 bg-muted/30 rounded-lg">
-                                    <Checkbox id="consent-modal" required />
-                                    <Label htmlFor="consent-modal" className="text-xs font-inter leading-relaxed cursor-pointer">
-                                      He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
-                                    </Label>
+                                   <div className="flex items-start space-x-2 p-4 bg-muted/30 rounded-lg">
+                                     <Checkbox 
+                                       id="consent-modal" 
+                                       checked={consentAccepted}
+                                       onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
+                                       required 
+                                     />
+                                     <Label htmlFor="consent-modal" className="text-xs font-inter leading-relaxed cursor-pointer">
+                                       He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
+                                     </Label>
                                   </div>
                                 </div>
 
@@ -455,22 +479,28 @@ const Registrate = () => {
                                   </Button>
                                   <Button
                                     type="button"
-                                    onClick={() => {
-                                      if (signatureData) {
-                                        setShowConsentDialog(false);
-                                        toast({
-                                          title: "Firma guardada",
-                                          description: "Tu firma ha sido capturada correctamente."
-                                        });
-                                      } else {
-                                        toast({
-                                          title: "Firma requerida",
-                                          description: "Por favor, firma antes de continuar.",
-                                          variant: "destructive"
-                                        });
-                                      }
-                                    }}
-                                    disabled={!signatureData}
+                                     onClick={() => {
+                                       if (signatureData && consentAccepted) {
+                                         setShowConsentDialog(false);
+                                         toast({
+                                           title: "Firma guardada",
+                                           description: "Tu firma ha sido capturada correctamente."
+                                         });
+                                       } else if (!signatureData) {
+                                         toast({
+                                           title: "Firma requerida",
+                                           description: "Por favor, firma antes de continuar.",
+                                           variant: "destructive"
+                                         });
+                                       } else if (!consentAccepted) {
+                                         toast({
+                                           title: "Acepta el consentimiento",
+                                           description: "Debes marcar la casilla de aceptación.",
+                                           variant: "destructive"
+                                         });
+                                       }
+                                     }}
+                                     disabled={!signatureData || !consentAccepted}
                                   >
                                     Confirmar firma
                                   </Button>
