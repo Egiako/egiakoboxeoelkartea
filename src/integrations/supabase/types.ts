@@ -73,13 +73,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "bookings_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "safe_trainer_profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       class_exceptions: {
@@ -825,6 +818,17 @@ export type Database = {
       }
       is_user_approved: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      profile_sensitive_unchanged: {
+        Args: {
+          _approval: Database["public"]["Enums"]["approval_status"]
+          _email: string
+          _is_active: boolean
+          _is_rereg: boolean
+          _prev_status: string
+          _user_id: string
+        }
         Returns: boolean
       }
       set_class_instructor: {

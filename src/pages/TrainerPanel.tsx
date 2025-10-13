@@ -1,4 +1,5 @@
 import { useTrainerRole } from '@/hooks/useTrainerRole';
+import { useTrainerLanguage } from '@/hooks/useTrainerLanguage';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +11,7 @@ import { UnifiedScheduleManagement } from '@/components/UnifiedScheduleManagemen
 
 const TrainerPanel = () => {
   const { isTrainer, loading } = useTrainerRole();
+  const { t } = useTrainerLanguage();
 
   if (loading) {
     return (
@@ -18,7 +20,7 @@ const TrainerPanel = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="animate-pulse text-muted-foreground">
-              Verificando permisos...
+              {t.trainerPanel.verifyingPermissions}
             </div>
           </div>
         </div>
@@ -36,7 +38,7 @@ const TrainerPanel = () => {
             <Alert variant="destructive" className="max-w-md">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                No tienes permisos para acceder al panel de entrenador.
+                {t.trainerPanel.noPermission}
               </AlertDescription>
             </Alert>
           </div>
@@ -53,10 +55,10 @@ const TrainerPanel = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              Panel de Entrenador
+              {t.trainerPanel.title}
             </h1>
             <p className="text-muted-foreground">
-              Gestiona usuarios activos y asistencia a clases
+              {t.trainerPanel.subtitle}
             </p>
           </div>
 
@@ -64,11 +66,11 @@ const TrainerPanel = () => {
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="bookings" className="flex items-center gap-2">
                 <ClipboardList className="h-4 w-4" />
-                Gestión de Asistencia
+                {t.trainerPanel.bookingsTab}
               </TabsTrigger>
               <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Gestión de Horarios
+                {t.trainerPanel.calendarTab}
               </TabsTrigger>
             </TabsList>
 

@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useTrainerBookingManagement } from '@/hooks/useTrainerBookingManagement';
+import { useTrainerLanguage } from '@/hooks/useTrainerLanguage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Clock, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { format, isAfter, startOfDay } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 
 const TrainerBookingManagement = () => {
   const { bookings, loading, updateAttendance, refetch } = useTrainerBookingManagement();
+  const { language, t } = useTrainerLanguage();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [updating, setUpdating] = useState<string | null>(null);
 
@@ -59,7 +61,7 @@ const TrainerBookingManagement = () => {
     return (
       <Card className="shadow-boxing">
         <CardHeader>
-          <CardTitle className="font-oswald">Gestión de Asistencia</CardTitle>
+          <CardTitle className="font-oswald">{t.bookingManagement.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
@@ -76,13 +78,13 @@ const TrainerBookingManagement = () => {
     return (
       <Card className="shadow-boxing">
         <CardHeader>
-          <CardTitle className="font-oswald">Gestión de Asistencia</CardTitle>
+          <CardTitle className="font-oswald">{t.bookingManagement.title}</CardTitle>
         </CardHeader>
         <CardContent className="text-center py-12">
           <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-oswald font-bold text-lg mb-2">No hay reservas</h3>
+          <h3 className="font-oswald font-bold text-lg mb-2">{t.bookingManagement.noBookings}</h3>
           <p className="text-muted-foreground font-inter">
-            No hay reservas de clases para mostrar
+            {t.bookingManagement.noBookingsMessage}
           </p>
         </CardContent>
       </Card>
@@ -92,9 +94,9 @@ const TrainerBookingManagement = () => {
   return (
     <Card className="shadow-boxing">
       <CardHeader>
-        <CardTitle className="font-oswald">Gestión de Asistencia - Entrenador</CardTitle>
+        <CardTitle className="font-oswald">{t.bookingManagement.title}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Gestiona la asistencia de los alumnos a las clases
+          {language === 'en' ? 'Manage student attendance for classes' : 'Gestiona la asistencia de los alumnos a las clases'}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -107,7 +109,7 @@ const TrainerBookingManagement = () => {
               <div className="flex items-center gap-4">
                 <Calendar className="h-5 w-5 text-boxing-red" />
                 <h3 className="font-oswald font-bold text-lg">
-                  {format(new Date(date), "EEEE d 'de' MMMM", { locale: es })}
+                  {format(new Date(date), language === 'en' ? "EEEE, MMMM d" : "EEEE d 'de' MMMM", { locale: language === 'en' ? enUS : es })}
                 </h3>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-boxing-red" />
@@ -116,7 +118,9 @@ const TrainerBookingManagement = () => {
                   </span>
                 </div>
                 <Badge variant={isEditable ? "default" : "secondary"}>
-                  {isEditable ? "Editable" : "Finalizada"}
+                  {isEditable 
+                    ? (language === 'en' ? "Editable" : "Editable") 
+                    : (language === 'en' ? "Completed" : "Finalizada")}
                 </Badge>
               </div>
               
@@ -138,13 +142,13 @@ const TrainerBookingManagement = () => {
                         
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>
-                            <strong>Alumno:</strong> {booking.profile?.first_name} {booking.profile?.last_name}
+                            <strong>{language === 'en' ? 'Student:' : 'Alumno:'}</strong> {booking.profile?.first_name} {booking.profile?.last_name}
                           </span>
                           <span>
                             {booking.has_classes_available ? (
-                              <span className="text-green-600 font-medium">✓ Tiene clases disponibles</span>
+                              <span className="text-green-600 font-medium">✓ {t.bookingManagement.hasClasses}</span>
                             ) : (
-                              <span className="text-orange-600 font-medium">⚠ Sin clases disponibles</span>
+                              <span className="text-orange-600 font-medium">⚠ {t.bookingManagement.noClasses}</span>
                             )}
                           </span>
                         </div>
@@ -165,7 +169,7 @@ const TrainerBookingManagement = () => {
                               ) : (
                                 <CheckCircle className="h-4 w-4" />
                               )}
-                              Asistió
+                              {t.bookingManagement.attended}
                             </Button>
                             <Button
                               size="sm"
@@ -178,7 +182,7 @@ const TrainerBookingManagement = () => {
                               ) : (
                                 <XCircle className="h-4 w-4" />
                               )}
-                              No asistió
+                              {t.bookingManagement.notAttended}
                             </Button>
                           </div>
                         ) : (
@@ -190,12 +194,12 @@ const TrainerBookingManagement = () => {
                               {booking.attended ? (
                                 <>
                                   <CheckCircle className="h-3 w-3" />
-                                  Asistió
+                                  {t.bookingManagement.attended}
                                 </>
                               ) : (
                                 <>
                                   <XCircle className="h-3 w-3" />
-                                  No asistió
+                                  {t.bookingManagement.notAttended}
                                 </>
                               )}
                             </Badge>
@@ -209,7 +213,7 @@ const TrainerBookingManagement = () => {
                                 {updating === booking.id ? (
                                   <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
                                 ) : (
-                                  "Cambiar"
+                                  language === 'en' ? "Change" : "Cambiar"
                                 )}
                               </Button>
                             )}
