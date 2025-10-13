@@ -248,7 +248,7 @@ const Horarios = () => {
     if (!monthlyClasses || monthlyClasses.remaining_classes <= 0) {
       toast({
         title: "Sin clases disponibles",
-        description: "Has agotado tus clases mensuales. El contador se reinicia el 1 de cada mes.",
+        description: "Has agotado tus clases mensuales. Contacta con el administrador para renovar tu cuota.",
         variant: "destructive"
       });
       return;
@@ -303,7 +303,7 @@ const Horarios = () => {
       } else if (error.message.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
       } else if (error.message.includes('antelación')) {
-        errorMessage = "Solo puedes reservar con un día de antelación como máximo";
+        errorMessage = "Solo puedes reservar clases de la próxima semana. Cada domingo se abren las reservas.";
       }
       toast({
         title: "Error al reservar",
@@ -380,7 +380,7 @@ const Horarios = () => {
     return booking?.id || '';
   };
 
-  // Check if date can be booked (monthly booking - full current month)
+  // Check if date can be booked (weekly booking - next week starting from Sunday)
   const canBookDate = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -391,13 +391,30 @@ const Horarios = () => {
     // Can't book past dates
     if (targetDate < today) return false;
     
-    // Check if it's the same month and year as today
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const targetMonth = targetDate.getMonth();
-    const targetYear = targetDate.getFullYear();
+    // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const currentDayOfWeek = today.getDay();
     
-    return targetYear === currentYear && targetMonth === currentMonth;
+    // Calculate next Monday and Sunday
+    let nextMonday: Date;
+    let nextSunday: Date;
+    
+    if (currentDayOfWeek === 0) {
+      // It's Sunday, available week is next week (Monday to Sunday)
+      nextMonday = new Date(today);
+      nextMonday.setDate(today.getDate() + 1);
+      nextSunday = new Date(nextMonday);
+      nextSunday.setDate(nextMonday.getDate() + 6);
+    } else {
+      // Not Sunday, calculate next Monday
+      const daysUntilNextMonday = 8 - currentDayOfWeek;
+      nextMonday = new Date(today);
+      nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+      nextSunday = new Date(nextMonday);
+      nextSunday.setDate(nextMonday.getDate() + 6);
+    }
+    
+    // Check if target date is within the bookable week
+    return targetDate >= nextMonday && targetDate <= nextSunday;
   };
 
   // Get day name for display
@@ -457,9 +474,9 @@ const Horarios = () => {
               animationDelay: '0.3s'
             }}>
                 {user ? <>
-                      <span className="text-white font-semibold">Selecciona el día y la clase</span> que prefieras.
+                       <span className="text-white font-semibold">Selecciona el día y la clase</span> que prefieras.
                       <br className="hidden md:block" />
-                      <span className="text-white/80">Las reservas se pueden hacer para hoy y mañana únicamente.</span>
+                      <span className="text-white/80">Cada domingo se habilitan las reservas para la semana siguiente.</span>
                     </> : <>
                       Consulta nuestros <span className="text-white font-semibold">horarios</span>.
                       <br className="hidden md:block" />
