@@ -24,6 +24,8 @@ const Registrate = () => {
   const [signatureData, setSignatureData] = useState<string | null>(null);
   const [signatureMethod, setSignatureMethod] = useState<'canvas' | 'typed'>('canvas');
   const [showConsentDialog, setShowConsentDialog] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [trainingGoal, setTrainingGoal] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
