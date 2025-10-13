@@ -714,7 +714,7 @@ const AdminPanel = () => {
                                                       const url = window.URL.createObjectURL(blob);
                                                       const a = document.createElement('a');
                                                       a.href = url;
-                                                      a.download = `consentimiento-${user.first_name}-${user.last_name}.html`;
+                                                      a.download = `consentimiento-${user.first_name}-${user.last_name}.pdf`;
                                                       document.body.appendChild(a);
                                                       a.click();
                                                       window.URL.revokeObjectURL(url);

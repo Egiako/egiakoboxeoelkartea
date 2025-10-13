@@ -275,9 +275,12 @@ serve(async (req) => {
           : 'N/A';
         const info1 = `Firmado digitalmente por ${fullName}`;
         const info2 = `Fecha: ${signedAt}`;
+        const info3 = `DNI: ${profile.dni || 'N/A'}`;
         page.drawText(info1, { x: margin, y: y2, size: 12, font });
         y2 -= 18;
         page.drawText(info2, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(info3, { x: margin, y: y2, size: 12, font });
         y2 -= 18;
       } catch (e) {
         console.error('Error embedding signature image:', e);
