@@ -31,6 +31,11 @@ interface UserProfile {
   birth_date?: string;
   consent_signed?: boolean;
   consent_signed_at?: string;
+  consent_signature_url?: string;
+  consent_method?: string;
+  consent_signed_ip?: string;
+  consent_user_agent?: string;
+  consent_text_version?: string;
   objective?: string;
 }
 interface BookingWithDetails {
@@ -91,11 +96,13 @@ const AdminPanel = () => {
       });
       if (profilesError) throw profilesError;
 
-      // Fetch user emails from auth.users through a custom function or RPC
-      const profilesWithEmails = await Promise.all((profilesData || []).map(async profile => {
-        // We can't directly query auth.users, so we'll store email in the booking context
-        return profile;
-      }));
+      // Type the data properly
+      const profilesWithEmails = (profilesData || []).map(profile => ({
+        ...profile,
+        consent_signed_ip: profile.consent_signed_ip as string | undefined,
+        consent_user_agent: profile.consent_user_agent as string | undefined,
+      })) as UserProfile[];
+      
       setUsers(profilesWithEmails);
 
       // Fetch bookings with user and class details
@@ -616,7 +623,13 @@ const AdminPanel = () => {
                                                 <p className="font-medium">Estado del consentimiento</p>
                                                 <p className="text-sm text-muted-foreground">
                                                   {user.consent_signed 
-                                                    ? `Firmado el ${new Date(user.consent_signed_at || '').toLocaleDateString('es-ES')}`
+                                                    ? `Firmado el ${new Date(user.consent_signed_at || '').toLocaleDateString('es-ES', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                      })}`
                                                     : 'No firmado'}
                                                 </p>
                                               </div>
@@ -626,7 +639,89 @@ const AdminPanel = () => {
                                             </Badge>
                                           </div>
                                           
-                                          {user.consent_signed && (
+                                          {user.consent_signed && user.consent_signature_url && (
+                                            <>
+                                              {/* Signature Image */}
+                                              <div className="border rounded-lg p-4 bg-white">
+                                                <p className="text-sm font-medium mb-2">Firma Digital:</p>
+                                                <img 
+                                                  src={user.consent_signature_url} 
+                                                  alt="Firma del usuario" 
+                                                  className="max-w-full h-32 object-contain border border-muted mx-auto"
+                                                />
+                                                <div className="mt-3 text-xs text-muted-foreground space-y-1">
+                                                  <p><strong>Método:</strong> {user.consent_method === 'canvas' ? 'Firma dibujada' : 'Nombre escrito'}</p>
+                                                  {user.consent_signed_ip && <p><strong>IP:</strong> {user.consent_signed_ip}</p>}
+                                                  {user.consent_text_version && <p><strong>Versión del documento:</strong> {user.consent_text_version}</p>}
+                                                </div>
+                                              </div>
+
+                                              {/* Download Buttons */}
+                                              <div className="grid grid-cols-2 gap-2">
+                                                <Button 
+                                                  variant="outline" 
+                                                  size="sm"
+                                                  asChild
+                                                >
+                                                  <a href={user.consent_signature_url} download={`firma-${user.first_name}-${user.last_name}.png`}>
+                                                    <Download className="h-4 w-4 mr-2" />
+                                                    Descargar firma
+                                                  </a>
+                                                </Button>
+                                                <Button 
+                                                  variant="outline" 
+                                                  size="sm"
+                                                  onClick={async () => {
+                                                    try {
+                                                      const { data: { session } } = await supabase.auth.getSession();
+                                                      if (!session) throw new Error('No session');
+
+                                                      const response = await fetch(
+                                                        `https://qdpvgbnkewxrervdoexg.supabase.co/functions/v1/generate-consent-pdf`,
+                                                        {
+                                                          method: 'POST',
+                                                          headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Authorization': `Bearer ${session.access_token}`
+                                                          },
+                                                          body: JSON.stringify({ userId: user.user_id })
+                                                        }
+                                                      );
+
+                                                      if (!response.ok) throw new Error('Failed to generate PDF');
+
+                                                      const blob = await response.blob();
+                                                      const url = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = url;
+                                                      a.download = `consentimiento-${user.first_name}-${user.last_name}.html`;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      window.URL.revokeObjectURL(url);
+                                                      document.body.removeChild(a);
+
+                                                      toast({
+                                                        title: "PDF generado",
+                                                        description: "El documento se está descargando."
+                                                      });
+                                                    } catch (error) {
+                                                      console.error('Error generating PDF:', error);
+                                                      toast({
+                                                        title: "Error",
+                                                        description: "No se pudo generar el PDF.",
+                                                        variant: "destructive"
+                                                      });
+                                                    }
+                                                  }}
+                                                >
+                                                  <FileText className="h-4 w-4 mr-2" />
+                                                  Generar PDF
+                                                </Button>
+                                              </div>
+                                            </>
+                                          )}
+
+                                          {user.consent_signed && !user.consent_signature_url && (
                                             <Button 
                                               asChild
                                               variant="outline" 

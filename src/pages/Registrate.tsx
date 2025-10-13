@@ -14,12 +14,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { SignatureCanvasComponent } from '@/components/SignatureCanvas';
+import { useToast } from '@/hooks/use-toast';
 
 const Registrate = () => {
   const { user, signUp, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [signatureMethod, setSignatureMethod] = useState<'canvas' | 'typed'>('canvas');
+  const [showConsentDialog, setShowConsentDialog] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -28,6 +34,16 @@ const Registrate = () => {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!signatureData) {
+      toast({
+        title: "Firma requerida",
+        description: "Por favor, firma el consentimiento informado antes de continuar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
@@ -51,31 +67,78 @@ const Registrate = () => {
     console.log('Registration result:', { error, data });
 
     if (!error && data?.user) {
-      // Wait a bit for the trigger to create the profile, then update it with consent data
-      setTimeout(async () => {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            dni,
-            birth_date: birthDate,
-            objective,
-            consent_signed: true,
-            consent_signed_at: new Date().toISOString()
-          })
-          .eq('user_id', data.user.id);
-
-        if (updateError) {
-          console.error('Error updating profile with consent:', updateError);
-        } else {
-          console.log('Profile updated with consent and objective data');
+      try {
+        // Get user's session token
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error('No session available');
         }
-      }, 1000);
+
+        // Convert base64 signature to blob
+        const base64Response = await fetch(signatureData);
+        const blob = await base64Response.blob();
+        
+        // Prepare form data for edge function
+        const signatureFormData = new FormData();
+        signatureFormData.append('signature', blob, 'signature.png');
+        signatureFormData.append('method', signatureMethod);
+        signatureFormData.append('ip', 'client-ip'); // Will be captured server-side
+        signatureFormData.append('userAgent', navigator.userAgent);
+        signatureFormData.append('textVersion', 'v1');
+
+        // Call edge function to save signature
+        const { data: consentData, error: consentError } = await supabase.functions.invoke('save-consent', {
+          body: signatureFormData,
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        });
+
+        if (consentError) {
+          console.error('Error saving consent:', consentError);
+          toast({
+            title: "Error al guardar la firma",
+            description: "Tu cuenta se creó pero hubo un problema guardando la firma. Contacta con el administrador.",
+            variant: "destructive"
+          });
+        }
+
+        // Update profile with additional data
+        setTimeout(async () => {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              dni,
+              birth_date: birthDate,
+              objective
+            })
+            .eq('user_id', data.user.id);
+
+          if (updateError) {
+            console.error('Error updating profile:', updateError);
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.error('Error in registration process:', err);
+        toast({
+          title: "Error",
+          description: "Hubo un problema completando tu registro. Por favor, contacta con el administrador.",
+          variant: "destructive"
+        });
+      }
 
       setRegistrationSuccess(true);
       console.log('Registration successful, showing approval message...');
     }
 
     setIsLoading(false);
+  };
+
+  const handleSignatureChange = (signature: string | null, method: 'canvas' | 'typed') => {
+    setSignatureData(signature);
+    setSignatureMethod(method);
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -324,7 +387,7 @@ const Registrate = () => {
                               Me comprometo a seguir las normas de seguridad y las instrucciones de los entrenadores en todo momento.
                             </p>
                             
-                            <Dialog>
+                            <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
                               <DialogTrigger asChild>
                                 <Button 
                                   type="button" 
@@ -333,49 +396,85 @@ const Registrate = () => {
                                   className="w-full font-inter text-xs mt-2"
                                 >
                                   <ExternalLink className="h-3 w-3 mr-2" />
-                                  Ver documento completo (PDF)
+                                  Ver documento y firmar
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[90vh]">
+                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
                                 <DialogHeader>
                                   <DialogTitle className="font-oswald">Consentimiento Informado - EgiaK.O. Boxeo</DialogTitle>
                                   <DialogDescription className="font-inter">
-                                    Lee detenidamente el documento completo antes de aceptar
+                                    Lee el documento y firma para aceptar los términos
                                   </DialogDescription>
                                 </DialogHeader>
-                                <div className="overflow-auto max-h-[70vh] border rounded-lg">
-                                  <object 
-                                    data="/documents/consentimiento-informado.pdf#toolbar=0" 
-                                    type="application/pdf" 
-                                    className="w-full h-[70vh]"
-                                  >
-                                    <p className="p-4 text-sm text-muted-foreground">
-                                      No se pudo visualizar el PDF en tu navegador. 
-                                      <a href="/documents/consentimiento-informado.pdf" download className="underline">Descargar PDF</a> o 
-                                      <a href="/documents/consentimiento-informado.pdf" target="_blank" rel="noopener noreferrer" className="underline ml-1">abrir en nueva pestaña</a>.
-                                    </p>
-                                  </object>
+                                
+                                <div className="space-y-4 overflow-y-auto max-h-[60vh]">
+                                  {/* PDF Viewer */}
+                                  <div className="border rounded-lg overflow-hidden">
+                                    <object 
+                                      data="/documents/consentimiento-informado.pdf#toolbar=0" 
+                                      type="application/pdf" 
+                                      className="w-full h-[40vh]"
+                                    >
+                                      <p className="p-4 text-sm text-muted-foreground">
+                                        <a href="/documents/consentimiento-informado.pdf" download className="underline">Descargar PDF</a> o 
+                                        <a href="/documents/consentimiento-informado.pdf" target="_blank" rel="noopener noreferrer" className="underline ml-1">abrir en nueva pestaña</a>.
+                                      </p>
+                                    </object>
+                                  </div>
+
+                                  {/* Signature Component */}
+                                  <div className="border-t pt-4">
+                                    <SignatureCanvasComponent onSignatureChange={handleSignatureChange} />
+                                  </div>
+
+                                  {/* Consent Checkbox */}
+                                  <div className="flex items-start space-x-2 p-4 bg-muted/30 rounded-lg">
+                                    <Checkbox id="consent-modal" required />
+                                    <Label htmlFor="consent-modal" className="text-xs font-inter leading-relaxed cursor-pointer">
+                                      He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
+                                    </Label>
+                                  </div>
                                 </div>
-                                <div className="flex justify-center gap-2 pt-2">
+
+                                <div className="flex justify-end gap-2 pt-2 border-t">
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => window.open('/documents/consentimiento-informado.pdf', '_blank')}
-                                    className="font-inter text-sm"
+                                    onClick={() => setShowConsentDialog(false)}
                                   >
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Abrir en nueva pestaña
+                                    Cerrar
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    onClick={() => {
+                                      if (signatureData) {
+                                        setShowConsentDialog(false);
+                                        toast({
+                                          title: "Firma guardada",
+                                          description: "Tu firma ha sido capturada correctamente."
+                                        });
+                                      } else {
+                                        toast({
+                                          title: "Firma requerida",
+                                          description: "Por favor, firma antes de continuar.",
+                                          variant: "destructive"
+                                        });
+                                      }
+                                    }}
+                                    disabled={!signatureData}
+                                  >
+                                    Confirmar firma
                                   </Button>
                                 </div>
                               </DialogContent>
                             </Dialog>
 
-                            <div className="flex items-start space-x-2 mt-3">
-                              <Checkbox id="consent" required />
-                              <Label htmlFor="consent" className="text-xs font-inter leading-relaxed cursor-pointer">
-                                He leído y acepto el consentimiento informado para la práctica de boxeo *
-                              </Label>
-                            </div>
+                            {signatureData && (
+                              <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded">
+                                <CheckCircle className="h-4 w-4" />
+                                <span>Firma capturada correctamente</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
