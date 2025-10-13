@@ -620,17 +620,18 @@ const AdminPanel = () => {
                                       </div>
 
                                       {/* Objetivo */}
-                                      <div className="space-y-3">
-                                        <h3 className="font-semibold text-lg border-b pb-2">Objetivo de Entrenamiento</h3>
-                                        <div className="bg-muted/50 rounded-lg p-4">
-                                          <p className="font-medium">
-                                            {user.objective === 'forma' && '🎯 Ponerme en forma'}
-                                            {user.objective === 'competir' && '🥊 Competir'}
-                                            {user.objective === 'tecnica' && '📚 Aprender técnica'}
-                                            {!user.objective && 'No especificado'}
-                                          </p>
+                                      {user.objective && (
+                                        <div className="space-y-3">
+                                          <h3 className="font-semibold text-lg border-b pb-2">Objetivo de Entrenamiento</h3>
+                                          <div className="bg-muted/50 rounded-lg p-4">
+                                            <p className="font-medium">
+                                              {user.objective === 'forma' && '🎯 Ponerme en forma'}
+                                              {user.objective === 'competir' && '🥊 Competir'}
+                                              {user.objective === 'tecnica' && '📚 Aprender técnica'}
+                                            </p>
+                                          </div>
                                         </div>
-                                      </div>
+                                      )}
 
                                       {/* Consentimiento */}
                                       <div className="space-y-3">
@@ -661,19 +662,43 @@ const AdminPanel = () => {
                                           
                                           {user.consent_signed && user.consent_signature_url && (
                                             <>
+                                              {/* Datos del firmante */}
+                                              <div className="border rounded-lg p-4 bg-background space-y-2">
+                                                <p className="text-sm font-medium mb-2">Datos del firmante:</p>
+                                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                                  <div>
+                                                    <span className="text-muted-foreground">Nombre:</span>
+                                                    <span className="ml-2 font-medium">{user.first_name} {user.last_name}</span>
+                                                  </div>
+                                                  <div>
+                                                    <span className="text-muted-foreground">DNI:</span>
+                                                    <span className="ml-2 font-medium">{user.dni || 'N/A'}</span>
+                                                  </div>
+                                                  <div>
+                                                    <span className="text-muted-foreground">Fecha de nacimiento:</span>
+                                                    <span className="ml-2 font-medium">
+                                                      {user.birth_date 
+                                                        ? new Date(user.birth_date).toLocaleDateString('es-ES')
+                                                        : 'N/A'}
+                                                    </span>
+                                                  </div>
+                                                  <div>
+                                                    <span className="text-muted-foreground">Método:</span>
+                                                    <span className="ml-2 font-medium">
+                                                      {user.consent_method === 'canvas' ? 'Firma dibujada' : 'Nombre escrito'}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+
                                               {/* Signature Image */}
                                               <div className="border rounded-lg p-4 bg-white">
                                                 <p className="text-sm font-medium mb-2">Firma Digital:</p>
                                                 <img 
                                                   src={user.consent_signature_url} 
                                                   alt="Firma del usuario" 
-                                                  className="max-w-full h-32 object-contain border border-muted mx-auto"
+                                                  className="max-w-full h-32 object-contain border border-muted mx-auto bg-white"
                                                 />
-                                                <div className="mt-3 text-xs text-muted-foreground space-y-1">
-                                                  <p><strong>Método:</strong> {user.consent_method === 'canvas' ? 'Firma dibujada' : 'Nombre escrito'}</p>
-                                                  {user.consent_signed_ip && <p><strong>IP:</strong> {user.consent_signed_ip}</p>}
-                                                  {user.consent_text_version && <p><strong>Versión del documento:</strong> {user.consent_text_version}</p>}
-                                                </div>
                                               </div>
 
                                               {/* Download Buttons */}
@@ -735,23 +760,18 @@ const AdminPanel = () => {
                                                   }}
                                                 >
                                                   <FileText className="h-4 w-4 mr-2" />
-                                                  Generar PDF
+                                                  Generar PDF completo
                                                 </Button>
                                               </div>
                                             </>
                                           )}
 
                                           {user.consent_signed && !user.consent_signature_url && (
-                                            <Button 
-                                              asChild
-                                              variant="outline" 
-                                              className="w-full"
-                                            >
-                                              <a href="/documents/consentimiento-informado.pdf" download>
-                                                <Download className="h-4 w-4 mr-2" />
-                                                Descargar documento de consentimiento
-                                              </a>
-                                            </Button>
+                                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                              <p className="text-sm text-yellow-800">
+                                                ⚠️ Consentimiento firmado pero no se encontró la imagen de la firma.
+                                              </p>
+                                            </div>
                                           )}
                                         </div>
                                       </div>

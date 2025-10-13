@@ -6,15 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Mail, Lock, User, Phone, Target, CheckCircle, Clock, Calendar, FileText, ExternalLink } from 'lucide-react';
+import { Mail, Lock, User, Phone, Target, CheckCircle, Clock, Calendar, FileText } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { SignatureCanvasComponent } from '@/components/SignatureCanvas';
+import { ConsentModal } from '@/components/ConsentModal';
 import { useToast } from '@/hooks/use-toast';
 
 const Registrate = () => {
@@ -160,9 +159,14 @@ const Registrate = () => {
     setIsLoading(false);
   };
 
-  const handleSignatureChange = (signature: string | null, method: 'canvas' | 'typed') => {
+  const handleConsentAccept = (signature: string, method: 'canvas' | 'typed') => {
     setSignatureData(signature);
     setSignatureMethod(method);
+    setConsentAccepted(true);
+    toast({
+      title: "Consentimiento aceptado",
+      description: "Tu firma ha sido capturada correctamente.",
+    });
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -409,126 +413,37 @@ const Registrate = () => {
                         <div className="flex items-start gap-2">
                           <FileText className="h-5 w-5 text-boxing-red mt-0.5 flex-shrink-0" />
                           <div className="space-y-2 flex-1">
-                            <h4 className="font-semibold font-oswald text-sm">Consentimiento Informado</h4>
+                            <h4 className="font-semibold font-oswald text-sm">Consentimiento Informado *</h4>
                             <p className="text-xs text-muted-foreground font-inter leading-relaxed">
-                              Al participar en actividades de boxeo, reconozco los riesgos inherentes a este deporte de contacto. 
-                              Me comprometo a seguir las normas de seguridad y las instrucciones de los entrenadores en todo momento.
+                              Es obligatorio leer y firmar el consentimiento informado para poder registrarte en el club.
                             </p>
-
-                            {/* Campo de firma directamente bajo el texto */}
-                            <div className="mt-3">
-                              <SignatureCanvasComponent onSignatureChange={handleSignatureChange} />
-                              <div className="flex items-start space-x-2 mt-3 p-3 bg-muted/30 rounded-lg">
-                                <Checkbox 
-                                  id="consent-outside" 
-                                  checked={consentAccepted}
-                                  onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
-                                  required 
-                                />
-                                <Label htmlFor="consent-outside" className="text-xs font-inter leading-relaxed cursor-pointer">
-                                  He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
-                                </Label>
-                              </div>
-                            </div>
                             
-                            <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="w-full font-inter text-xs mt-2"
-                                >
-                                  <ExternalLink className="h-3 w-3 mr-2" />
-                                  Ver documento y firmar
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-                                <DialogHeader>
-                                  <DialogTitle className="font-oswald">Consentimiento Informado - EgiaK.O. Boxeo</DialogTitle>
-                                  <DialogDescription className="font-inter">
-                                    Lee el documento y firma para aceptar los términos
-                                  </DialogDescription>
-                                </DialogHeader>
-                                
-                                <div className="space-y-4 overflow-y-auto max-h-[60vh]">
-                                  {/* PDF Viewer */}
-                                  <div className="border rounded-lg overflow-hidden">
-                                    <object 
-                                      data="/documents/consentimiento-informado.pdf#toolbar=0" 
-                                      type="application/pdf" 
-                                      className="w-full h-[40vh]"
-                                    >
-                                      <p className="p-4 text-sm text-muted-foreground">
-                                        <a href="/documents/consentimiento-informado.pdf" download className="underline">Descargar PDF</a> o 
-                                        <a href="/documents/consentimiento-informado.pdf" target="_blank" rel="noopener noreferrer" className="underline ml-1">abrir en nueva pestaña</a>.
-                                      </p>
-                                    </object>
-                                  </div>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setShowConsentDialog(true)}
+                              className="w-full font-inter text-xs mt-2"
+                            >
+                              <FileText className="h-3 w-3 mr-2" />
+                              Leer y firmar consentimiento
+                            </Button>
 
-
-                                  {/* Consent Checkbox */}
-                                   <div className="flex items-start space-x-2 p-4 bg-muted/30 rounded-lg">
-                                     <Checkbox 
-                                       id="consent-modal" 
-                                       checked={consentAccepted}
-                                       onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
-                                       required 
-                                     />
-                                     <Label htmlFor="consent-modal" className="text-xs font-inter leading-relaxed cursor-pointer">
-                                       He leído, comprendido y acepto el consentimiento informado. Confirmo que la firma proporcionada es auténtica. *
-                                     </Label>
-                                  </div>
-                                </div>
-
-                                <div className="flex justify-end gap-2 pt-2 border-t">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowConsentDialog(false)}
-                                  >
-                                    Cerrar
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                     onClick={() => {
-                                       if (signatureData && consentAccepted) {
-                                         setShowConsentDialog(false);
-                                         toast({
-                                           title: "Firma guardada",
-                                           description: "Tu firma ha sido capturada correctamente."
-                                         });
-                                       } else if (!signatureData) {
-                                         toast({
-                                           title: "Firma requerida",
-                                           description: "Por favor, firma antes de continuar.",
-                                           variant: "destructive"
-                                         });
-                                       } else if (!consentAccepted) {
-                                         toast({
-                                           title: "Acepta el consentimiento",
-                                           description: "Debes marcar la casilla de aceptación.",
-                                           variant: "destructive"
-                                         });
-                                       }
-                                     }}
-                                     disabled={!signatureData || !consentAccepted}
-                                  >
-                                    Confirmar firma
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-
-                            {signatureData && (
+                            {signatureData && consentAccepted && (
                               <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded">
                                 <CheckCircle className="h-4 w-4" />
-                                <span>Firma capturada correctamente</span>
+                                <span>Consentimiento firmado y aceptado</span>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
+
+                      <ConsentModal 
+                        open={showConsentDialog}
+                        onOpenChange={setShowConsentDialog}
+                        onAccept={handleConsentAccept}
+                      />
 
                       <div className="flex items-start space-x-2">
                         <Checkbox id="privacy" required />
