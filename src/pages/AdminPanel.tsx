@@ -364,6 +364,9 @@ const AdminPanel = () => {
                               {user.first_name} {user.last_name}
                             </TableCell>
                             <TableCell>{user.phone}</TableCell>
+                            <TableCell>
+                              <Badge variant="default" className="bg-green-600">Activo</Badge>
+                            </TableCell>
                             <TableCell>{user.dni || '-'}</TableCell>
                             <TableCell>
                               {user.consent_signed ? (

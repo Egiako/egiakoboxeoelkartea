@@ -12,3 +12,9 @@ verify_jwt = true
 
 [functions.admin-expel-user]
 verify_jwt = true
+
+[functions.save-consent]
+verify_jwt = false
+
+[functions.generate-consent-pdf]
+verify_jwt = true

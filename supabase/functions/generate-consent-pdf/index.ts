@@ -278,7 +278,6 @@ serve(async (req) => {
         y2 -= 18;
         page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
         y2 -= 18;
-      }
       } else {
         const fullName = `${profile.first_name} ${profile.last_name}`.trim();
         const signedAt = profile.consent_signed_at

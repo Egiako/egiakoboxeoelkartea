@@ -17,40 +17,56 @@ serve(async (req) => {
     
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header for user authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+  // Optional authentication via Authorization header
+  const authHeader = req.headers.get('Authorization') || '';
+
+  let sessionUser: any = null;
+  let targetUserId: string | null = null;
+
+  // Try to verify user with regular anon key if Authorization provided
+  if (authHeader) {
+    try {
+      const supabaseClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!
+      );
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+      if (!userError && user) {
+        sessionUser = user;
+        targetUserId = user.id;
+      }
+    } catch (_) {
+      // Ignore auth errors here; we'll fallback to userId from form
     }
+  }
 
-    // Verify user with regular anon key
-    const supabaseClient = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    );
-    
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+  // Parse incoming form data
+  const formData = await req.formData();
+  const signatureFile = formData.get('signature') as File | null;
+  const method = (formData.get('method') as string) || '';
+  const textVersion = (formData.get('textVersion') as string) || 'v1';
+  const ip = (req.headers.get('x-forwarded-for') || (formData.get('ip') as string) || '').toString();
+  const userAgent = (req.headers.get('user-agent') || (formData.get('userAgent') as string) || '').toString();
 
-    if (userError || !user) {
-      throw new Error('Unauthorized');
-    }
+  // Fallback: allow passing userId when no session is available (e.g., during email confirmation flow)
+  if (!targetUserId) {
+    const bodyUserId = (formData.get('userId') as string) || '';
+    if (bodyUserId) targetUserId = bodyUserId;
+  }
 
-    const formData = await req.formData();
-    const signatureFile = formData.get('signature') as File;
-    const method = formData.get('method') as string;
-    const ip = formData.get('ip') as string;
-    const userAgent = formData.get('userAgent') as string;
-    const textVersion = formData.get('textVersion') as string || 'v1';
+  if (!targetUserId) {
+    throw new Error('Unable to determine target user');
+  }
 
-    if (!signatureFile) {
-      throw new Error('No signature file provided');
-    }
+  if (!signatureFile) {
+    throw new Error('No signature file provided');
+  }
 
     // Upload signature to storage
     const timestamp = new Date().getTime();
-    const filePath = `${user.id}/signature-${timestamp}.png`;
+    const filePath = `${targetUserId}/signature-${timestamp}.png`;
     
     const fileBuffer = await signatureFile.arrayBuffer();
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
@@ -82,7 +98,7 @@ serve(async (req) => {
         consent_user_agent: userAgent,
         consent_text_version: textVersion
       })
-      .eq('user_id', user.id);
+      .eq('user_id', targetUserId as string);
 
     if (updateError) {
       console.error('Update error:', updateError);

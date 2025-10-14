@@ -84,14 +84,14 @@ const Registrate = () => {
 
     if (!error && data?.user) {
       try {
-        // Ensure we have a valid session/token after sign up
-        let session = data.session ?? (await supabase.auth.getSession()).data.session;
+        // Try to get current session
+        const { data: sessionResp } = await supabase.auth.getSession();
+        let accessToken = sessionResp.session?.access_token ?? null;
 
-        // Fallback: try to sign in to obtain a session if needed (some projects require email confirmation off)
-        if (!session) {
-          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInErr) throw new Error('No session available');
-          session = signInData.session;
+        // Fallback: try to sign in to obtain a session if needed
+        if (!accessToken) {
+          const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
+          accessToken = signInData.session?.access_token ?? null;
         }
 
         // Convert base64 signature to blob
@@ -102,30 +102,26 @@ const Registrate = () => {
         const signatureFormData = new FormData();
         signatureFormData.append('signature', blob, 'signature.png');
         signatureFormData.append('method', signatureMethod);
-        signatureFormData.append('ip', ''); // IP opcional: el servidor puede capturarla
         signatureFormData.append('userAgent', navigator.userAgent);
         signatureFormData.append('textVersion', 'v1');
+        signatureFormData.append('userId', data.user.id);
 
         // Call edge function to save signature (multipart/form-data)
+        const headers: Record<string, string> = {};
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+
         const response = await fetch(
           `https://qdpvgbnkewxrervdoexg.supabase.co/functions/v1/save-consent`,
           {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${session!.access_token}`
-            },
+            headers,
             body: signatureFormData
           }
         );
 
         if (!response.ok) {
-          const errJson = await response.json().catch(() => ({}));
-          console.error('Error saving consent:', errJson);
-          toast({
-            title: 'Error al guardar la firma',
-            description: 'Tu cuenta se creó pero hubo un problema guardando la firma. Contacta con el administrador.',
-            variant: 'destructive'
-          });
+          const errJson = await response.json().catch(() => ({} as any));
+          throw new Error(errJson?.error || 'No se pudo guardar la firma');
         }
 
         // Update profile with additional data (dni, birth_date, objective)
@@ -142,19 +138,24 @@ const Registrate = () => {
           console.error('Error updating profile:', updateError);
         }
 
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error in registration process:', err);
         toast({
           title: 'Error',
-          description: 'Hubo un problema completando tu registro. Por favor, contacta con el administrador.',
+          description: err?.message || 'Hubo un problema completando tu registro. Por favor, contacta con el administrador.',
           variant: 'destructive'
         });
       }
 
       setRegistrationSuccess(true);
       console.log('Registration successful, showing approval message...');
+    } else if (error) {
+      toast({
+        title: 'Error en el registro',
+        description: error.message || 'No se pudo completar el registro',
+        variant: 'destructive'
+      });
     }
-
 
     setIsLoading(false);
   };
