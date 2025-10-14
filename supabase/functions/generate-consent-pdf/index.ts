@@ -267,19 +267,32 @@ serve(async (req) => {
       } catch (e) {
         console.error('Error embedding signature image:', e);
         page.drawText('Firma no disponible (error al cargar la imagen).', { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        const fullName = `${profile.first_name} ${profile.last_name}`.trim();
+        const signedAt = profile.consent_signed_at
+          ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
+          : 'N/A';
+        page.drawText(`Firmado por: ${fullName}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(`Fecha: ${signedAt}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
       }
-      const fullName = `${profile.first_name} ${profile.last_name}`.trim();
-      const signedAt = profile.consent_signed_at
-        ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
-        : 'N/A';
-      page.drawText('Firma no disponible (se registró aceptación sin imagen).', { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`Firmado por: ${fullName}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`Fecha: ${signedAt}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
+      } else {
+        const fullName = `${profile.first_name} ${profile.last_name}`.trim();
+        const signedAt = profile.consent_signed_at
+          ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
+          : 'N/A';
+        page.drawText('Firma no disponible (se registró aceptación sin imagen).', { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(`Firmado por: ${fullName}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(`Fecha: ${signedAt}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+        page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
+        y2 -= 18;
+      }
 
     // Technical info footer
     y2 -= 20;
