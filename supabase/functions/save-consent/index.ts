@@ -64,13 +64,13 @@ serve(async (req) => {
     throw new Error('No signature file provided');
   }
 
-    // Upload signature to storage
+    // Upload signature to storage (bucket: signatures)
     const timestamp = new Date().getTime();
     const filePath = `${targetUserId}/signature-${timestamp}.png`;
     
     const fileBuffer = await signatureFile.arrayBuffer();
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from('consents')
+      .from('signatures')
       .upload(filePath, fileBuffer, {
         contentType: 'image/png',
         upsert: false
@@ -83,7 +83,7 @@ serve(async (req) => {
 
     // Get public URL
     const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('consents')
+      .from('signatures')
       .getPublicUrl(filePath);
 
     // Update profile with consent information

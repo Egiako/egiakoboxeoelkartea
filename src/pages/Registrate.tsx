@@ -83,6 +83,12 @@ const Registrate = () => {
     console.log('Registration result:', { error, data });
 
     if (!error && data?.user) {
+      // Show loading toast for signature upload
+      toast({
+        title: "Guardando firma...",
+        description: "Subiendo tu firma digital de forma segura.",
+      });
+
       try {
         // Try to get current session
         const { data: sessionResp } = await supabase.auth.getSession();
@@ -121,8 +127,13 @@ const Registrate = () => {
 
         if (!response.ok) {
           const errJson = await response.json().catch(() => ({} as any));
-          throw new Error(errJson?.error || 'No se pudo guardar la firma');
+          const errorMsg = errJson?.error || 'No se pudo guardar la firma';
+          console.error('Error saving signature:', errorMsg);
+          throw new Error(errorMsg);
         }
+
+        const result = await response.json();
+        console.log('Signature saved successfully:', result);
 
         // Update profile with additional data (dni, birth_date, objective)
         const { error: updateError } = await supabase
@@ -138,13 +149,20 @@ const Registrate = () => {
           console.error('Error updating profile:', updateError);
         }
 
+        toast({
+          title: "¡Registro completado!",
+          description: "Tu consentimiento y firma se han guardado correctamente.",
+        });
+
       } catch (err: any) {
         console.error('Error in registration process:', err);
         toast({
-          title: 'Error',
-          description: err?.message || 'Hubo un problema completando tu registro. Por favor, contacta con el administrador.',
+          title: 'Error al guardar la firma',
+          description: err?.message || 'Hubo un problema guardando tu firma. Por favor, contacta con el administrador.',
           variant: 'destructive'
         });
+        setIsLoading(false);
+        return;
       }
 
       setRegistrationSuccess(true);
