@@ -96,9 +96,23 @@ const SobreNosotros = () => {
           </div>
         </section>
 
+        {/* Asociación sin ánimo de lucro */}
+        <section className="py-20 bg-boxing-grey/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="font-oswald font-bold text-4xl mb-8">Asociación sin ánimo de lucro</h2>
+              <p className="font-inter text-lg text-muted-foreground leading-relaxed">
+                Nuestra entidad está constituida como una asociación deportiva sin ánimo de lucro. 
+                Esto significa que todos los recursos y aportaciones que recibimos se destinan 
+                íntegramente a la promoción del boxeo, al desarrollo de actividades deportivas y 
+                formativas, y al fomento de valores como el respeto, la disciplina y la superación personal.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Misión y Valores */}
-        <section className="py-20 bg-boxing-grey/30">
+        <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="font-oswald font-bold text-4xl mb-6">Nuestra Misión</h2>
@@ -119,21 +133,6 @@ const SobreNosotros = () => {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Asociación sin ánimo de lucro */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="font-oswald font-bold text-4xl mb-8">Asociación sin ánimo de lucro</h2>
-              <p className="font-inter text-lg text-muted-foreground leading-relaxed">
-                Nuestra entidad está constituida como una asociación deportiva sin ánimo de lucro. 
-                Esto significa que todos los recursos y aportaciones que recibimos se destinan 
-                íntegramente a la promoción del boxeo, al desarrollo de actividades deportivas y 
-                formativas, y al fomento de valores como el respeto, la disciplina y la superación personal.
-              </p>
             </div>
           </div>
         </section>
@@ -182,6 +181,26 @@ const SobreNosotros = () => {
                   <Target className="h-6 w-6 text-boxing-red" />
                 </div>
                 <div className="h-px bg-gradient-to-r from-boxing-red to-transparent flex-1"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Acceso y aparcamiento */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="font-oswald font-bold text-4xl mb-8">Acceso y aparcamiento</h2>
+              <div className="font-inter text-lg text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  Nuestro local está situado en una calle sin salida, por lo que no hay aparcamiento para coches.
+                </p>
+                <p>
+                  Sin embargo, disponemos de dos parkings para motos justo al lado del local.
+                </p>
+                <p>
+                  Recomendamos venir a pie o en transporte público siempre que sea posible.
+                </p>
               </div>
             </div>
           </div>
