@@ -179,14 +179,14 @@ serve(async (req) => {
       drawWrappedText(p, 11, 16);
     }
 
-    // Signature page
-    page = pdfDoc.addPage([pageWidth, pageHeight]);
+    // Signature section (same page, no page break)
+    cursorY -= 40; // Add margin before signature section
     const sigWidthMax = 240;
     const title2 = 'Firma del participante';
-    let y2 = page.getSize().height - margin;
+    ensureSpace(50); // Ensure we have space for the signature section
     const t2w = fontBold.widthOfTextAtSize(title2, 14);
-    page.drawText(title2, { x: (page.getSize().width - t2w) / 2, y: y2, size: 14, font: fontBold });
-    y2 -= 30;
+    page.drawText(title2, { x: (page.getSize().width - t2w) / 2, y: cursorY, size: 14, font: fontBold });
+    cursorY -= 30;
 
     if (profile.consent_signature_url) {
       try {
@@ -264,10 +264,11 @@ serve(async (req) => {
         const scale = sigWidthMax / image.width;
         const drawW = image.width * scale;
         const drawH = image.height * scale;
+        ensureSpace(drawH + 60); // Ensure space for signature image and text below
         const x = (page.getSize().width - drawW) / 2;
-        const y = y2 - drawH;
+        const y = cursorY - drawH;
         page.drawImage(image, { x, y, width: drawW, height: drawH });
-        y2 = y - 14;
+        cursorY = y - 14;
 
         const fullName = `${profile.first_name} ${profile.last_name}`.trim();
         const signedAt = profile.consent_signed_at
@@ -276,26 +277,28 @@ serve(async (req) => {
         const info1 = `Firmado digitalmente por ${fullName}`;
         const info2 = `Fecha: ${signedAt}`;
         const info3 = `DNI: ${profile.dni || 'N/A'}`;
-        page.drawText(info1, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
-        page.drawText(info2, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
-        page.drawText(info3, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
+        ensureSpace(60);
+        page.drawText(info1, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
+        page.drawText(info2, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
+        page.drawText(info3, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
       } catch (e) {
         console.error('Error embedding signature image:', e);
-        page.drawText('Firma no disponible (error al cargar la imagen).', { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
+        ensureSpace(80);
+        page.drawText('Firma no disponible (error al cargar la imagen).', { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
         const fullName = `${profile.first_name} ${profile.last_name}`.trim();
         const signedAt = profile.consent_signed_at
           ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
           : 'N/A';
-        page.drawText(`Firmado por: ${fullName}`, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
-        page.drawText(`Fecha: ${signedAt}`, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
-        page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
-        y2 -= 18;
+        page.drawText(`Firmado por: ${fullName}`, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
+        page.drawText(`Fecha: ${signedAt}`, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
+        page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: cursorY, size: 12, font });
+        cursorY -= 18;
       }
     } else {
       // No signature URL available
@@ -303,21 +306,23 @@ serve(async (req) => {
       const signedAt = profile.consent_signed_at
         ? new Date(profile.consent_signed_at).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })
         : 'N/A';
-      page.drawText('Firma no disponible (se registró aceptación sin imagen).', { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`Firmado por: ${fullName}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`Fecha: ${signedAt}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
-      page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: y2, size: 12, font });
-      y2 -= 18;
+      ensureSpace(80);
+      page.drawText('Firma no disponible (se registró aceptación sin imagen).', { x: margin, y: cursorY, size: 12, font });
+      cursorY -= 18;
+      page.drawText(`Firmado por: ${fullName}`, { x: margin, y: cursorY, size: 12, font });
+      cursorY -= 18;
+      page.drawText(`Fecha: ${signedAt}`, { x: margin, y: cursorY, size: 12, font });
+      cursorY -= 18;
+      page.drawText(`DNI: ${profile.dni || 'N/A'}`, { x: margin, y: cursorY, size: 12, font });
+      cursorY -= 18;
     }
 
     // Technical info footer
-    y2 -= 20;
+    cursorY -= 20;
+    ensureSpace(100);
     const techTitle = 'Información técnica de la firma:';
-    page.drawText(techTitle, { x: margin, y: y2, size: 12, font: fontBold });
-    y2 -= 16;
+    page.drawText(techTitle, { x: margin, y: cursorY, size: 12, font: fontBold });
+    cursorY -= 16;
     const techLines: string[] = [
       `Método: ${profile.consent_method || 'N/A'}`,
       `Fecha y Hora: ${profile.consent_signed_at ? new Date(profile.consent_signed_at).toLocaleString('es-ES') : 'N/A'}`,
@@ -326,8 +331,9 @@ serve(async (req) => {
       `User Agent: ${profile.consent_user_agent || 'N/A'}`,
     ];
     for (const line of techLines) {
-      page.drawText(line, { x: margin, y: y2, size: 10, font });
-      y2 -= 14;
+      ensureSpace(14);
+      page.drawText(line, { x: margin, y: cursorY, size: 10, font });
+      cursorY -= 14;
     }
 
     const pdfBytes = await pdfDoc.save();
