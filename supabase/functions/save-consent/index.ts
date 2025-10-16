@@ -47,8 +47,8 @@ serve(async (req) => {
   const signatureFile = formData.get('signature') as File | null;
   const method = (formData.get('method') as string) || '';
   const textVersion = (formData.get('textVersion') as string) || 'v1';
-  const ip = (req.headers.get('x-forwarded-for') || (formData.get('ip') as string) || '').toString();
-  const userAgent = (req.headers.get('user-agent') || (formData.get('userAgent') as string) || '').toString();
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+  const userAgent = req.headers.get('user-agent') || null;
 
   // Fallback: allow passing userId when no session is available (e.g., during email confirmation flow)
   if (!targetUserId) {
