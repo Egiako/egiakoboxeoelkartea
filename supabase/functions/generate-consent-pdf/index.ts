@@ -74,17 +74,21 @@ serve(async (req) => {
     }
 
     const { userId } = await req.json();
+    console.log('Generating PDF for user:', userId);
 
     // Get user profile data
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('*')
+      .select('first_name, last_name, email, phone, dni, birth_date, objective, consent_signature_url, consent_signed, consent_signed_at, consent_signed_ip, consent_method, consent_text_version, consent_user_agent')
       .eq('user_id', userId)
       .single();
 
     if (profileError || !profile) {
+      console.error('Profile error:', profileError);
       throw new Error('User profile not found');
     }
+
+    console.log('Profile loaded, signature URL:', profile.consent_signature_url ? 'present' : 'missing');
 
     // Generate a proper PDF with embedded signature using pdf-lib
     const pdfDoc = await PDFDocument.create();
@@ -186,10 +190,12 @@ serve(async (req) => {
 
     if (profile.consent_signature_url) {
       try {
+        console.log('Processing signature URL:', profile.consent_signature_url);
         let imageBytes: Uint8Array | null = null;
         const sigUrl: string = profile.consent_signature_url as string;
 
         if (sigUrl.startsWith('data:')) {
+          console.log('Signature is data URL');
           // Data URL (base64)
           const base64 = sigUrl.split(',')[1] ?? '';
           const bin = atob(base64);
@@ -197,33 +203,40 @@ serve(async (req) => {
           for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
           imageBytes = bytes;
         } else {
+          console.log('Signature is URL, attempting fetch...');
           // Try direct fetch first (works for public URLs and valid signed URLs)
           try {
             const res = await fetch(sigUrl);
+            console.log('Fetch response status:', res.status);
             if (res.ok) {
               const ab = await res.arrayBuffer();
               imageBytes = new Uint8Array(ab);
+              console.log('Successfully fetched signature via direct fetch, bytes:', imageBytes.length);
             }
-          } catch (_) {
-            // ignore and try storage fallback
+          } catch (e) {
+            console.error('Direct fetch failed:', e);
           }
 
           // Fallback: derive bucket/path from Supabase Storage URL and download with admin client
           if (!imageBytes) {
+            console.log('Direct fetch failed, trying storage download fallback...');
             try {
               const url = new URL(sigUrl);
               // Matches /storage/v1/object/(public|sign)/:bucket/:path?...
               const match = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
+              console.log('URL pathname:', url.pathname, 'Match:', match);
               if (match) {
                 const bucket = match[1];
                 const pathWithQuery = match[2];
                 const path = decodeURIComponent(pathWithQuery.split('?')[0]);
+                console.log('Attempting storage download from bucket:', bucket, 'path:', path);
                 const { data: blob, error: dlError } = await supabaseAdmin.storage.from(bucket).download(path);
                 if (dlError) {
                   console.error('Storage download error:', dlError);
                 } else if (blob) {
                   const ab = await blob.arrayBuffer();
                   imageBytes = new Uint8Array(ab);
+                  console.log('Successfully downloaded signature via storage API, bytes:', imageBytes.length);
                 }
               }
             } catch (e) {
@@ -233,14 +246,19 @@ serve(async (req) => {
         }
 
         if (!imageBytes) {
+          console.error('Failed to load signature image from any source');
           throw new Error('No image bytes for signature');
         }
 
+        console.log('Attempting to embed signature image in PDF...');
         let image: any;
         try {
           image = await pdfDoc.embedPng(imageBytes);
-        } catch {
+          console.log('Successfully embedded PNG signature');
+        } catch (pngError) {
+          console.log('PNG embed failed, trying JPG:', pngError);
           image = await pdfDoc.embedJpg(imageBytes);
+          console.log('Successfully embedded JPG signature');
         }
 
         const scale = sigWidthMax / image.width;
