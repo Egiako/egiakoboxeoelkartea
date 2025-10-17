@@ -99,14 +99,42 @@ const SobreNosotros = () => {
         {/* Asociación sin ánimo de lucro */}
         <section className="py-20 bg-boxing-grey/30">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="font-oswald font-bold text-4xl mb-8">Asociación sin ánimo de lucro</h2>
-              <p className="font-inter text-lg text-muted-foreground leading-relaxed">
-                Nuestra entidad está constituida como una asociación deportiva sin ánimo de lucro. 
-                Esto significa que todos los recursos y aportaciones que recibimos se destinan 
-                íntegramente a la promoción del boxeo, al desarrollo de actividades deportivas y 
-                formativas, y al fomento de valores como el respeto, la disciplina y la superación personal.
-              </p>
+            <div className="max-w-4xl mx-auto">
+              <Card className="shadow-boxing hover:shadow-glow transition-all duration-300">
+                <CardContent className="p-10">
+                  <div className="flex items-center justify-center gap-3 mb-8">
+                    <Shield className="h-10 w-10 text-boxing-red" />
+                    <h2 className="font-oswald font-bold text-4xl text-center">Asociación sin ánimo de lucro</h2>
+                  </div>
+                  
+                  <p className="font-inter text-lg text-muted-foreground leading-relaxed mb-6 text-center">
+                    Nuestra entidad está constituida como una <span className="font-semibold text-foreground">asociación deportiva sin ánimo de lucro</span>.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <p className="font-inter text-lg text-muted-foreground text-center mb-4">
+                      Todos los recursos y aportaciones que recibimos se destinan íntegramente a:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50">
+                        <Target className="h-8 w-8 text-boxing-red mb-3" />
+                        <p className="font-inter text-base text-foreground font-semibold">La promoción del boxeo</p>
+                      </div>
+                      
+                      <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50">
+                        <TrendingUp className="h-8 w-8 text-boxing-red mb-3" />
+                        <p className="font-inter text-base text-foreground font-semibold">El desarrollo de actividades deportivas y formativas</p>
+                      </div>
+                      
+                      <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50">
+                        <Award className="h-8 w-8 text-boxing-red mb-3" />
+                        <p className="font-inter text-base text-foreground font-semibold">Fomentar valores como el respeto, la disciplina y la superación personal</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -189,18 +217,53 @@ const SobreNosotros = () => {
         {/* Acceso y aparcamiento */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="font-oswald font-bold text-4xl mb-8">Acceso y aparcamiento</h2>
-              <div className="font-inter text-lg text-muted-foreground leading-relaxed space-y-4">
-                <p>
-                  Nuestro local está situado en una calle sin salida, por lo que no hay aparcamiento para coches.
-                </p>
-                <p>
-                  Sin embargo, disponemos de dos parkings para motos justo al lado del local.
-                </p>
-                <p>
-                  Recomendamos venir a pie o en transporte público siempre que sea posible.
-                </p>
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="font-oswald font-bold text-4xl">Acceso y aparcamiento</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="shadow-boxing hover:shadow-glow transition-all duration-300">
+                  <CardContent className="p-8 text-center">
+                    <div className="mb-4 flex justify-center">
+                      <div className="w-16 h-16 rounded-full bg-boxing-red/10 flex items-center justify-center">
+                        <Shield className="h-8 w-8 text-boxing-red" />
+                      </div>
+                    </div>
+                    <h3 className="font-oswald font-bold text-xl mb-4">Calle sin salida</h3>
+                    <p className="font-inter text-muted-foreground">
+                      Nuestro local está en una <span className="font-semibold text-foreground">calle sin salida</span>, por lo que <span className="font-semibold text-foreground">no hay aparcamiento para coches</span>.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-boxing hover:shadow-glow transition-all duration-300">
+                  <CardContent className="p-8 text-center">
+                    <div className="mb-4 flex justify-center">
+                      <div className="w-16 h-16 rounded-full bg-boxing-red/10 flex items-center justify-center">
+                        <Target className="h-8 w-8 text-boxing-red" />
+                      </div>
+                    </div>
+                    <h3 className="font-oswald font-bold text-xl mb-4">Parking para motos</h3>
+                    <p className="font-inter text-muted-foreground">
+                      Disponemos de <span className="font-semibold text-foreground">dos parkings para motos</span> justo al lado del local.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-boxing hover:shadow-glow transition-all duration-300">
+                  <CardContent className="p-8 text-center">
+                    <div className="mb-4 flex justify-center">
+                      <div className="w-16 h-16 rounded-full bg-boxing-red/10 flex items-center justify-center">
+                        <Users className="h-8 w-8 text-boxing-red" />
+                      </div>
+                    </div>
+                    <h3 className="font-oswald font-bold text-xl mb-4">Recomendación</h3>
+                    <p className="font-inter text-muted-foreground">
+                      Recomendamos venir <span className="font-semibold text-foreground">a pie o en transporte público</span> siempre que sea posible.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
