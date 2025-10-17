@@ -120,3 +120,42 @@ Estética: energía urbana, contrastes fuertes
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Botones reutilizables */
+  .btn-primary {
+    @apply bg-boxing-red text-white hover:shadow-glow transition-smooth font-oswald font-semibold;
+  }
+
+  .btn-secondary {
+    @apply bg-boxing-grey text-boxing-black hover:bg-boxing-grey/80 transition-smooth font-oswald;
+  }
+
+  .btn-outline {
+    @apply border-2 border-boxing-red text-boxing-red hover:bg-boxing-red hover:text-white transition-smooth font-oswald;
+  }
+
+  /* Cards reutilizables */
+  .card-boxing {
+    @apply bg-card rounded-lg shadow-boxing hover:shadow-glow transition-smooth;
+  }
+
+  /* Textos destacados */
+  .text-gradient-red {
+    @apply text-transparent bg-gradient-to-r from-boxing-red to-boxing-red/80 bg-clip-text;
+  }
+
+  .text-gradient-gold {
+    @apply text-transparent bg-gradient-to-r from-boxing-gold to-boxing-gold/80 bg-clip-text;
+  }
+
+  /* Contenedores */
+  .container-boxing {
+    @apply container mx-auto px-4;
+  }
+
+  /* Secciones */
+  .section-padding {
+    @apply py-20;
+  }
+}
