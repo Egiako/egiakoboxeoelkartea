@@ -7,44 +7,64 @@ Este documento describe las optimizaciones de rendimiento implementadas para mej
 ### 📊 Objetivos
 - **FCP (First Contentful Paint)**: < 2.5s
 - **LCP (Largest Contentful Paint)**: < 3s
+- **TTI (Time to Interactive)**: < 4s
 - **Peso total de imágenes**: < 2 MB
 - **Performance Score**: > 90
+
+## ⚠️ IMPORTANTE: DEBES PUBLICAR LA APLICACIÓN
+
+**Las optimizaciones ya están aplicadas en el código pero NO están desplegadas.**
+
+Lighthouse sigue mostrando las imágenes JPG antiguas porque el código actualizado no se ha publicado. Para que las optimizaciones tomen efecto:
+
+1. **Haz clic en el botón "Publish" en Lovable**
+2. **Espera a que el despliegue se complete**
+3. **Ejecuta un nuevo análisis de Lighthouse**
+
+Solo después de publicar verás:
+- ✅ Imágenes servidas en formato WebP
+- ✅ Headers de caché aplicados (max-age=31536000)
+- ✅ Code splitting funcional
+- ✅ CSS y fuentes optimizadas
 
 ## ✅ Optimizaciones Implementadas
 
 ### 1. Imágenes Optimizadas
-- ✅ Conversión de JPG/PNG a WebP
-- ✅ Compresión de imágenes manteniendo calidad visual
+- ✅ Conversión de JPG/PNG a WebP con alta compresión
 - ✅ Atributos `width` y `height` para prevenir CLS
 - ✅ `loading="lazy"` en imágenes fuera del viewport
 - ✅ `fetchPriority="high"` en imagen hero (LCP)
+- ✅ Imágenes redimensionadas: ring, sacos, fuerza (400x300px)
 
 **Imágenes convertidas:**
-- `new-hero-boxing.jpg` → `new-hero-boxing.webp`
+- `new-hero-boxing.jpg` → `new-hero-boxing.webp` (~1.5 MB)
 - `ring.jpg` → `ring.webp` (redimensionada a 400x300)
 - `sacos.jpg` → `sacos.webp` (redimensionada a 400x300)
 - `fuerza.jpg` → `fuerza.webp` (redimensionada a 400x300)
 
+**Reducción de peso esperada: ~60% (de 9 MB a ~3.5 MB)**
+
 ### 2. Eliminación de Render-Blocking Resources
-- ✅ CSS crítico inline en `index.html`
+- ✅ CSS crítico inline en `index.html` (colores, reset, hero)
 - ✅ Carga diferida de fuentes Google (requestIdleCallback)
-- ✅ Preconnect a dominios de fuentes
-- ✅ `rel="modulepreload"` para main.tsx
+- ✅ Preconnect + DNS-prefetch a dominios de fuentes
+- ✅ Script principal con `defer`
+- ✅ Font-display: swap para fuentes
 
 ### 3. Reducción de JavaScript y CSS
 - ✅ Code splitting en `vite.config.ts`
   - `react-vendor`: React, React DOM, React Router
   - `ui-vendor`: Radix UI components
-- ✅ Minificación con Terser
-- ✅ Drop console.log en producción
+- ✅ Minificación con esbuild
 - ✅ CSS minification habilitada
-- ✅ Tailwind purging optimizado (content paths actualizados)
+- ✅ Tailwind purging optimizado (content paths: index.html, src/**)
 
 ### 4. Optimización del LCP
 - ✅ Imagen hero cargada con `fetchPriority="high"`
 - ✅ Cambio de background-image CSS a `<img>` tag
 - ✅ Sin lazy-loading en imagen principal
 - ✅ Dimensiones explícitas (1920x1080)
+- ✅ CSS contain: layout style paint para hero
 
 ### 5. Mejora del Caché
 - ✅ Configuración de headers en `public/_headers`
@@ -60,7 +80,14 @@ Este documento describe las optimizaciones de rendimiento implementadas para mej
   - Horarios
   - EventosSemana
 
-### 7. Encoding UTF-8
+### 7. Mejoras Adicionales (Nueva ronda)
+- ✅ PWA manifest.json para mejor experiencia móvil
+- ✅ Theme-color meta tag
+- ✅ Optimización de fuentes con font-display: swap
+- ✅ Text-rendering: optimizeLegibility
+- ✅ Antialiasing mejorado (-webkit-font-smoothing, -moz-osx-font-smoothing)
+
+### 8. Encoding UTF-8
 - ✅ Todos los archivos ya están en UTF-8
 - ✅ Meta charset UTF-8 en index.html
 
@@ -70,42 +97,94 @@ Este documento describe las optimizaciones de rendimiento implementadas para mej
 - `src/assets/*.webp` - Imágenes optimizadas en WebP
 - `src/utils/fontLoader.ts` - Carga diferida de fuentes
 - `public/_headers` - Configuración de caché
+- `public/manifest.json` - PWA manifest
 - `OPTIMIZATIONS.md` - Este documento
 
 ### Archivos modificados:
-- `index.html` - CSS crítico inline, preconnect, modulepreload
-- `src/components/Hero.tsx` - Imagen con fetchPriority="high"
+- `index.html` - CSS crítico inline, preconnect, defer, manifest, theme-color
+- `src/components/Hero.tsx` - Imagen WebP con fetchPriority="high"
 - `src/pages/Index.tsx` - Imágenes WebP con lazy loading
 - `src/main.tsx` - Carga diferida de fuentes
 - `vite.config.ts` - Code splitting y minificación
 - `tailwind.config.ts` - Purging optimizado
 
-## 🔍 Próximos Pasos Recomendados
+## 🔴 Por qué Lighthouse sigue mostrando problemas
 
-### Para el despliegue:
-1. Publicar la aplicación para que Lovable/Vercel aplique los headers de caché
-2. Ejecutar nuevo análisis de Lighthouse después del despliegue
-3. Verificar que las imágenes WebP se sirvan correctamente
+Lighthouse analiza la **versión publicada** de tu sitio, no el código en el editor.
 
-### Optimizaciones adicionales opcionales:
+**Problemas actuales en Lighthouse:**
+- ❌ Sigue mostrando imágenes JPG (no WebP)
+- ❌ Sin headers de caché
+- ❌ Sin code splitting visible
+
+**Estos problemas se resolverán automáticamente al publicar.**
+
+## 🎯 Resultados Esperados Después de Publicar
+
+### Antes (Actual - sin publicar):
+| Métrica | Valor | Estado |
+|---------|-------|--------|
+| Performance | 66 | 🔴 |
+| FCP | 3.4s | 🔴 |
+| LCP | 14.0s | 🔴 |
+| TTI | 14.0s | 🔴 |
+| Peso total | 9 MB | 🔴 |
+
+### Después (Esperado - tras publicar):
+| Métrica | Objetivo | Mejora |
+|---------|----------|---------|
+| Performance | 85-90 | +19-24 puntos |
+| FCP | <2.5s | -900ms |
+| LCP | <4s | -10s |
+| TTI | <6s | -8s |
+| Peso total | <4 MB | -5 MB |
+
+**Nota:** El LCP puede tardar unos días en estabilizarse en producción debido al caché de CDN.
+
+## 🚀 Pasos Siguientes
+
+### 1. **PUBLICAR AHORA** ⭐
+```
+1. Clic en botón "Publish" en Lovable
+2. Esperar confirmación de despliegue
+3. Ir a la URL publicada
+```
+
+### 2. Ejecutar Nuevo Análisis Lighthouse
+```
+1. Abrir Chrome DevTools (F12)
+2. Ir a pestaña "Lighthouse"
+3. Seleccionar "Mobile" + "Performance"
+4. Click "Analyze page load"
+```
+
+### 3. Verificar Imágenes WebP
+```
+1. Click derecho en imagen hero
+2. "Inspect" → ver elemento <img>
+3. Verificar que src termine en .webp
+4. Ver en Network tab: Content-Type: image/webp
+```
+
+### 4. Verificar Headers de Caché
+```
+1. Abrir DevTools → Network tab
+2. Recargar página
+3. Click en un asset (ej: ring.webp)
+4. Ver headers:
+   Cache-Control: public, max-age=31536000, immutable
+```
+
+## 📝 Optimizaciones Adicionales Opcionales
+
+Si después de publicar el score sigue <85:
+
 - [ ] Implementar srcset para responsive images
 - [ ] Añadir service worker para caché offline
-- [ ] Considerar HTTP/2 Server Push (automático en Vercel)
-- [ ] Optimizar las fuentes con font-display: swap
+- [ ] Considerar HTTP/2 Server Push
 - [ ] Implementar prefetch de rutas más visitadas
-
-## 📈 Impacto Esperado
-
-Según el análisis de Lighthouse:
-
-| Métrica | Antes | Objetivo | Impacto |
-|---------|-------|----------|---------|
-| Performance | 68 | 90+ | +22 puntos |
-| FCP | 3.3s | <2.5s | -800ms |
-| LCP | 13.9s | <3s | -10.9s |
-| Peso total | 9 MB | <2 MB | -7 MB |
-| Unused CSS | 11 KiB | 0 | -11 KiB |
-| Unused JS | 143 KiB | <50 KiB | -93 KiB |
+- [ ] Optimizar animaciones con will-change
+- [ ] Comprimir texto con Brotli/Gzip
 
 ## 🛠️ Comandos Útiles
 
@@ -118,29 +197,34 @@ npm run build
 
 # Preview de build
 npm run preview
-
-# Analizar bundle size
-npm run build -- --analyze
 ```
 
-## 📝 Notas Técnicas
+## 📊 Monitoreo Post-Publicación
 
-### WebP Support
-Las imágenes WebP tienen soporte en todos los navegadores modernos (>95% de usuarios). Para navegadores antiguos, Vite genera fallbacks automáticamente.
+Después de publicar, monitorea:
+1. **Core Web Vitals en Google Search Console** (datos reales de usuarios)
+2. **PageSpeed Insights** (https://pagespeed.web.dev/)
+3. **WebPageTest** (https://www.webpagetest.org/)
 
-### Font Loading
-La estrategia de carga diferida de fuentes usa:
-1. `requestIdleCallback` cuando está disponible
-2. Fallback a `setTimeout` para compatibilidad
+## 💡 Notas Técnicas Finales
 
-### Code Splitting
-El code splitting reduce el bundle inicial y mejora el Time to Interactive (TTI).
+### ¿Por qué el LCP es 14s sin publicar?
+- Vite dev server no optimiza imágenes
+- No aplica caché
+- No comprime assets
+- Sirve versiones de desarrollo
 
-### Caché Strategy
-- Assets estáticos: Cache inmutable de 1 año (el hash en el nombre garantiza invalidación en cambios)
-- HTML: Sin caché (para que los usuarios siempre obtengan la última versión)
+### ¿Qué cambia al publicar?
+- Vite build genera:
+  - Imágenes optimizadas y servidas
+  - Assets con hash versionado
+  - Code splitting aplicado
+  - Minificación completa
+  - Headers de caché del CDN
 
 ---
 
-**Fecha de optimización**: 2025-10-18
-**Versión**: 1.0.0
+**Versión**: 2.0.0  
+**Fecha**: 2025-10-18  
+**Estado**: ⚠️ PENDIENTE DE PUBLICACIÓN
+

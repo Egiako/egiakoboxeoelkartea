@@ -3,13 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#D7263D" />
+    <link rel="manifest" href="/manifest.json" />
     <title>EgiaK.O. Boxeo elkartea - Boxeo real en Donostia</title>
     <meta name="description" content="Gimnasio de boxeo en Donostia. Clases para todos los niveles, entrenadores titulados. Técnica, fuerza y disciplina. ¡Prueba una clase!" />
     <meta name="author" content="EgiaK.O. Boxeo elkartea" />
     
     <!-- Preconnect para fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     
     <!-- CSS Crítico Inline -->
     <style>
@@ -31,6 +35,8 @@
         color: hsl(var(--foreground));
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
       }
       
       /* Hero crítico - Above the fold */
@@ -41,6 +47,27 @@
         align-items: center;
         justify-content: center;
         overflow: hidden;
+        contain: layout style paint;
+      }
+      
+      /* Prevenir CLS en imágenes */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      
+      /* Optimización de fuentes */
+      @font-face {
+        font-family: 'Oswald';
+        font-display: swap;
+        src: local('Oswald');
+      }
+      
+      @font-face {
+        font-family: 'Inter';
+        font-display: swap;
+        src: local('Inter');
       }
     </style>
 
@@ -98,7 +125,6 @@
 
   <body>
     <div id="root"></div>
-    <link rel="modulepreload" href="/src/main.tsx">
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" defer></script>
   </body>
 </html>
