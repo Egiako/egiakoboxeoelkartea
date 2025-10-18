@@ -16,43 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // React core
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-core';
-            }
-            // React Router
-            if (id.includes('react-router')) {
-              return 'react-router';
-            }
-            // UI Components (Radix UI)
-            if (id.includes('@radix-ui')) {
-              return 'ui-components';
-            }
-            // Icons
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            // React Query
-            if (id.includes('@tanstack/react-query')) {
-              return 'react-query';
-            }
-            // Supabase
-            if (id.includes('@supabase')) {
-              return 'supabase';
-            }
-            // Form libraries
-            if (id.includes('react-hook-form') || id.includes('@hookform')) {
-              return 'forms';
-            }
-            return 'vendor';
-          }
-        },
-      },
-    },
+    rollupOptions: {},
     cssMinify: true,
     minify: 'esbuild',
     cssCodeSplit: true,
