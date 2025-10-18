@@ -16,11 +16,20 @@ window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
 });
 
-createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>
-);
+try {
+  createRoot(document.getElementById("root")!).render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  );
+} catch (e) {
+  console.error('App bootstrap error:', e);
+  const root = document.getElementById('root');
+  if (root) {
+    root.innerHTML = '<main style="padding:16px;font-family:system-ui"><h1>Se produjo un error al iniciar la aplicación.</h1><p>Actualiza la página o vuelve más tarde.</p></main>';
+  }
+}
+
 
 // Monitorear Web Vitals para optimización de rendimiento
 reportWebVitals();

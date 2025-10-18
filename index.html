@@ -13,8 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Preload imagen LCP crítica (ruta genérica segura para dev y build) -->
-    <link rel="preload" as="image" href="/src/assets/new-hero-boxing.webp" fetchpriority="high" type="image/webp">
+    <!-- Preload LCP eliminado para evitar rutas hashed rotas en producción -->
     
     <!-- CSS Crítico Inline -->
     <style>
@@ -125,7 +124,10 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="padding:16px;font-family:system-ui">Cargando…</div>
+    </div>
+    <script>window.__APP_HTML_BOOT = true; console.log('Index HTML cargado');</script>
     <script type="module" src="/src/main.tsx"></script>
     <noscript>
       Necesitas habilitar JavaScript para ver esta web.
