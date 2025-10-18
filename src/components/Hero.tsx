@@ -1,19 +1,18 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Image from '@/components/Image';
 import heroImage from '@/assets/new-hero-boxing.webp';
 const Hero = () => {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image - Optimizada para LCP */}
-      <img 
+      <Image 
         src={heroImage}
-        srcSet={`${heroImage} 1920w, ${heroImage} 1280w, ${heroImage} 640w`}
-        sizes="100vw"
         alt="Boxing training at EgiaK.O. Boxeo elkartea"
         className="absolute inset-0 w-full h-full object-cover"
-        width="1920"
-        height="1080"
-        fetchPriority="high"
-        decoding="async"
+        width={1920}
+        height={1080}
+        priority={true}
+        layout="full"
       />
       <div className="absolute inset-0 bg-gradient-hero opacity-80"></div>
 
