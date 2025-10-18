@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Preload imagen LCP crítica -->
-    <link rel="preload" as="image" href="/assets/new-hero-boxing-DJznLveF.webp" fetchpriority="high" type="image/webp">
+    <!-- Preload imagen LCP crítica (ruta genérica segura para dev y build) -->
+    <link rel="preload" as="image" href="/src/assets/new-hero-boxing.webp" fetchpriority="high" type="image/webp">
     
     <!-- CSS Crítico Inline -->
     <style>
@@ -87,13 +87,13 @@
       "@type": "SportsActivityLocation",
       "name": "EgiaK.O. Boxeo elkartea",
       "description": "Gimnasio de boxeo profesional en Donostia con clases para todos los niveles",
-      "url": "https://egiako-boxeo.lovable.app",
+      "url": "https://egiakoboxeoelkartea.lovable.app",
       "telephone": "000 000 000",
-      "email": "egiaK.O.@gmail.com",
+      "email": "egiako.boxeo@gmail.com",
       "sport": "Boxing",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Calle Ejemplo 123",
+        "streetAddress": "Donostia",
         "addressLocality": "Donostia",
         "addressCountry": "ES"
       },
@@ -127,5 +127,8 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      Necesitas habilitar JavaScript para ver esta web.
+    </noscript>
   </body>
 </html>
