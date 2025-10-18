@@ -20,20 +20,33 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
+            // React core
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-core';
             }
+            // React Router
+            if (id.includes('react-router')) {
+              return 'react-router';
+            }
+            // UI Components (Radix UI)
             if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
+              return 'ui-components';
             }
+            // Icons
             if (id.includes('lucide-react')) {
               return 'icons';
             }
+            // React Query
             if (id.includes('@tanstack/react-query')) {
-              return 'query-vendor';
+              return 'react-query';
             }
+            // Supabase
             if (id.includes('@supabase')) {
-              return 'supabase-vendor';
+              return 'supabase';
+            }
+            // Form libraries
+            if (id.includes('react-hook-form') || id.includes('@hookform')) {
+              return 'forms';
             }
             return 'vendor';
           }
@@ -47,8 +60,14 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     target: 'es2020',
     sourcemap: mode === 'development',
+    assetsInlineLimit: 4096,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+    exclude: ['lovable-tagger'],
+  },
+  preview: {
+    port: 8080,
+    host: "::",
   },
 }));
