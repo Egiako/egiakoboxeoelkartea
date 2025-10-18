@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import heroImage from '@/assets/new-hero-boxing.jpg';
+import heroImage from '@/assets/new-hero-boxing.webp';
 const Hero = () => {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-      backgroundImage: `url(${heroImage})`
-    }}>
-        <div className="absolute inset-0 bg-gradient-hero opacity-80"></div>
-      </div>
+      <img 
+        src={heroImage} 
+        alt="Boxing training at EgiaK.O. Boxeo elkartea"
+        className="absolute inset-0 w-full h-full object-cover"
+        width="1920"
+        height="1080"
+        fetchPriority="high"
+      />
+      <div className="absolute inset-0 bg-gradient-hero opacity-80"></div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">

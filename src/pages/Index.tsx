@@ -9,10 +9,10 @@ import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import heroImage from '@/assets/hero-boxing.jpg';
 import gymInterior from '@/assets/gym-interior.jpg';
-import boxingRing from '@/assets/ring.jpg';
+import boxingRing from '@/assets/ring.webp';
 import coachTraining from '@/assets/coach-training.jpg';
-import fuerzaImage from '@/assets/fuerza.jpg';
-import sacosImage from '@/assets/sacos.jpg';
+import fuerzaImage from '@/assets/fuerza.webp';
+import sacosImage from '@/assets/sacos.webp';
 const Index = () => {
   const beneficios = [{
     icon: <Target className="h-8 w-8" />,
@@ -130,7 +130,14 @@ const Index = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {instalaciones.map((instalacion, index) => <Card key={index} className="overflow-hidden shadow-boxing hover:shadow-glow transition-all duration-300">
                   <div className="aspect-video bg-boxing-grey/20 overflow-hidden">
-                    <img src={instalacion.imagen} alt={instalacion.nombre} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                    <img 
+                      src={instalacion.imagen} 
+                      alt={instalacion.nombre} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      width="400"
+                      height="300"
+                      loading="lazy"
+                    />
                   </div>
                   <CardContent className="p-4">
                     <h3 className="font-oswald font-semibold text-center">{instalacion.nombre}</h3>
