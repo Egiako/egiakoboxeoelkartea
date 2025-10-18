@@ -127,8 +127,21 @@
     <div id="root">
       <div style="padding:16px;font-family:system-ui">Cargando…</div>
     </div>
-    <script>window.__APP_HTML_BOOT = true; console.log('Index HTML cargado');</script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Diagnóstico temprano: captura errores antes de cargar React
+      window.addEventListener('error', function (e) {
+        console.log('Early error:', e);
+        const r = document.getElementById('root');
+        if (r) r.innerHTML = '<main style="padding:16px;font-family:system-ui"><h1>Error cargando la web</h1><p>' + (e.message || 'Error desconocido') + '</p></main>';
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        console.log('Early rejection:', e);
+        const msg = (e && (e.reason?.message || e.reason)) || 'Error desconocido';
+        const r = document.getElementById('root');
+        if (r) r.innerHTML = '<main style="padding:16px;font-family:system-ui"><h1>Error de inicialización</h1><p>' + msg + '</p></main>';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx" onerror="(function(){var r=document.getElementById('root'); if(r){ r.innerHTML='<main style=\'padding:16px;font-family:system-ui\'><h1>No se pudo cargar la aplicación</h1><p>Prueba a actualizar. Si persiste, avísanos.</p></main>'; }})();"></script>
     <noscript>
       Necesitas habilitar JavaScript para ver esta web.
     </noscript>
