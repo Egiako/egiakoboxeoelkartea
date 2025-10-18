@@ -2,7 +2,7 @@ import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-boxing-black text-boxing-white">
+    <footer className="bg-boxing-black text-boxing-white" role="contentinfo">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Información del gimnasio */}
@@ -26,12 +26,16 @@ const Footer = () => {
                 <span className="font-inter">Pje. Ur Zaleak de, 2, 20012 Donostia-San Sebastián</span>
               </div>
               <div className="flex items-center text-sm">
-                <Phone className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" />
-                <span className="font-inter">669339812</span>
+                <Phone className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" aria-hidden="true" />
+                <a href="tel:+34669339812" className="font-inter hover:text-boxing-red transition-colors">
+                  669 339 812
+                </a>
               </div>
               <div className="flex items-center text-sm">
-                <Mail className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" />
-                <span className="font-inter">egiakobe@gmail.com</span>
+                <Mail className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" aria-hidden="true" />
+                <a href="mailto:egiakobe@gmail.com" className="font-inter hover:text-boxing-red transition-colors">
+                  egiakobe@gmail.com
+                </a>
               </div>
             </div>
           </div>
@@ -70,14 +74,20 @@ const Footer = () => {
         <div className="border-t border-boxing-red/20 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm font-inter text-boxing-grey">
             <p>&copy; 2025 <span className="text-boxing-white">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-white"> Boxeo Elkartea</span>. Todos los derechos reservados.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="/politica-privacidad" className="hover:text-boxing-red transition-colors">
+            <nav className="flex space-x-6 mt-4 md:mt-0" aria-label="Enlaces legales">
+              <a 
+                href="/politica-privacidad" 
+                className="hover:text-boxing-red transition-colors focus:outline-none focus:ring-2 focus:ring-boxing-red focus:ring-offset-2 focus:ring-offset-boxing-black rounded"
+              >
                 Política de privacidad
               </a>
-              <a href="/aviso-legal" className="hover:text-boxing-red transition-colors">
+              <a 
+                href="/aviso-legal" 
+                className="hover:text-boxing-red transition-colors focus:outline-none focus:ring-2 focus:ring-boxing-red focus:ring-offset-2 focus:ring-offset-boxing-black rounded"
+              >
                 Aviso legal
               </a>
-            </div>
+            </nav>
           </div>
         </div>
       </div>

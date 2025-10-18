@@ -3,14 +3,16 @@ import { Routes, Route } from "react-router-dom";
 import ApprovalGuard from "@/components/ApprovalGuard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Páginas públicas (carga inmediata)
+// Páginas críticas (carga inmediata)
 import Index from "@/pages/Index";
-import SobreNosotros from "@/pages/SobreNosotros";
-import Precios from "@/pages/Precios";
-import Registrate from "@/pages/Registrate";
-import PoliticaPrivacidad from "@/pages/PoliticaPrivacidad";
-import AvisoLegal from "@/pages/AvisoLegal";
 import NotFound from "@/pages/NotFound";
+
+// Páginas públicas (lazy loading para optimizar bundle inicial)
+const SobreNosotros = lazy(() => import("@/pages/SobreNosotros"));
+const Precios = lazy(() => import("@/pages/Precios"));
+const Registrate = lazy(() => import("@/pages/Registrate"));
+const PoliticaPrivacidad = lazy(() => import("@/pages/PoliticaPrivacidad"));
+const AvisoLegal = lazy(() => import("@/pages/AvisoLegal"));
 
 // Páginas protegidas (lazy loading para optimizar)
 const Horarios = lazy(() => import("@/pages/Horarios"));

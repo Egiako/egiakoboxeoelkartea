@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, Target, Shield, TrendingUp, Award } from 'lucide-react';
@@ -6,6 +7,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
 const SobreNosotros = () => {
+  usePageTitle('Sobre Nosotros');
 
   const valores = [
     {

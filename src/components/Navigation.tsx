@@ -44,6 +44,7 @@ const Navigation = () => {
                     ? 'text-boxing-red border-b-2 border-boxing-red pb-1'
                     : 'text-boxing-white hover:text-boxing-red'
                 }`}
+                aria-current={isActive(item.href) ? 'page' : undefined}
               >
                 {item.name}
               </Link>
@@ -104,6 +105,9 @@ const Navigation = () => {
             size="sm"
             className="md:hidden text-boxing-white hover:text-boxing-red hover:bg-boxing-red/10"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation"
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
@@ -111,7 +115,12 @@ const Navigation = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden border-t border-boxing-red/20 py-4">
+          <div 
+            id="mobile-navigation" 
+            className="md:hidden border-t border-boxing-red/20 py-4"
+            role="navigation"
+            aria-label="Navegación móvil"
+          >
             <div className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <Link

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -14,6 +15,8 @@ import coachTraining from '@/assets/coach-training.jpg';
 import fuerzaImage from '@/assets/fuerza.webp';
 import sacosImage from '@/assets/sacos.webp';
 const Index = () => {
+  usePageTitle('Inicio');
+  
   const beneficios = [{
     icon: <Target className="h-8 w-8" />,
     title: 'Técnica desde cero',

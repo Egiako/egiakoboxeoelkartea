@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Star } from 'lucide-react';
@@ -6,6 +7,8 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
 const Precios = () => {
+  usePageTitle('Precios');
+  
   const planes = [
     {
       nombre: 'Plan Mensual',
