@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
-const Footer = () => {
+const Footer = memo(() => {
   return (
     <footer className="bg-boxing-black text-boxing-white" role="contentinfo">
       <div className="container mx-auto px-4 py-12">
@@ -93,6 +94,8 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer;

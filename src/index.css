@@ -119,6 +119,16 @@ Estética: energía urbana, contrastes fuertes
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Mejoras de accesibilidad: contraste y focus */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Tamaños mínimos de toque para móvil (WCAG 2.1 - 44x44px) */
+  button, a[href], .btn {
+    @apply min-h-[44px];
+  }
 }
 
 @layer components {
