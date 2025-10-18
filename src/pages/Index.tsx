@@ -131,12 +131,15 @@ const Index = () => {
               {instalaciones.map((instalacion, index) => <Card key={index} className="overflow-hidden shadow-boxing hover:shadow-glow transition-all duration-300">
                   <div className="aspect-video bg-boxing-grey/20 overflow-hidden">
                     <img 
-                      src={instalacion.imagen} 
+                      src={instalacion.imagen}
+                      srcSet={`${instalacion.imagen} 400w, ${instalacion.imagen} 300w, ${instalacion.imagen} 200w`}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 400px"
                       alt={instalacion.nombre} 
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       width="400"
                       height="300"
                       loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <CardContent className="p-4">

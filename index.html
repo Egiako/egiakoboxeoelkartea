@@ -9,11 +9,12 @@
     <meta name="description" content="Gimnasio de boxeo en Donostia. Clases para todos los niveles, entrenadores titulados. Técnica, fuerza y disciplina. ¡Prueba una clase!" />
     <meta name="author" content="EgiaK.O. Boxeo elkartea" />
     
-    <!-- Preconnect para fuentes -->
+    <!-- Preconnect crítico -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Preload imagen LCP crítica -->
+    <link rel="preload" as="image" href="/assets/new-hero-boxing-DJznLveF.webp" fetchpriority="high" type="image/webp">
     
     <!-- CSS Crítico Inline -->
     <style>
@@ -125,6 +126,6 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx" defer></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

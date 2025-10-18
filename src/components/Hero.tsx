@@ -3,14 +3,17 @@ import { Button } from '@/components/ui/button';
 import heroImage from '@/assets/new-hero-boxing.webp';
 const Hero = () => {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background Image - Optimizada para LCP */}
       <img 
-        src={heroImage} 
+        src={heroImage}
+        srcSet={`${heroImage} 1920w, ${heroImage} 1280w, ${heroImage} 640w`}
+        sizes="100vw"
         alt="Boxing training at EgiaK.O. Boxeo elkartea"
         className="absolute inset-0 w-full h-full object-cover"
         width="1920"
         height="1080"
         fetchPriority="high"
+        decoding="async"
       />
       <div className="absolute inset-0 bg-gradient-hero opacity-80"></div>
 
