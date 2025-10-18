@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Star } from 'lucide-react';
@@ -27,6 +28,11 @@ const Precios = () => {
 
   return (
     <>
+      <SEO 
+        title="Precios"
+        description="Precios y tarifas de Egia K.O. Boxeo Elkartea. Planes flexibles para todos los presupuestos. Primera clase de prueba incluida."
+        keywords="precios boxeo Donostia, tarifa gimnasio, cuotas boxeo, precio clases boxeo"
+      />
       <Navigation />
       
       <main className="min-h-screen bg-background">

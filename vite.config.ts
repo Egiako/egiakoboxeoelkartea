@@ -29,6 +29,12 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('lucide-react')) {
               return 'icons';
             }
+            if (id.includes('@tanstack/react-query')) {
+              return 'query-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
             return 'vendor';
           }
         },
@@ -38,5 +44,11 @@ export default defineConfig(({ mode }) => ({
     minify: 'esbuild',
     cssCodeSplit: true,
     reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
+    target: 'es2020',
+    sourcemap: mode === 'development',
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
   },
 }));

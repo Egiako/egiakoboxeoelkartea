@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, Target, Shield, TrendingUp, Award } from 'lucide-react';
@@ -45,6 +46,11 @@ const SobreNosotros = () => {
 
   return (
     <>
+      <SEO 
+        title="Sobre Nosotros"
+        description="Conoce la historia de Egia K.O. Boxeo Elkartea. Un club comprometido con el desarrollo del boxeo en Donostia desde hace años."
+        keywords="club boxeo Donostia, historia boxeo, equipo entrenadores, boxeo San Sebastián"
+      />
       <Navigation />
       
       <main className="min-h-screen bg-background">

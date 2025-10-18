@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mail, Lock, User, Phone, Target, CheckCircle, Clock, Calendar, FileText } from 'lucide-react';
+import SEO from '@/components/SEO';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
@@ -212,6 +213,11 @@ const Registrate = () => {
 
   return (
     <>
+      <SEO 
+        title="Regístrate"
+        description="Únete a Egia K.O. Boxeo Elkartea. Regístrate ahora y prueba tu primera clase gratis."
+        keywords="registro boxeo, inscripción gimnasio Donostia, apuntarse boxeo, unirse club boxeo"
+      />
       <Navigation />
       
       <main className="min-h-screen bg-background py-12">

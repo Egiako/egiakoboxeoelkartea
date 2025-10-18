@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -100,6 +101,12 @@ const Index = () => {
     respuesta: "Aceptamos desde los 16 años."
   }];
   return <>
+      <SEO 
+        title="Inicio"
+        description="Egia K.O. Boxeo Elkartea - El mejor club de boxeo en Donostia-San Sebastián. Entrenadores titulados, instalaciones profesionales y clases para todos los niveles."
+        keywords="boxeo Donostia, gimnasio boxeo San Sebastián, clases boxeo, entrenamiento boxeo, club boxeo euskadi"
+        image="/images/hero-boxing.jpg"
+      />
       <Navigation />
       
       <main>

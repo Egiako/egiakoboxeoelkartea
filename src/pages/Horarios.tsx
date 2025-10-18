@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '@/components/SEO';
 import { Calendar, Clock, Users, MapPin, Phone, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -429,6 +430,11 @@ const Horarios = () => {
   };
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Horarios"
+        description="Consulta los horarios de clases de boxeo en Egia K.O. Clases de mañana y tarde adaptadas a todos los niveles."
+        keywords="horarios boxeo Donostia, clases boxeo, horario gimnasio, boxeo San Sebastián"
+      />
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
