@@ -3,7 +3,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Target, Shield, TrendingUp, Award, MapPin } from 'lucide-react';
+import { Users, Target, Shield, TrendingUp, Award } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
@@ -54,22 +54,20 @@ const SobreNosotros = () => {
       <Navigation />
       
       <main className="min-h-screen bg-background">
-        {/* Hero Section - Limpio y profesional */}
-        <section className="relative py-20 md:py-32 bg-gradient-to-br from-background via-background to-muted/20">
+        {/* Hero Section */}
+        <section className="relative py-20 md:py-32">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Users className="h-8 w-8 text-primary" />
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-16 text-center">
+                <h1 className="font-oswald font-bold text-4xl md:text-5xl lg:text-6xl text-white mb-6">
+                  Somos boxeo.
+                  <span className="block text-primary mt-2">Somos comunidad.</span>
+                </h1>
+                
+                <p className="font-inter text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+                  Más que un gimnasio, somos una <span className="font-semibold text-white">familia unida</span> por la pasión del boxeo
+                </p>
               </div>
-              
-              <h1 className="font-oswald font-bold text-5xl md:text-6xl lg:text-7xl">
-                Somos boxeo.
-                <span className="block text-primary mt-2">Somos comunidad.</span>
-              </h1>
-              
-              <p className="font-inter text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Más que un gimnasio, somos una <span className="font-semibold text-foreground">familia unida</span> por la pasión del boxeo
-              </p>
             </div>
           </div>
         </section>
@@ -123,12 +121,9 @@ const SobreNosotros = () => {
         <section className="py-16 md:py-24 bg-muted/20">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              {/* Misión */}
-              <div className="text-center mb-16">
-                <h2 className="font-oswald font-bold text-3xl md:text-4xl mb-6">Nuestra Misión</h2>
-                <p className="font-inter text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-                  "Hacemos del boxeo una escuela de confianza y respeto, donde cada persona puede descubrir su fuerza interior y alcanzar sus objetivos."
-                </p>
+              {/* Valores */}
+              <div className="text-center mb-12">
+                <h2 className="font-oswald font-bold text-3xl md:text-4xl">Nuestros Valores</h2>
               </div>
 
               {/* Valores */}
@@ -177,23 +172,17 @@ const SobreNosotros = () => {
           </div>
         </section>
 
-        {/* Acceso y aparcamiento - Diseño estructurado */}
+        {/* Acceso y aparcamiento */}
         <section className="py-16 md:py-24 bg-muted/20">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
-                  <MapPin className="h-7 w-7 text-primary" />
-                </div>
                 <h2 className="font-oswald font-bold text-3xl md:text-4xl">Acceso y aparcamiento</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-6">
-                      <Shield className="h-7 w-7 text-primary" />
-                    </div>
                     <h3 className="font-oswald font-bold text-xl mb-4">Calle sin salida</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Nuestro local está en una <span className="font-semibold text-foreground">calle sin salida</span>, por lo que <span className="font-semibold text-foreground">no hay aparcamiento para coches</span>.
@@ -203,9 +192,6 @@ const SobreNosotros = () => {
 
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-6">
-                      <Target className="h-7 w-7 text-primary" />
-                    </div>
                     <h3 className="font-oswald font-bold text-xl mb-4">Parking para motos</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Disponemos de <span className="font-semibold text-foreground">dos parkings para motos</span> justo al lado del local.
@@ -215,9 +201,6 @@ const SobreNosotros = () => {
 
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-6">
-                      <Users className="h-7 w-7 text-primary" />
-                    </div>
                     <h3 className="font-oswald font-bold text-xl mb-4">Recomendación</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Recomendamos venir <span className="font-semibold text-foreground">a pie o en transporte público</span> siempre que sea posible.
