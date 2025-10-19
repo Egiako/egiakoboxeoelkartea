@@ -58,15 +58,42 @@ const SobreNosotros = () => {
         <section className="relative py-20 md:py-32">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-16 text-center">
-                <h1 className="font-oswald font-bold text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-                  Somos boxeo.
-                  <span className="block text-primary mt-2">Somos comunidad.</span>
-                </h1>
+              <div className="text-center space-y-6 bg-gradient-to-br from-boxing-black via-boxing-black/90 to-boxing-red/80 rounded-xl p-8 text-white shadow-boxing relative overflow-hidden">
                 
-                <p className="font-inter text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-                  Más que un gimnasio, somos una <span className="font-semibold text-white">familia unida</span> por la pasión del boxeo
-                </p>
+                {/* Animated decorative elements */}
+                <div className="absolute top-4 left-4 w-3 h-3 bg-white/20 rounded-full animate-ping"></div>
+                <div className="absolute top-6 right-6 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
+                <div className="absolute bottom-4 left-8 w-4 h-4 bg-white/10 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-6 right-4 w-2 h-2 bg-white/20 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+
+                {/* Main title with enhanced styling */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-white rounded-full animate-fade-in"></div>
+                    <Users className="h-10 w-10 text-white animate-scale-in" />
+                    <div className="w-12 h-0.5 bg-gradient-to-r from-white via-white to-transparent rounded-full animate-fade-in"></div>
+                  </div>
+                  
+                  <h1 className="text-5xl md:text-7xl font-oswald font-bold tracking-tight animate-fade-in">
+                    <span className="text-white inline-block hover:scale-105 transition-transform duration-300">
+                      Somos boxeo.
+                    </span>
+                    <span className="block text-primary mt-2">Somos comunidad.</span>
+                  </h1>
+                  
+                  <div className="flex items-center justify-center gap-2 mt-4">
+                    <div className="h-1 w-8 bg-white/60 rounded-full animate-scale-in"></div>
+                    <div className="h-0.5 w-16 bg-gradient-to-r from-white/50 to-white/30 rounded-full animate-scale-in"></div>
+                    <div className="h-1 w-8 bg-white/60 rounded-full animate-scale-in"></div>
+                  </div>
+                </div>
+
+                {/* Enhanced subtitle with better typography */}
+                <div className="max-w-3xl mx-auto space-y-4">
+                  <p className="text-xl md:text-2xl text-white font-inter leading-relaxed animate-fade-in" style={{animationDelay: '0.3s'}}>
+                    Más que un gimnasio, somos una <span className="text-white font-semibold">familia unida</span> por la pasión del boxeo
+                  </p>
+                </div>
               </div>
             </div>
           </div>
