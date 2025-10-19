@@ -210,7 +210,7 @@ const SobreNosotros = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <h3 className="font-oswald font-bold text-xl mb-4">Calle sin salida</h3>
+                    <h3 className="font-oswald font-bold text-xl mb-4 text-primary">Calle sin salida</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Nuestro local está en una <span className="font-semibold text-foreground">calle sin salida</span>, por lo que <span className="font-semibold text-foreground">no hay aparcamiento para coches</span>.
                     </p>
@@ -219,7 +219,7 @@ const SobreNosotros = () => {
 
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <h3 className="font-oswald font-bold text-xl mb-4">Parking para motos</h3>
+                    <h3 className="font-oswald font-bold text-xl mb-4 text-primary">Parking para motos</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Disponemos de <span className="font-semibold text-foreground">dos parkings para motos</span> justo al lado del local.
                     </p>
@@ -228,7 +228,7 @@ const SobreNosotros = () => {
 
                 <Card className="border-border hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-8 text-center">
-                    <h3 className="font-oswald font-bold text-xl mb-4">Recomendación</h3>
+                    <h3 className="font-oswald font-bold text-xl mb-4 text-primary">Recomendación</h3>
                     <p className="font-inter text-muted-foreground leading-relaxed">
                       Recomendamos venir <span className="font-semibold text-foreground">a pie o en transporte público</span> siempre que sea posible.
                     </p>
