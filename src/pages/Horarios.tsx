@@ -299,13 +299,18 @@ const Horarios = () => {
       refreshMonthlyClasses();
     } catch (error: any) {
       let errorMessage = "No se pudo crear la reserva";
-      if (error.message.includes('está completa')) {
+      
+      // Check for duplicate booking error
+      if (error.code === '23505' || error.message.includes('duplicate key')) {
+        errorMessage = "Ya tienes una reserva para esta clase en este día";
+      } else if (error.message.includes('está completa')) {
         errorMessage = "Plazas agotadas - Esta clase ya tiene el máximo de personas";
       } else if (error.message.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
       } else if (error.message.includes('próxima semana')) {
         errorMessage = "Solo se permiten reservas para la próxima semana";
       }
+      
       toast({
         title: "Error al reservar",
         description: errorMessage,
@@ -809,8 +814,6 @@ const Horarios = () => {
               <ul className="space-y-2 font-inter text-muted-foreground">
                 <li>• ⚠️ Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase</li>
                 <li>• Si no cancelas a tiempo y no asistes, se descontará 1 clase adicional como penalización</li>
-                <li>• Los administradores pueden realizar cancelaciones sin restricción de tiempo en casos excepcionales</li>
-                <li>• Puedes ver el tiempo restante para cancelar en cada una de tus reservas</li>
               </ul>
             </CardContent>
           </Card>
