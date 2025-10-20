@@ -102,10 +102,11 @@ export const UnifiedScheduleManagement = () => {
 
       if (classesError) throw classesError;
 
-      // Fetch manual schedules
+      // Fetch manual schedules - solo futuras (desde hoy)
       const { data: manualData, error: manualError } = await supabase
         .from('manual_class_schedules')
         .select('*')
+        .gte('class_date', new Date().toISOString().split('T')[0])
         .order('class_date', { ascending: true });
 
       if (manualError) throw manualError;
@@ -283,9 +284,22 @@ export const UnifiedScheduleManagement = () => {
 
       if (error) throw error;
 
+      // Manejar respuesta de la función
+      const result = data as { ok: boolean; error?: string; message?: string; active_bookings?: number };
+
+      if (!result.ok) {
+        // Mostrar error específico
+        toast({
+          title: language === 'en' ? 'Cannot Delete' : 'No se puede eliminar',
+          description: result.error || 'Error desconocido',
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: language === 'en' ? 'Success' : 'Éxito',
-        description: t.scheduleManagement.successDeleted,
+        description: result.message || t.scheduleManagement.successDeleted,
       });
 
       fetchData();

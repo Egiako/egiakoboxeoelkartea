@@ -735,6 +735,10 @@ export type Database = {
         Args: { _booking_id: string; _requesting_user: string }
         Returns: Json
       }
+      cleanup_past_manual_schedules: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       create_class_exception: {
         Args: {
           p_class_id: string
@@ -781,7 +785,7 @@ export type Database = {
       }
       delete_manual_class_schedule: {
         Args: { schedule_id: string }
-        Returns: boolean
+        Returns: Json
       }
       delete_periodic_class: {
         Args: { target_class_id: string }
