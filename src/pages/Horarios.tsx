@@ -315,26 +315,51 @@ const Horarios = () => {
     setLoading(false);
   };
 
-  // Cancel booking
+  // Cancel booking using new validation
   const handleCancelBooking = async (bookingId: string) => {
     setLoading(true);
     try {
-      const {
-        error
-      } = await supabase.from('bookings').delete().eq('id', bookingId);
+      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
+        _booking_id: bookingId,
+        _requesting_user: user?.id
+      });
+
       if (error) throw error;
+
+      const result = data as { ok: boolean; error?: string; message?: string; minutes_until_class?: number };
+
+      if (!result.ok) {
+        if (result.error === 'within_time_limit') {
+          const minutesText = result.minutes_until_class 
+            ? ` (faltan ${result.minutes_until_class} minutos)` 
+            : '';
+          
+          toast({
+            title: "No se puede cancelar la clase",
+            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "No se pudo cancelar la reserva",
+            variant: "destructive"
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
       toast({
-        title: "Reserva cancelada",
-        description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
+        title: "Cancelación realizada",
+        description: result.message || "Tu reserva se ha cancelado correctamente"
       });
       
-      // Don't call loadUserData() - let real-time subscription handle the update
-      // This prevents flickering caused by duplicate state updates
       refreshMonthlyClasses();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "No se pudo cancelar la reserva",
+        description: error.message || "No se pudo cancelar la reserva. Intenta de nuevo.",
         variant: "destructive"
       });
     }
@@ -723,7 +748,7 @@ const Horarios = () => {
                   Mis Clases Reservadas
                 </CardTitle>
                 <CardDescription>
-                  Estas son tus próximas clases reservadas. Puedes cancelar cualquier reserva.
+                  Estas son tus próximas clases reservadas. Las cancelaciones deben realizarse al menos 1 hora antes del inicio.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -772,6 +797,24 @@ const Horarios = () => {
               </CardContent>
             </Card>
           </div>}
+
+        {/* Normas importantes */}
+        {user && (
+          <Card className="bg-card/50 mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Clock className="h-5 w-5 text-primary" />
+                <h3 className="font-oswald font-bold text-lg">Política de Cancelaciones</h3>
+              </div>
+              <ul className="space-y-2 font-inter text-muted-foreground">
+                <li>• ⚠️ Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase</li>
+                <li>• Si no cancelas a tiempo y no asistes, se descontará 1 clase adicional como penalización</li>
+                <li>• Los administradores pueden realizar cancelaciones sin restricción de tiempo en casos excepcionales</li>
+                <li>• Puedes ver el tiempo restante para cancelar en cada una de tus reservas</li>
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contact and Location Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">

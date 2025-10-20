@@ -204,7 +204,7 @@ const EventosSemana = () => {
                   <li>• Llega 10 minutos antes del inicio del evento</li>
                   <li>• Trae ropa cómoda y botella de agua</li>
                   <li>• Priorizamos un ambiente seguro y de respeto mutuo en todos los eventos</li>
-                  <li>• Puedes cancelar tu reserva hasta 2 horas antes</li>
+                  <li>• ⚠️ Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase</li>
                 </ul>
               </CardContent>
             </Card>

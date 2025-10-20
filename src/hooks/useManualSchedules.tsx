@@ -164,27 +164,61 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
 
   const cancelBooking = async (bookingId: string) => {
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .delete()
-        .eq('id', bookingId);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "Usuario no autenticado",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
+        _booking_id: bookingId,
+        _requesting_user: user.id
+      });
 
       if (error) throw error;
 
+      const result = data as unknown as { ok: boolean; error?: string; message?: string; minutes_until_class?: number };
+
+      if (!result.ok) {
+        if (result.error === 'within_time_limit') {
+          const minutesText = result.minutes_until_class 
+            ? ` (faltan ${result.minutes_until_class} minutos)` 
+            : '';
+          
+          toast({
+            title: "No se puede cancelar la clase",
+            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "No se pudo cancelar la reserva",
+            variant: "destructive"
+          });
+        }
+        return false;
+      }
+
       toast({
-        title: "Reserva cancelada",
-        description: "Tu reserva ha sido cancelada y la plaza está ahora disponible"
+        title: "Cancelación realizada",
+        description: result.message || "Tu reserva se ha cancelado correctamente"
       });
 
       // Refresh schedules to update booking counts
       await fetchSchedules();
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error canceling booking:', error);
       toast({
         title: "Error",
-        description: "No se pudo cancelar la reserva",
+        description: error.message || "No se pudo cancelar la reserva. Intenta de nuevo.",
         variant: "destructive"
       });
       return false;

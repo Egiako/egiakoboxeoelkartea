@@ -18,6 +18,9 @@ export type Database = {
         Row: {
           attended: boolean | null
           booking_date: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_reason: string | null
           class_id: string | null
           created_at: string
           id: string
@@ -30,6 +33,9 @@ export type Database = {
         Insert: {
           attended?: boolean | null
           booking_date: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_reason?: string | null
           class_id?: string | null
           created_at?: string
           id?: string
@@ -42,6 +48,9 @@ export type Database = {
         Update: {
           attended?: boolean | null
           booking_date?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_reason?: string | null
           class_id?: string | null
           created_at?: string
           id?: string
@@ -564,6 +573,10 @@ export type Database = {
           user_id: string
         }
       }
+      admin_force_cancel_booking: {
+        Args: { _admin_id: string; _booking_id: string; _reason?: string }
+        Returns: Json
+      }
       admin_get_monthly_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -647,6 +660,9 @@ export type Database = {
         Returns: {
           attended: boolean | null
           booking_date: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_reason: string | null
           class_id: string | null
           created_at: string
           id: string
@@ -698,6 +714,9 @@ export type Database = {
         Returns: {
           attended: boolean | null
           booking_date: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_reason: string | null
           class_id: string | null
           created_at: string
           id: string
@@ -707,6 +726,14 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      can_cancel_booking: {
+        Args: { _booking_id: string; _user_id: string }
+        Returns: Json
+      }
+      cancel_booking_if_allowed: {
+        Args: { _booking_id: string; _requesting_user: string }
+        Returns: Json
       }
       create_class_exception: {
         Args: {
@@ -796,6 +823,12 @@ export type Database = {
           class_id: string
           count: number
         }[]
+      }
+      get_booking_start_time: {
+        Args: {
+          booking_record: Database["public"]["Tables"]["bookings"]["Row"]
+        }
+        Returns: string
       }
       get_class_schedule_for_date: {
         Args: { target_date: string }
@@ -1013,6 +1046,9 @@ export type Database = {
         Returns: {
           attended: boolean | null
           booking_date: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_reason: string | null
           class_id: string | null
           created_at: string
           id: string
