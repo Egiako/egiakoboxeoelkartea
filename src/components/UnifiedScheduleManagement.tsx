@@ -677,13 +677,43 @@ export const UnifiedScheduleManagement = () => {
               {/* Clases esporádicas */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4" />
-                    Clases Esporádicas
-                  </CardTitle>
-                  <CardDescription>
-                    Gestionar clases puntuales programadas
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4" />
+                        Clases Esporádicas
+                      </CardTitle>
+                      <CardDescription>
+                        Gestionar clases puntuales programadas (solo próximas clases)
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.rpc('cleanup_past_manual_schedules');
+                          if (error) throw error;
+                          const result = data as { ok: boolean; deleted_schedules: number; message: string };
+                          toast({
+                            title: "Limpieza completada",
+                            description: result.message,
+                          });
+                          fetchData();
+                        } catch (error: any) {
+                          toast({
+                            title: "Error",
+                            description: error.message || "No se pudo ejecutar la limpieza",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Limpiar clases pasadas
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -700,54 +730,67 @@ export const UnifiedScheduleManagement = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {manualSchedules.map((schedule) => (
-                          <TableRow key={schedule.id}>
-                            <TableCell className="font-medium">{schedule.title}</TableCell>
-                            <TableCell>{schedule.instructor_name}</TableCell>
-                            <TableCell>
-                              {new Date(schedule.class_date).toLocaleDateString('es-ES', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </TableCell>
-                            <TableCell>{formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}</TableCell>
-                            <TableCell>{schedule.max_students}</TableCell>
-                            <TableCell>
-                              <Badge variant={schedule.is_enabled ? "default" : "secondary"}>
-                                {schedule.is_enabled ? "Activa" : "Desactivada"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" size="sm">
-                                    <Trash2 className="h-3 w-3 mr-1" />
-                                    Eliminar
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>¿Eliminar clase esporádica?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      ¿Estás seguro de que quieres eliminar la clase "{schedule.title}" del {new Date(schedule.class_date).toLocaleDateString('es-ES')}? Esta acción no se puede deshacer.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDeleteSporadicClass(schedule.id)}
-                                      className="bg-destructive hover:bg-destructive/90"
-                                    >
+                        {manualSchedules.map((schedule) => {
+                          // Verificar si la clase es futura
+                          const classDateTime = new Date(`${schedule.class_date}T${schedule.start_time}`);
+                          const isFuture = classDateTime > new Date();
+                          
+                          return (
+                            <TableRow key={schedule.id} className={!isFuture ? "opacity-50" : ""}>
+                              <TableCell className="font-medium">{schedule.title}</TableCell>
+                              <TableCell>{schedule.instructor_name}</TableCell>
+                              <TableCell>
+                                {new Date(schedule.class_date).toLocaleDateString('es-ES', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </TableCell>
+                              <TableCell>{formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}</TableCell>
+                              <TableCell>{schedule.max_students}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={schedule.is_enabled ? "default" : "secondary"}>
+                                    {schedule.is_enabled ? "Activa" : "Desactivada"}
+                                  </Badge>
+                                  {isFuture && (
+                                    <Badge variant="outline" className="text-green-600 border-green-600">
+                                      Próxima
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm">
+                                      <Trash2 className="h-3 w-3 mr-1" />
                                       Eliminar
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>¿Eliminar clase esporádica?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres eliminar la clase "{schedule.title}" del {new Date(schedule.class_date).toLocaleDateString('es-ES')}? Esta acción no se puede deshacer.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteSporadicClass(schedule.id)}
+                                        className="bg-destructive hover:bg-destructive/90"
+                                      >
+                                        Eliminar
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                         {manualSchedules.length === 0 && (
                           <TableRow>
                             <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
