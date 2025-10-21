@@ -234,7 +234,7 @@ const Horarios = () => {
     return scheduledClasses;
   };
 
-  // Create booking for regular or manual classes
+  // Create booking for regular or manual classes using safe RPC function
   const createBooking = async (classItem: any, date: Date) => {
     if (!user || !userProfile) {
       toast({
@@ -255,14 +255,60 @@ const Horarios = () => {
       return;
     }
 
-    // Check available spots before booking to prevent overbooking
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const availableSpots = getAvailableSpots(classItem.class_id || classItem.id, dateStr, classItem.max_students);
-    
-    if (availableSpots <= 0) {
+    setLoading(true);
+    try {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const classIdToUse = classItem.class_id || classItem.id;
+      
+      // Check if it's a manual schedule (sporadic class) or regular class
+      const isManualSchedule = classItem.day_of_week === null || classItem.day_of_week === undefined;
+      
+      // Use the safe RPC function to create booking
+      const { data, error } = await supabase.rpc('create_reservation_safe', {
+        p_user_id: user.id,
+        p_booking_date: dateStr,
+        p_class_id: isManualSchedule ? null : classIdToUse,
+        p_manual_schedule_id: isManualSchedule ? classIdToUse : null
+      });
+
+      if (error) throw error;
+
+      const result = data as { ok: boolean; error?: string; message?: string };
+
+      if (!result.ok) {
+        toast({
+          title: "Error al reservar",
+          description: result.error || "No se pudo crear la reserva",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+      
       toast({
-        title: "Plazas agotadas",
-        description: "Esta clase ya está completa. Todas las plazas están reservadas.",
+        title: "¡Reserva confirmada!",
+        description: result.message || "Tu plaza ha sido reservada exitosamente"
+      });
+      
+      // Don't call loadUserData() - let real-time subscription handle the update
+      // This prevents flickering caused by duplicate state updates
+      refreshMonthlyClasses();
+    } catch (error: any) {
+      toast({
+        title: "Error al reservar",
+        description: error.message || "No se pudo crear la reserva. Intenta de nuevo.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  // Cancel booking using safe RPC function
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes estar autenticado para cancelar reservas",
         variant: "destructive"
       });
       return;
@@ -270,63 +316,9 @@ const Horarios = () => {
 
     setLoading(true);
     try {
-      let bookingData: any = {
-        user_id: user.id,
-        booking_date: dateStr,
-        status: 'confirmed'
-      };
-
-      // Check if it's a manual schedule (sporadic class) or regular class
-      if (classItem.day_of_week === null || classItem.day_of_week === undefined) {
-        // This is a manual/sporadic class - use manual_schedule_id
-        bookingData.manual_schedule_id = classItem.class_id || classItem.id;
-      } else {
-        // This is a regular class - use class_id
-        bookingData.class_id = classItem.class_id || classItem.id;
-      }
-
-      const { error } = await supabase.from('bookings').insert([bookingData]);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "¡Reserva confirmada!",
-        description: "Tu plaza ha sido reservada exitosamente"
-      });
-      
-      // Don't call loadUserData() - let real-time subscription handle the update
-      // This prevents flickering caused by duplicate state updates
-      refreshMonthlyClasses();
-    } catch (error: any) {
-      let errorMessage = "No se pudo crear la reserva";
-      
-      // Check for duplicate booking error
-      if (error.code === '23505' || error.message.includes('duplicate key')) {
-        errorMessage = "Ya tienes una reserva para esta clase en este día";
-      } else if (error.message.includes('está completa')) {
-        errorMessage = "Plazas agotadas - Esta clase ya tiene el máximo de personas";
-      } else if (error.message.includes('No tienes clases restantes')) {
-        errorMessage = "Has agotado tus clases mensuales";
-      } else if (error.message.includes('próxima semana')) {
-        errorMessage = "Solo se permiten reservas para la próxima semana";
-      }
-      
-      toast({
-        title: "Error al reservar",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    }
-    setLoading(false);
-  };
-
-  // Cancel booking using new validation
-  const handleCancelBooking = async (bookingId: string) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
-        _booking_id: bookingId,
-        _requesting_user: user?.id
+      const { data, error } = await supabase.rpc('cancel_reservation_safe', {
+        p_booking_id: bookingId,
+        p_actor_user_id: user.id
       });
 
       if (error) throw error;
@@ -335,13 +327,9 @@ const Horarios = () => {
 
       if (!result.ok) {
         if (result.error === 'within_time_limit') {
-          const minutesText = result.minutes_until_class 
-            ? ` (faltan ${result.minutes_until_class} minutos)` 
-            : '';
-          
           toast({
             title: "No se puede cancelar la clase",
-            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            description: result.message || "Estás dentro de la hora máxima (1 hora antes del inicio).",
             variant: "destructive"
           });
         } else {

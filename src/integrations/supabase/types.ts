@@ -735,6 +735,10 @@ export type Database = {
         Args: { _booking_id: string; _requesting_user: string }
         Returns: Json
       }
+      cancel_reservation_safe: {
+        Args: { p_actor_user_id: string; p_booking_id: string }
+        Returns: Json
+      }
       cleanup_past_manual_schedules: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -778,6 +782,15 @@ export type Database = {
           title: string
           updated_at: string
         }
+      }
+      create_reservation_safe: {
+        Args: {
+          p_booking_date: string
+          p_class_id?: string
+          p_manual_schedule_id?: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       delete_class_exception: {
         Args: { p_exception_id: string }
@@ -947,6 +960,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      recompute_class_capacity: {
+        Args: { p_class_id: string }
+        Returns: undefined
       }
       set_class_instructor: {
         Args: {

@@ -45,7 +45,7 @@ export const useCancelBooking = () => {
   };
 
   /**
-   * Cancela una reserva con validación de ventana de 1 hora
+   * Cancela una reserva con validación de ventana de 1 hora usando la función segura
    */
   const cancelBooking = async (bookingId: string, onSuccess?: () => void): Promise<boolean> => {
     if (!user) {
@@ -59,9 +59,9 @@ export const useCancelBooking = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
-        _booking_id: bookingId,
-        _requesting_user: user.id
+      const { data, error } = await supabase.rpc('cancel_reservation_safe', {
+        p_booking_id: bookingId,
+        p_actor_user_id: user.id
       });
 
       if (error) throw error;
@@ -71,16 +71,12 @@ export const useCancelBooking = () => {
       if (!result.ok) {
         // Manejar diferentes tipos de error
         if (result.error === 'within_time_limit') {
-          const minutesText = result.minutes_until_class 
-            ? ` (faltan ${result.minutes_until_class} minutos)` 
-            : '';
-          
           toast({
             title: "No se puede cancelar la clase",
-            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            description: result.message || "Estás dentro de la hora máxima (1 hora antes del inicio).",
             variant: "destructive"
           });
-        } else if (result.error === 'No autorizado') {
+        } else if (result.error === 'No autorizado para cancelar esta reserva') {
           toast({
             title: "No autorizado",
             description: "No tienes permiso para cancelar esta reserva",
