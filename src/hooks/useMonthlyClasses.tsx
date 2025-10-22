@@ -61,6 +61,36 @@ export const useMonthlyClasses = () => {
 
   useEffect(() => {
     fetchMonthlyClasses();
+
+    if (!user) return;
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    // Realtime subscription to keep monthly classes in sync instantly
+    const channel = supabase
+      .channel(`umc-${user.id}-${currentMonth}-${currentYear}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'user_monthly_classes',
+        filter: `user_id=eq.${user.id},month=eq.${currentMonth},year=eq.${currentYear}`
+      }, () => {
+        fetchMonthlyClasses();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'user_monthly_classes',
+        filter: `user_id=eq.${user.id},month=eq.${currentMonth},year=eq.${currentYear}`
+      }, () => {
+        fetchMonthlyClasses();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const refreshMonthlyClasses = () => {

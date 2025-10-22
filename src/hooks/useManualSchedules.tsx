@@ -74,17 +74,23 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
 
   const bookSchedule = async (scheduleId: string, userId: string, bookingDate: Date) => {
     try {
-      const { data, error } = await supabase.rpc('book_manual_schedule', {
+      const { data, error } = await supabase.rpc('create_reservation_safe', {
         p_user_id: userId,
-        p_manual_schedule_id: scheduleId,
-        p_booking_date: bookingDate.toISOString().split('T')[0]
+        p_booking_date: bookingDate.toISOString().split('T')[0],
+        p_class_id: null,
+        p_manual_schedule_id: scheduleId
       });
 
       if (error) throw error;
 
+      const result = data as unknown as { ok: boolean; error?: string; message?: string };
+      if (!result?.ok) {
+        throw new Error(result?.error || 'No se pudo crear la reserva');
+      }
+
       toast({
         title: "¡Reserva confirmada!",
-        description: "Tu plaza ha sido reservada exitosamente"
+        description: result.message || "Tu plaza ha sido reservada exitosamente"
       });
 
       // Refresh schedules to update booking counts
@@ -95,13 +101,13 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
       console.error('Error booking schedule:', error);
       let errorMessage = "No se pudo crear la reserva";
       
-      if (error.message.includes('está completa')) {
+      if (error.message?.includes('está completa')) {
         errorMessage = "Esta clase ya tiene el máximo de personas";
-      } else if (error.message.includes('No tienes clases restantes')) {
+      } else if (error.message?.includes('No tienes clases restantes')) {
         errorMessage = "Has agotado tus clases mensuales";
-      } else if (error.message.includes('no autorizado')) {
+      } else if (error.message?.includes('no autorizado')) {
         errorMessage = "No tienes permisos para hacer reservas";
-      } else if (error.message.includes('antelación')) {
+      } else if (error.message?.includes('antelación')) {
         errorMessage = "Solo puedes reservar con un día de antelación como máximo";
       }
       
