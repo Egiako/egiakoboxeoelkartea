@@ -61,43 +61,41 @@ export const useBookingCounts = (dates: string[]) => {
   useEffect(() => {
     fetchBookingCounts();
 
-    // Only listen to INSERT and DELETE to avoid unnecessary updates
+    // Subscribe to INSERT, UPDATE, and DELETE so reactivations/cancellations via UPDATE are reflected
     const subscription = supabase
       .channel('booking-counts-stable')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'bookings',
-        filter: `status=eq.confirmed`
+        table: 'bookings'
       }, () => {
-        // Clear existing timeout
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-        // Mark updating to prevent UI flicker
+        if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
-        
-        // Stable update with longer debounce
         debounceRef.current = setTimeout(() => {
           fetchBookingCounts();
-        }, 300);
+        }, 200);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'bookings'
+      }, () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        setIsUpdating(true);
+        debounceRef.current = setTimeout(() => {
+          fetchBookingCounts();
+        }, 200);
       })
       .on('postgres_changes', {
         event: 'DELETE',
         schema: 'public',
         table: 'bookings'
       }, () => {
-        // Clear existing timeout
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-        // Mark updating to prevent UI flicker
+        if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
-        
-        // Stable update with longer debounce
         debounceRef.current = setTimeout(() => {
           fetchBookingCounts();
-        }, 300);
+        }, 200);
       })
       .subscribe();
 
@@ -129,6 +127,7 @@ export const useBookingCounts = (dates: string[]) => {
     loading,
     isUpdating,
     getAvailableSpots,
-    getBookedSpots
+    getBookedSpots,
+    refresh: fetchBookingCounts
   };
 };

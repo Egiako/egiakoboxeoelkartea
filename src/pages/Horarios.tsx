@@ -41,7 +41,8 @@ const Horarios = () => {
   const {
     getAvailableSpots,
     getBookedSpots,
-    loading: countsLoading
+    loading: countsLoading,
+    refresh: refreshCounts
   } = useBookingCounts(bookingDates);
   useEffect(() => {
     if (user) {
@@ -293,6 +294,8 @@ const Horarios = () => {
       // Don't call loadUserData() - let real-time subscription handle the update
       // This prevents flickering caused by duplicate state updates
       refreshMonthlyClasses();
+      // Force update counts instantly
+      refreshCounts();
     } catch (error: any) {
       toast({
         title: "Error al reservar",
