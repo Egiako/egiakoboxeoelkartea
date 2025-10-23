@@ -93,7 +93,8 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
         description: result.message || "Tu plaza ha sido reservada exitosamente"
       });
 
-      // Schedules and monthly classes will update via realtime subscriptions
+      // Refresh schedules to update booking counts
+      await fetchSchedules();
       
       return data;
     } catch (error: any) {
@@ -180,20 +181,19 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
         return false;
       }
 
-      // First check if booking can be cancelled (time validation)
-      const { data: canCancelData, error: canCancelError } = await supabase.rpc('can_cancel_booking', {
+      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
         _booking_id: bookingId,
-        _user_id: user.id
+        _requesting_user: user.id
       });
 
-      if (canCancelError) throw canCancelError;
+      if (error) throw error;
 
-      const canCancelResult = canCancelData as { can_cancel: boolean; reason: string; minutes_until_class?: number };
+      const result = data as unknown as { ok: boolean; error?: string; message?: string; minutes_until_class?: number };
 
-      if (!canCancelResult.can_cancel) {
-        if (canCancelResult.reason === 'within_time_limit') {
-          const minutesText = canCancelResult.minutes_until_class 
-            ? ` (faltan ${canCancelResult.minutes_until_class} minutos)` 
+      if (!result.ok) {
+        if (result.error === 'within_time_limit') {
+          const minutesText = result.minutes_until_class 
+            ? ` (faltan ${result.minutes_until_class} minutos)` 
             : '';
           
           toast({
@@ -203,30 +203,11 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
           });
         } else {
           toast({
-            title: "No se puede cancelar",
-            description: "No tienes permiso para cancelar esta reserva",
+            title: "Error",
+            description: result.error || "No se pudo cancelar la reserva",
             variant: "destructive"
           });
         }
-        return false;
-      }
-
-      // Proceed with cancellation
-      const { data, error } = await supabase.rpc('cancel_booking_if_allowed', {
-        _booking_id: bookingId,
-        _requesting_user: user.id
-      });
-
-      if (error) throw error;
-
-      const result = data as unknown as { ok: boolean; error?: string; message?: string };
-
-      if (!result.ok) {
-        toast({
-          title: "Error",
-          description: result.error || "No se pudo cancelar la reserva",
-          variant: "destructive"
-        });
         return false;
       }
 
@@ -235,7 +216,8 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
         description: result.message || "Tu reserva se ha cancelado correctamente"
       });
 
-      // Schedules and monthly classes will update via realtime subscriptions
+      // Refresh schedules to update booking counts
+      await fetchSchedules();
       
       return true;
     } catch (error: any) {

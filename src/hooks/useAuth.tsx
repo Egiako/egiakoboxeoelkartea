@@ -202,68 +202,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log('Starting sign out process...');
-      
-      // First, remove all active realtime subscriptions
-      const channels = supabase.getChannels();
-      console.log('Removing active channels:', channels.length);
-      for (const channel of channels) {
-        await supabase.removeChannel(channel);
+      // Check if there's a session first (production can lose session tokens between domains)
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      // If no session, perform a local sign out and redirect gracefully
+      if (!sessionData.session) {
+        await supabase.auth.signOut({ scope: 'local' });
+        setUser(null);
+        setSession(null);
+        setIsActive(null);
+        toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+        window.location.href = '/';
+        return;
       }
 
-      // Clear local state FIRST
-      setUser(null);
-      setSession(null);
-      setIsActive(null);
-      setLoading(false);
-
-      // Try to sign out from Supabase
+      // Try global sign out; if session missing error, fall back to local
       const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Sign out error:', error);
-        // Even if there's an error, force local cleanup
+      if (error && /auth session missing/i.test(error.message)) {
         await supabase.auth.signOut({ scope: 'local' });
       }
 
-      // Clear any remaining storage
-      localStorage.clear();
-      sessionStorage.clear();
-
-      toast({ 
-        title: "Sesión cerrada", 
-        description: "Has cerrado sesión correctamente." 
-      });
-
-      // Force full page reload to ensure clean state
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-    } catch (error: any) {
-      console.error('Critical sign out error:', error);
-      
-      // Force cleanup even on error
+      // Clear local state and redirect
       setUser(null);
       setSession(null);
       setIsActive(null);
-      
-      try { 
-        await supabase.auth.signOut({ scope: 'local' }); 
-      } catch (e) {
-        console.error('Local sign out failed:', e);
-      }
-      
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      toast({ 
-        title: "Sesión cerrada", 
-        description: "Has cerrado sesión correctamente." 
-      });
-      
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      window.location.href = '/';
+    } catch (error: any) {
+      // Last resort: local sign out and redirect
+      try { await supabase.auth.signOut({ scope: 'local' }); } catch {}
+      setUser(null);
+      setSession(null);
+      setIsActive(null);
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      window.location.href = '/';
     }
   };
 
