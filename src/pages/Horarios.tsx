@@ -291,10 +291,7 @@ const Horarios = () => {
         description: result.message || "Tu plaza ha sido reservada exitosamente"
       });
       
-      // Don't call loadUserData() - let real-time subscription handle the update
-      // This prevents flickering caused by duplicate state updates
-      refreshMonthlyClasses();
-      // Force update counts instantly
+      // Only refresh counts, monthly classes will update via realtime subscription
       refreshCounts();
     } catch (error: any) {
       toast({
@@ -306,7 +303,7 @@ const Horarios = () => {
     setLoading(false);
   };
 
-  // Cancel booking using safe RPC function
+  // Cancel booking using safe RPC function with time validation
   const handleCancelBooking = async (bookingId: string) => {
     if (!user) {
       toast({
@@ -319,6 +316,38 @@ const Horarios = () => {
 
     setLoading(true);
     try {
+      // First check if booking can be cancelled (time validation)
+      const { data: canCancelData, error: canCancelError } = await supabase.rpc('can_cancel_booking', {
+        _booking_id: bookingId,
+        _user_id: user.id
+      });
+
+      if (canCancelError) throw canCancelError;
+
+      const canCancelResult = canCancelData as { can_cancel: boolean; reason: string; minutes_until_class?: number };
+
+      if (!canCancelResult.can_cancel) {
+        if (canCancelResult.reason === 'within_time_limit') {
+          const minutesText = canCancelResult.minutes_until_class 
+            ? ` (faltan ${canCancelResult.minutes_until_class} minutos)` 
+            : '';
+          toast({
+            title: "No se puede cancelar la clase",
+            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "No se puede cancelar",
+            description: "No tienes permiso para cancelar esta reserva",
+            variant: "destructive"
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Proceed with cancellation
       const { data, error } = await supabase.rpc('cancel_reservation_safe', {
         p_booking_id: bookingId,
         p_actor_user_id: user.id
@@ -326,22 +355,14 @@ const Horarios = () => {
 
       if (error) throw error;
 
-      const result = data as { ok: boolean; error?: string; message?: string; minutes_until_class?: number };
+      const result = data as { ok: boolean; error?: string; message?: string };
 
       if (!result.ok) {
-        if (result.error === 'within_time_limit') {
-          toast({
-            title: "No se puede cancelar la clase",
-            description: result.message || "Estás dentro de la hora máxima (1 hora antes del inicio).",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: result.error || "No se pudo cancelar la reserva",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Error",
+          description: result.error || "No se pudo cancelar la reserva",
+          variant: "destructive"
+        });
         setLoading(false);
         return;
       }
@@ -351,7 +372,7 @@ const Horarios = () => {
         description: result.message || "Tu reserva se ha cancelado correctamente"
       });
       
-      refreshMonthlyClasses();
+      // Monthly classes will update via realtime subscription
     } catch (error: any) {
       toast({
         title: "Error",
