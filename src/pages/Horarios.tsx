@@ -333,7 +333,7 @@ const Horarios = () => {
             : '';
           toast({
             title: "No se puede cancelar la clase",
-            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            description: "No se puede cancelar. Estás dentro de la hora para el inicio.",
             variant: "destructive"
           });
         } else {

@@ -73,7 +73,7 @@ export const useCancelBooking = () => {
         if (result.error === 'within_time_limit') {
           toast({
             title: "No se puede cancelar la clase",
-            description: result.message || "Estás dentro de la hora máxima (1 hora antes del inicio).",
+            description: "No se puede cancelar. Estás dentro de la hora para el inicio.",
             variant: "destructive"
           });
         } else if (result.error === 'No autorizado para cancelar esta reserva') {
