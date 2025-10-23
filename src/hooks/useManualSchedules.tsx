@@ -192,13 +192,9 @@ export const useManualSchedules = (startDate?: Date, endDate?: Date) => {
 
       if (!canCancelResult.can_cancel) {
         if (canCancelResult.reason === 'within_time_limit') {
-          const minutesText = canCancelResult.minutes_until_class 
-            ? ` (faltan ${canCancelResult.minutes_until_class} minutos)` 
-            : '';
-          
           toast({
-            title: "No se puede cancelar la clase",
-            description: `Estás dentro de la hora máxima. Las cancelaciones deben realizarse al menos 1 hora antes del inicio de la clase${minutesText}.`,
+            title: "No se puede cancelar",
+            description: "Estás dentro de la hora para el inicio.",
             variant: "destructive"
           });
         } else {
