@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyClasses } from '@/hooks/useMonthlyClasses';
 import { useBookingCounts } from '@/hooks/useBookingCounts';
+import { useCancelBooking } from '@/hooks/useCancelBooking';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { format, addDays, isSameDay } from 'date-fns';
@@ -34,6 +35,9 @@ const Horarios = () => {
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [datesWithClasses, setDatesWithClasses] = useState<Set<string>>(new Set());
+  const [cancelableBookings, setCancelableBookings] = useState<Record<string, boolean>>({});
+  
+  const { canCancelBooking } = useCancelBooking();
 
   // Get booking counts for the selected date
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -165,6 +169,22 @@ const Horarios = () => {
       });
       if (bookingsError) throw bookingsError;
       setUserBookings(bookings || []);
+      
+      // Check which bookings can be cancelled
+      if (bookings && bookings.length > 0) {
+        const cancelChecks = await Promise.all(
+          bookings.map(async (booking) => {
+            const result = await canCancelBooking(booking.id);
+            return { id: booking.id, canCancel: result.can_cancel };
+          })
+        );
+        
+        const cancelMap: Record<string, boolean> = {};
+        cancelChecks.forEach(check => {
+          cancelMap[check.id] = check.canCancel;
+        });
+        setCancelableBookings(cancelMap);
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -674,14 +694,24 @@ const Horarios = () => {
                               </div>
                             )}
 
-                            <Button 
-                              onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking({...classItem, id: classItem.class_id}, selectedDate)} 
-                              disabled={loading || !isBooked && (isFull || !monthlyClasses || monthlyClasses.remaining_classes <= 0)} 
-                              variant={isBooked ? "destructive" : "default"} 
-                              className="w-full"
-                            >
-                              {loading ? "Procesando..." : isBooked ? "Cancelar reserva" : isFull ? "Clase completa" : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? "Sin clases disponibles" : "Reservar plaza"}
-                            </Button>
+                            {isBooked && !cancelableBookings[getBookingId(classItem)] ? (
+                              <Button 
+                                disabled 
+                                variant="outline" 
+                                className="w-full"
+                              >
+                                No se puede cancelar
+                              </Button>
+                            ) : (
+                              <Button 
+                                onClick={() => isBooked ? handleCancelBooking(getBookingId(classItem)) : createBooking({...classItem, id: classItem.class_id}, selectedDate)} 
+                                disabled={loading || !isBooked && (isFull || !monthlyClasses || monthlyClasses.remaining_classes <= 0)} 
+                                variant={isBooked ? "destructive" : "default"} 
+                                className="w-full"
+                              >
+                                {loading ? "Procesando..." : isBooked ? "Cancelar reserva" : isFull ? "Clase completa" : !monthlyClasses || monthlyClasses.remaining_classes <= 0 ? "Sin clases disponibles" : "Reservar plaza"}
+                              </Button>
+                            )}
                           </CardContent>
                         </Card>;
             })}
@@ -804,10 +834,16 @@ const Horarios = () => {
                             </div>
                           </div>
                         </div>
-                        <Button onClick={() => handleCancelBooking(booking.id)} disabled={loading} variant="destructive" size="sm" className="flex items-center gap-2">
-                          <X className="h-4 w-4" />
-                          Cancelar
-                        </Button>
+                        {cancelableBookings[booking.id] ? (
+                          <Button onClick={() => handleCancelBooking(booking.id)} disabled={loading} variant="destructive" size="sm" className="flex items-center gap-2">
+                            <X className="h-4 w-4" />
+                            Cancelar
+                          </Button>
+                        ) : (
+                          <Button disabled variant="outline" size="sm">
+                            No se puede cancelar
+                          </Button>
+                        )}
                       </div>;
               }).filter(Boolean)}
                 </div>
