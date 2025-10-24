@@ -273,7 +273,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -297,7 +297,7 @@ export type Database = {
           consent_signature_url?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
-          consent_signed_ip?: unknown | null
+          consent_signed_ip?: unknown
           consent_text_version?: string | null
           consent_user_agent?: string | null
           created_at?: string
@@ -321,7 +321,7 @@ export type Database = {
           consent_signature_url?: string | null
           consent_signed?: boolean | null
           consent_signed_at?: string | null
-          consent_signed_ip?: unknown | null
+          consent_signed_ip?: unknown
           consent_text_version?: string | null
           consent_user_agent?: string | null
           created_at?: string
@@ -478,9 +478,15 @@ export type Database = {
           override_date: string
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "schedule_overrides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_advance_all_to_next_month: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           month: number
           remaining_classes: number
@@ -497,7 +503,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -514,6 +520,12 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_deactivate_user: {
         Args: { target_user_id: string }
@@ -524,7 +536,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -540,6 +552,12 @@ export type Database = {
           previous_status: string | null
           updated_at: string
           user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_delete_user_completely: {
@@ -555,7 +573,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -572,13 +590,19 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_force_cancel_booking: {
         Args: { _admin_id: string; _booking_id: string; _reason?: string }
         Returns: Json
       }
       admin_get_monthly_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           average_remaining: number
           current_month: number
@@ -597,7 +621,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -614,6 +638,12 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_reject_user: {
         Args: { target_user_id: string }
@@ -624,7 +654,7 @@ export type Database = {
           consent_signature_url: string | null
           consent_signed: boolean | null
           consent_signed_at: string | null
-          consent_signed_ip: unknown | null
+          consent_signed_ip: unknown
           consent_text_version: string | null
           consent_user_agent: string | null
           created_at: string
@@ -640,6 +670,12 @@ export type Database = {
           previous_status: string | null
           updated_at: string
           user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_reset_user_monthly_classes: {
@@ -653,6 +689,12 @@ export type Database = {
           updated_at: string
           user_id: string
           year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_monthly_classes"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_update_attendance: {
@@ -672,6 +714,12 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_update_user_classes: {
         Args: { class_change: number; target_user_id: string }
@@ -684,6 +732,12 @@ export type Database = {
           updated_at: string
           user_id: string
           year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_monthly_classes"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_update_user_monthly_limits: {
@@ -702,31 +756,66 @@ export type Database = {
           user_id: string
           year: number
         }
+        SetofOptions: {
+          from: "*"
+          to: "user_monthly_classes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      book_manual_schedule: {
-        Args:
-          | {
+      book_manual_schedule:
+        | {
+            Args: {
               p_booking_date: string
               p_manual_schedule_id: string
               p_user_id: string
             }
-          | { p_manual_schedule_id: string; p_user_id: string }
-        Returns: {
-          attended: boolean | null
-          booking_date: string
-          cancelled_at: string | null
-          cancelled_by: string | null
-          cancelled_reason: string | null
-          class_id: string | null
-          created_at: string
-          id: string
-          manual_schedule_id: string | null
-          profile_id: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-      }
+            Returns: {
+              attended: boolean | null
+              booking_date: string
+              cancelled_at: string | null
+              cancelled_by: string | null
+              cancelled_reason: string | null
+              class_id: string | null
+              created_at: string
+              id: string
+              manual_schedule_id: string | null
+              profile_id: string | null
+              status: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bookings"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { p_manual_schedule_id: string; p_user_id: string }
+            Returns: {
+              attended: boolean | null
+              booking_date: string
+              cancelled_at: string | null
+              cancelled_by: string | null
+              cancelled_reason: string | null
+              class_id: string | null
+              created_at: string
+              id: string
+              manual_schedule_id: string | null
+              profile_id: string | null
+              status: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bookings"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       can_cancel_booking: {
         Args: { _booking_id: string; _user_id: string }
         Returns: Json
@@ -739,10 +828,7 @@ export type Database = {
         Args: { p_actor_user_id: string; p_booking_id: string }
         Returns: Json
       }
-      cleanup_past_manual_schedules: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      cleanup_past_manual_schedules: { Args: never; Returns: Json }
       create_class_exception: {
         Args: {
           p_class_id: string
@@ -782,6 +868,12 @@ export type Database = {
           title: string
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "manual_class_schedules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_reservation_safe: {
         Args: {
@@ -816,6 +908,12 @@ export type Database = {
           notes: string | null
           override_date: string
           updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schedule_overrides"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       get_available_classes_for_date_range: {
@@ -892,9 +990,15 @@ export type Database = {
           user_id: string
           year: number
         }
+        SetofOptions: {
+          from: "*"
+          to: "user_monthly_classes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_public_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approval_status: Database["public"]["Enums"]["approval_status"]
           first_name: string
@@ -921,7 +1025,7 @@ export type Database = {
         }[]
       }
       get_trainer_visible_bookings: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           attended: boolean
           booking_date: string
@@ -938,18 +1042,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_specific_trainer: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_user_active: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_user_approved: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_specific_trainer: { Args: { _user_id: string }; Returns: boolean }
+      is_user_active: { Args: { _user_id: string }; Returns: boolean }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
       profile_sensitive_unchanged: {
         Args: {
           _approval: Database["public"]["Enums"]["approval_status"]
@@ -980,6 +1075,12 @@ export type Database = {
           specific_date: string | null
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "class_instructors"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_schedule_override: {
         Args: {
@@ -999,6 +1100,12 @@ export type Database = {
           notes: string | null
           override_date: string
           updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schedule_overrides"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       toggle_manual_class_schedule: {
@@ -1023,13 +1130,19 @@ export type Database = {
           title: string
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "manual_class_schedules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       trainer_can_view_user_profile: {
         Args: { target_user_id: string; trainer_id: string }
         Returns: boolean
       }
       trainer_get_all_bookings: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           attended: boolean
           booking_date: string
@@ -1055,7 +1168,7 @@ export type Database = {
         }[]
       }
       trainer_get_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           first_name: string
           last_name: string
@@ -1079,9 +1192,15 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       verify_profiles_security: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           policy_command: string
           policy_name: string
