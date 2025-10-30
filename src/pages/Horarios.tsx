@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { Calendar, Clock, Users, MapPin, Phone, X } from 'lucide-react';
@@ -36,6 +36,9 @@ const Horarios = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [datesWithClasses, setDatesWithClasses] = useState<Set<string>>(new Set());
   const [cancelableBookings, setCancelableBookings] = useState<Record<string, boolean>>({});
+  
+  const bookingLock = useRef(false);
+  const cancelLock = useRef(false);
   
   const { canCancelBooking } = useCancelBooking();
 
@@ -257,12 +260,16 @@ const Horarios = () => {
 
   // Create booking for regular or manual classes using safe RPC function
   const createBooking = async (classItem: any, date: Date) => {
+    if (bookingLock.current) return;
+    bookingLock.current = true;
+
     if (!user || !userProfile) {
       toast({
         title: "Error",
         description: "Debes estar logueado para reservar una clase",
         variant: "destructive"
       });
+      bookingLock.current = false;
       return;
     }
 
@@ -273,6 +280,7 @@ const Horarios = () => {
         description: "Has agotado tus clases mensuales. Contacta con el administrador para renovar tu cuota.",
         variant: "destructive"
       });
+      bookingLock.current = false;
       return;
     }
 
@@ -302,7 +310,6 @@ const Horarios = () => {
           description: result.error || "No se pudo crear la reserva",
           variant: "destructive"
         });
-        setLoading(false);
         return;
       }
       
@@ -319,18 +326,24 @@ const Horarios = () => {
         description: error.message || "No se pudo crear la reserva. Intenta de nuevo.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
+      bookingLock.current = false;
     }
-    setLoading(false);
   };
 
   // Cancel booking using safe RPC function with time validation
   const handleCancelBooking = async (bookingId: string) => {
+    if (cancelLock.current) return;
+    cancelLock.current = true;
+
     if (!user) {
       toast({
         title: "Error",
         description: "Debes estar autenticado para cancelar reservas",
         variant: "destructive"
       });
+      cancelLock.current = false;
       return;
     }
 
@@ -363,7 +376,6 @@ const Horarios = () => {
             variant: "destructive"
           });
         }
-        setLoading(false);
         return;
       }
 
@@ -383,7 +395,6 @@ const Horarios = () => {
           description: result.error || "No se pudo cancelar la reserva",
           variant: "destructive"
         });
-        setLoading(false);
         return;
       }
 
@@ -399,8 +410,10 @@ const Horarios = () => {
         description: error.message || "No se pudo cancelar la reserva. Intenta de nuevo.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
+      cancelLock.current = false;
     }
-    setLoading(false);
   };
 
   // Check if user already has a booking for this class (both regular and manual schedules)

@@ -65,7 +65,7 @@ const Registrate = () => {
     const phone = formData.get('telefono') as string;
     const dni = formData.get('dni') as string;
     const birthDate = formData.get('birth_date') as string;
-    const objective = formData.get('objetivo') as string;
+    const objective = trainingGoal || null;
 
     console.log('Registering user:', email);
 
