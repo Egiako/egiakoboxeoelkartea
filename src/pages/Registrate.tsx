@@ -18,7 +18,7 @@ import { ConsentModal } from '@/components/ConsentModal';
 import { useToast } from '@/hooks/use-toast';
 
 const Registrate = () => {
-  const { user, signUp, signIn } = useAuth();
+  const { user, signUp, signIn, resetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [signatureData, setSignatureData] = useState<string | null>(null);
@@ -26,8 +26,24 @@ const Registrate = () => {
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [trainingGoal, setTrainingGoal] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if user is in password recovery mode
+  useEffect(() => {
+    const checkRecovery = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery') {
+        setIsRecoveryMode(true);
+      }
+    };
+    
+    checkRecovery();
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -211,6 +227,60 @@ const Registrate = () => {
     setIsLoading(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('resetEmail') as string;
+
+    await resetPassword(email);
+    
+    setIsLoading(false);
+    setShowForgotPassword(false);
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const newPassword = formData.get('newPassword') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "¡Contraseña actualizada!",
+        description: "Tu contraseña ha sido cambiada exitosamente."
+      });
+      setIsRecoveryMode(false);
+      // Clear the hash from URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    
+    setIsLoading(false);
+  };
+
   return (
     <>
       <SEO 
@@ -291,13 +361,70 @@ const Registrate = () => {
                 {/* Normal Registration/Login Form */}
             <div className="text-center mb-8">
               <h1 className="font-oswald font-bold text-4xl mb-4">
-                Únete a <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>
+                {isRecoveryMode ? (
+                  "Restablecer contraseña"
+                ) : (
+                  <>
+                    Únete a <span className="text-boxing-black">Egia</span><span className="text-boxing-red">K.O.</span><span className="text-boxing-black"> Boxeo Elkartea</span>
+                  </>
+                )}
               </h1>
               <p className="font-inter text-muted-foreground">
-                Crea tu cuenta para acceder al horario de eventos y comenzar tu transformación
+                {isRecoveryMode 
+                  ? "Introduce tu nueva contraseña"
+                  : "Crea tu cuenta para acceder al horario de eventos y comenzar tu transformación"
+                }
               </p>
             </div>
 
+            {isRecoveryMode ? (
+              <Card className="shadow-boxing">
+                <CardContent className="p-6">
+                  <form onSubmit={handleUpdatePassword} className="space-y-6">
+                    <div>
+                      <Label htmlFor="newPassword" className="font-inter font-semibold">Nueva contraseña</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          id="newPassword"
+                          name="newPassword"
+                          type="password"
+                          placeholder="Mínimo 8 caracteres"
+                          className="pl-10"
+                          required
+                          minLength={8}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="confirmPassword" className="font-inter font-semibold">Confirmar contraseña</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type="password"
+                          placeholder="Repite tu contraseña"
+                          className="pl-10"
+                          required
+                          minLength={8}
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      variant="hero" 
+                      className="w-full font-oswald font-semibold"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Actualizando...' : 'Actualizar contraseña'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            ) : (
             <Card className="shadow-boxing">
               <CardContent className="p-6">
                 <Tabs defaultValue="register" className="w-full">
@@ -494,58 +621,110 @@ const Registrate = () => {
 
                   {/* Login */}
                   <TabsContent value="login">
-                    <form onSubmit={handleLogin} className="space-y-6">
-                      <div>
-                        <Label htmlFor="loginEmail" className="font-inter font-semibold">Email</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                           <Input 
-                             id="loginEmail"
-                             name="loginEmail"
-                             type="email"
-                             placeholder="tu@email.com"
-                             className="pl-10"
-                             required
-                           />
+                    {!showForgotPassword ? (
+                      <form onSubmit={handleLogin} className="space-y-6">
+                        <div>
+                          <Label htmlFor="loginEmail" className="font-inter font-semibold">Email</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                             <Input 
+                               id="loginEmail"
+                               name="loginEmail"
+                               type="email"
+                               placeholder="tu@email.com"
+                               className="pl-10"
+                               required
+                             />
+                          </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <Label htmlFor="loginPassword" className="font-inter font-semibold">Contraseña</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                           <Input 
-                             id="loginPassword"
-                             name="loginPassword"
-                             type="password"
-                             placeholder="Tu contraseña"
-                             className="pl-10"
-                             required
-                           />
+                        <div>
+                          <Label htmlFor="loginPassword" className="font-inter font-semibold">Contraseña</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                             <Input 
+                               id="loginPassword"
+                               name="loginPassword"
+                               type="password"
+                               placeholder="Tu contraseña"
+                               className="pl-10"
+                               required
+                             />
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="text-center">
-                        <a href="#" className="text-sm text-boxing-red hover:underline font-inter">
-                          ¿Olvidaste tu contraseña?
-                        </a>
-                      </div>
+                        <div className="text-center">
+                          <button 
+                            type="button"
+                            onClick={() => setShowForgotPassword(true)}
+                            className="text-sm text-boxing-red hover:underline font-inter"
+                          >
+                            ¿Olvidaste tu contraseña?
+                          </button>
+                        </div>
 
-                      <Button 
-                        type="submit" 
-                        variant="hero" 
-                        className="w-full font-oswald font-semibold"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                      </Button>
-                    </form>
+                        <Button 
+                          type="submit" 
+                          variant="hero" 
+                          className="w-full font-oswald font-semibold"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                        </Button>
+                      </form>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <h3 className="font-oswald font-bold text-xl mb-2">Restablecer contraseña</h3>
+                          <p className="font-inter text-sm text-muted-foreground">
+                            Introduce tu email y te enviaremos un enlace para crear una nueva contraseña
+                          </p>
+                        </div>
+
+                        <form onSubmit={handleForgotPassword} className="space-y-4">
+                          <div>
+                            <Label htmlFor="resetEmail" className="font-inter font-semibold">Email</Label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                               <Input 
+                                 id="resetEmail"
+                                 name="resetEmail"
+                                 type="email"
+                                 placeholder="tu@email.com"
+                                 className="pl-10"
+                                 required
+                               />
+                            </div>
+                          </div>
+
+                          <Button 
+                            type="submit" 
+                            variant="hero" 
+                            className="w-full font-oswald font-semibold"
+                            disabled={isLoading}
+                          >
+                            {isLoading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                          </Button>
+
+                          <Button 
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowForgotPassword(false)}
+                            className="w-full font-oswald"
+                          >
+                            Volver al inicio de sesión
+                          </Button>
+                        </form>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </CardContent>
             </Card>
+            )}
 
             {/* Información adicional */}
+            {!isRecoveryMode && (
             <Card className="mt-8 bg-boxing-grey/30">
               <CardContent className="p-6 text-center">
                 <h3 className="font-oswald font-bold text-lg mb-2">¡Bienvenido/a a la familia!</h3>
@@ -555,6 +734,7 @@ const Registrate = () => {
                 </p>
               </CardContent>
             </Card>
+            )}
             </>
           )}
           </div>
