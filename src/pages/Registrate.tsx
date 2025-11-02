@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mail, Lock, User, Phone, Target, CheckCircle, Clock, Calendar, FileText } from 'lucide-react';
+import { Mail, Lock, User, Phone, CheckCircle, Clock, Calendar, FileText } from 'lucide-react';
 import SEO from '@/components/SEO';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -25,7 +24,6 @@ const Registrate = () => {
   const [signatureMethod, setSignatureMethod] = useState<'canvas' | 'typed'>('canvas');
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
-  const [trainingGoal, setTrainingGoal] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const navigate = useNavigate();
@@ -81,7 +79,6 @@ const Registrate = () => {
     const phone = formData.get('telefono') as string;
     const dni = formData.get('dni') as string;
     const birthDate = formData.get('birth_date') as string;
-    const objective = trainingGoal || null;
 
     console.log('Registering user:', email);
 
@@ -91,7 +88,6 @@ const Registrate = () => {
       phone,
       dni,
       birth_date: birthDate,
-      training_goal: objective,
       consent_signed: true,
       consent_signed_at: new Date().toISOString(),
       consent_method: signatureMethod
@@ -152,13 +148,12 @@ const Registrate = () => {
         const result = await response.json();
         console.log('Signature saved successfully:', result);
 
-        // Update profile with additional data (dni, birth_date, objective)
+        // Update profile with additional data (dni, birth_date)
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
             dni,
-            birth_date: birthDate,
-            objective
+            birth_date: birthDate
           })
           .eq('user_id', data.user.id);
 
@@ -536,27 +531,6 @@ const Registrate = () => {
                              required
                              minLength={8}
                            />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="objetivo" className="font-inter font-semibold">Objetivo (opcional)</Label>
-                        <div className="relative">
-                          <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Select 
-                              name="objetivo"
-                              value={trainingGoal}
-                              onValueChange={setTrainingGoal}
-                            >
-                              <SelectTrigger className="pl-10">
-                                <SelectValue placeholder="¿Qué te gustaría conseguir?" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="forma">Ponerme en forma</SelectItem>
-                                <SelectItem value="competir">Competir</SelectItem>
-                                <SelectItem value="tecnica">Aprender técnica</SelectItem>
-                              </SelectContent>
-                            </Select>
                         </div>
                       </div>
 
