@@ -44,8 +44,14 @@ export const handler = async (req: Request): Promise<Response> => {
     const token = authHeader.replace('Bearer ', '');
     console.log('Verifying JWT token...');
 
+    // Create a temporary client with the user's token to verify identity
+    const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
     // Verify the calling user
-    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
     if (userErr) {
       console.error('Error verifying user:', userErr);
       return new Response(JSON.stringify({ error: 'Token inválido', details: userErr.message }), {
@@ -116,16 +122,11 @@ export const handler = async (req: Request): Promise<Response> => {
 
     console.log('Expelling user:', target_user_id, 'delete_auth:', delete_auth);
 
-// Step 1: Update profile and cancel bookings via RPC with user context
-console.log('Calling admin_expel_user RPC with user JWT...');
-const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || SERVICE_ROLE_KEY, {
-  global: { headers: { Authorization: `Bearer ${token}` } },
-  auth: { persistSession: false, autoRefreshToken: false },
-});
-
-const { data: expelledProfile, error: rpcErr } = await supabaseUser.rpc('admin_expel_user', {
-  target_user_id,
-});
+    // Step 1: Update profile and cancel bookings via RPC with user context
+    console.log('Calling admin_expel_user RPC with user JWT...');
+    const { data: expelledProfile, error: rpcErr } = await supabaseUser.rpc('admin_expel_user', {
+      target_user_id,
+    });
 
 if (rpcErr) {
   console.error('RPC error:', rpcErr);
