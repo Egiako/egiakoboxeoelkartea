@@ -12,8 +12,9 @@ export const useBookingCounts = (dates: string[]) => {
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
+  const channelRef = useRef<any>(null);
 
-  const fetchBookingCounts = useCallback(async () => {
+  const fetchBookingCounts = useCallback(async (forceRefresh = false) => {
     if (dates.length === 0) {
       setBookingCounts([]);
       setLoading(false);
@@ -21,12 +22,17 @@ export const useBookingCounts = (dates: string[]) => {
     }
 
     try {
-      setIsUpdating(true);
+      if (forceRefresh) {
+        setIsUpdating(true);
+      }
       setLoading(true);
+      
+      // Force a fresh query by adding a timestamp to prevent any caching
+      const timestamp = new Date().getTime();
       
       const { data, error } = await supabase
         .from('bookings')
-        .select('class_id, booking_date, manual_schedule_id')
+        .select('class_id, booking_date, manual_schedule_id, id')
         .eq('status', 'confirmed')
         .in('booking_date', dates);
 
@@ -51,7 +57,6 @@ export const useBookingCounts = (dates: string[]) => {
       setBookingCounts(counts);
     } catch (error) {
       console.error('Error fetching booking counts:', error);
-      // Keep previous counts to avoid UI flicker on transient errors
     } finally {
       setLoading(false);
       setIsUpdating(false);
@@ -59,11 +64,21 @@ export const useBookingCounts = (dates: string[]) => {
   }, [dates]);
 
   useEffect(() => {
-    fetchBookingCounts();
+    // Clean up previous channel if it exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
 
-    // Subscribe to INSERT, UPDATE, and DELETE so reactivations/cancellations via UPDATE are reflected
-    const subscription = supabase
-      .channel('booking-counts-stable')
+    // Fetch initial counts
+    fetchBookingCounts(true);
+
+    // Create a unique channel name with timestamp to force new subscription
+    const channelName = `booking-counts-${Date.now()}`;
+    
+    // Subscribe to INSERT, UPDATE, and DELETE
+    channelRef.current = supabase
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -72,8 +87,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts();
-        }, 200);
+          fetchBookingCounts(true);
+        }, 100);
       })
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -83,8 +98,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts();
-        }, 200);
+          fetchBookingCounts(true);
+        }, 100);
       })
       .on('postgres_changes', {
         event: 'DELETE',
@@ -94,8 +109,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts();
-        }, 200);
+          fetchBookingCounts(true);
+        }, 100);
       })
       .subscribe();
 
@@ -103,9 +118,12 @@ export const useBookingCounts = (dates: string[]) => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      supabase.removeChannel(subscription);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [fetchBookingCounts]);
+  }, [dates.join(',')]); // Use dates.join() to ensure effect runs when dates array changes
 
   const getAvailableSpots = (classId: string, date: string, maxStudents: number) => {
     const booking = bookingCounts.find(

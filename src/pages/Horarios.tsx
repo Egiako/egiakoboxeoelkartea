@@ -121,6 +121,11 @@ const Horarios = () => {
   useEffect(() => {
     loadScheduledClasses(selectedDate);
   }, [selectedDate]);
+  
+  // Separate effect to refresh booking counts when date changes
+  useEffect(() => {
+    refreshCounts();
+  }, [dateStr]);
   const loadClasses = async () => {
     try {
       const {
@@ -318,8 +323,11 @@ const Horarios = () => {
         description: result.message || "Tu plaza ha sido reservada exitosamente"
       });
       
-      // Only refresh counts, monthly classes will update via realtime subscription
-      refreshCounts();
+      // Force immediate refresh of counts and user data
+      await Promise.all([
+        refreshCounts(),
+        loadUserData()
+      ]);
     } catch (error: any) {
       toast({
         title: "Error al reservar",
@@ -403,7 +411,11 @@ const Horarios = () => {
         description: result.message || "Tu reserva se ha cancelado correctamente"
       });
       
-      // Monthly classes will update via realtime subscription
+      // Force immediate refresh of counts and user data
+      await Promise.all([
+        refreshCounts(),
+        loadUserData()
+      ]);
     } catch (error: any) {
       toast({
         title: "Error",
