@@ -12,9 +12,8 @@ export const useBookingCounts = (dates: string[]) => {
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
-  const channelRef = useRef<any>(null);
 
-  const fetchBookingCounts = useCallback(async (forceRefresh = false) => {
+  const fetchBookingCounts = useCallback(async () => {
     if (dates.length === 0) {
       setBookingCounts([]);
       setLoading(false);
@@ -22,27 +21,37 @@ export const useBookingCounts = (dates: string[]) => {
     }
 
     try {
-      if (forceRefresh) {
-        setIsUpdating(true);
-      }
+      setIsUpdating(true);
       setLoading(true);
-
-      // Use RPC to bypass RLS safely with aggregated data
-      const { data, error } = await supabase.rpc('get_booking_counts', {
-        _dates: dates
-      });
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('class_id, booking_date, manual_schedule_id')
+        .eq('status', 'confirmed')
+        .in('booking_date', dates);
 
       if (error) throw error;
 
-      const counts: BookingCount[] = (data || []).map((row: any) => ({
-        class_id: row.class_key,
-        booking_date: row.booking_date,
-        count: row.count
-      }));
+      // Count bookings by class_id/manual_schedule_id and booking_date
+      const counts: BookingCount[] = [];
+      const countMap = new Map<string, number>();
+
+      (data || []).forEach((booking) => {
+        const id = booking.class_id || booking.manual_schedule_id;
+        if (!id) return;
+        const key = `${id}|${booking.booking_date}`;
+        countMap.set(key, (countMap.get(key) || 0) + 1);
+      });
+
+      countMap.forEach((count, key) => {
+        const [class_id, booking_date] = key.split('|');
+        counts.push({ class_id, booking_date, count });
+      });
 
       setBookingCounts(counts);
     } catch (error) {
       console.error('Error fetching booking counts:', error);
+      // Keep previous counts to avoid UI flicker on transient errors
     } finally {
       setLoading(false);
       setIsUpdating(false);
@@ -50,21 +59,11 @@ export const useBookingCounts = (dates: string[]) => {
   }, [dates]);
 
   useEffect(() => {
-    // Clean up previous channel if it exists
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    fetchBookingCounts();
 
-    // Fetch initial counts
-    fetchBookingCounts(true);
-
-    // Create a unique channel name with timestamp to force new subscription
-    const channelName = `booking-counts-${Date.now()}`;
-    
-    // Subscribe to INSERT, UPDATE, and DELETE
-    channelRef.current = supabase
-      .channel(channelName)
+    // Subscribe to INSERT, UPDATE, and DELETE so reactivations/cancellations via UPDATE are reflected
+    const subscription = supabase
+      .channel('booking-counts-stable')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -73,8 +72,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts(true);
-        }, 100);
+          fetchBookingCounts();
+        }, 200);
       })
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -84,8 +83,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts(true);
-        }, 100);
+          fetchBookingCounts();
+        }, 200);
       })
       .on('postgres_changes', {
         event: 'DELETE',
@@ -95,8 +94,8 @@ export const useBookingCounts = (dates: string[]) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setIsUpdating(true);
         debounceRef.current = setTimeout(() => {
-          fetchBookingCounts(true);
-        }, 100);
+          fetchBookingCounts();
+        }, 200);
       })
       .subscribe();
 
@@ -104,12 +103,9 @@ export const useBookingCounts = (dates: string[]) => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(subscription);
     };
-  }, [dates.join(',')]); // Use dates.join() to ensure effect runs when dates array changes
+  }, [fetchBookingCounts]);
 
   const getAvailableSpots = (classId: string, date: string, maxStudents: number) => {
     const booking = bookingCounts.find(

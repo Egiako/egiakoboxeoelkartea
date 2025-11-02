@@ -42,20 +42,27 @@ export const handler = async (req: Request): Promise<Response> => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    console.log('Verifying JWT token with admin client...');
+    console.log('Verifying JWT token...');
 
-    // Verify JWT token using admin client
-    const { data: { user: verifiedUser }, error: jwtErr } = await supabaseAdmin.auth.getUser(token);
-    
-    if (jwtErr || !verifiedUser) {
-      console.error('Invalid JWT token:', jwtErr);
-      return new Response(JSON.stringify({ error: 'Token inválido', details: jwtErr?.message }), {
+    // Verify the calling user
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    if (userErr) {
+      console.error('Error verifying user:', userErr);
+      return new Response(JSON.stringify({ error: 'Token inválido', details: userErr.message }), {
         status: 401,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    const invokerId = verifiedUser.id;
+    if (!userData?.user) {
+      console.error('No user data found');
+      return new Response(JSON.stringify({ error: 'Usuario no encontrado' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    const invokerId = userData.user.id;
     console.log('User verified:', invokerId);
 
     // Check admin role
@@ -109,11 +116,16 @@ export const handler = async (req: Request): Promise<Response> => {
 
     console.log('Expelling user:', target_user_id, 'delete_auth:', delete_auth);
 
-    // Step 1: Update profile and cancel bookings via RPC using admin client
-    console.log('Calling admin_expel_user RPC...');
-    const { data: expelledProfile, error: rpcErr } = await supabaseAdmin.rpc('admin_expel_user', {
-      target_user_id,
-    });
+// Step 1: Update profile and cancel bookings via RPC with user context
+console.log('Calling admin_expel_user RPC with user JWT...');
+const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || SERVICE_ROLE_KEY, {
+  global: { headers: { Authorization: `Bearer ${token}` } },
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+const { data: expelledProfile, error: rpcErr } = await supabaseUser.rpc('admin_expel_user', {
+  target_user_id,
+});
 
 if (rpcErr) {
   console.error('RPC error:', rpcErr);

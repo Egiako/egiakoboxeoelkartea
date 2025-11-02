@@ -10,7 +10,6 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
   loading: boolean;
   isActive: boolean | null;
 }
@@ -201,30 +200,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: new Error("Maximum retry attempts exceeded"), data: null };
   };
 
-  const resetPassword = async (email: string) => {
-    console.log('Requesting password reset for:', email);
-    const redirectUrl = `${window.location.origin}/registrate`;
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl
-    });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Email enviado",
-        description: "Revisa tu correo para restablecer tu contraseña."
-      });
-    }
-
-    return { error };
-  };
-
   const signOut = async () => {
     try {
       console.log('Starting sign out process...');
@@ -299,7 +274,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signUp,
       signIn,
       signOut,
-      resetPassword,
       loading,
       isActive
     }}>

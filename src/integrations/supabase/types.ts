@@ -935,7 +935,7 @@ export type Database = {
         Args: { _dates: string[] }
         Returns: {
           booking_date: string
-          class_key: string
+          class_id: string
           count: number
         }[]
       }

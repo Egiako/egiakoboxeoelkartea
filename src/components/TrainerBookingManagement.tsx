@@ -32,35 +32,12 @@ const TrainerBookingManagement = () => {
     return acc;
   }, {} as Record<string, { date: string; time: string; bookings: typeof bookings }>);
 
-  // Sort by week, then day of week (Mon-Thu), then time
+  // Sort by date then by time
   const sortedKeys = Object.keys(groupedBookings).sort((a, b) => {
     const [dateA, timeA] = a.split('-');
     const [dateB, timeB] = b.split('-');
-    
-    const dateObjA = new Date(dateA);
-    const dateObjB = new Date(dateB);
-    
-    // Calculate week number (ISO week)
-    const getWeek = (date: Date) => {
-      const d = new Date(date);
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-      const yearStart = new Date(d.getFullYear(), 0, 1);
-      return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-    };
-    
-    const weekA = getWeek(dateObjA);
-    const weekB = getWeek(dateObjB);
-    
-    // First: compare weeks
-    if (weekA !== weekB) return weekA - weekB;
-    
-    // Second: compare day of week (1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday)
-    const dayOfWeekA = dateObjA.getDay() || 7; // Convert Sunday (0) to 7
-    const dayOfWeekB = dateObjB.getDay() || 7;
-    if (dayOfWeekA !== dayOfWeekB) return dayOfWeekA - dayOfWeekB;
-    
-    // Third: compare time
+    const dateCompare = new Date(dateA).getTime() - new Date(dateB).getTime();
+    if (dateCompare !== 0) return dateCompare;
     return timeA.localeCompare(timeB);
   });
 
