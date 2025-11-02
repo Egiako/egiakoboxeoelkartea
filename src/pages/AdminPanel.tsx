@@ -220,14 +220,19 @@ const AdminPanel = () => {
   };
   const expelUser = async (userId: string, userName: string) => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('admin-expel-user', {
+      const { data: session } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session.session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.session.access_token}`;
+      }
+      headers['apikey'] = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcHZnYm5rZXd4cmVydmRvZXhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczMTgyOTYsImV4cCI6MjA3Mjg5NDI5Nn0.Y1p4oXkG4l0rOODNzyZNPC_qQ_cn5jhEPF5CrVZzLj8';
+
+      const { data, error } = await supabase.functions.invoke('admin-expel-user', {
         body: {
           target_user_id: userId,
           delete_auth: true
-        }
+        },
+        headers
       });
       if (error) throw error;
       toast({

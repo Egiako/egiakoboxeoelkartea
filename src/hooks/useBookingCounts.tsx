@@ -26,33 +26,19 @@ export const useBookingCounts = (dates: string[]) => {
         setIsUpdating(true);
       }
       setLoading(true);
-      
-      // Force a fresh query by adding a timestamp to prevent any caching
-      const timestamp = new Date().getTime();
-      
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('class_id, booking_date, manual_schedule_id, id')
-        .eq('status', 'confirmed')
-        .in('booking_date', dates);
+
+      // Use RPC to bypass RLS safely with aggregated data
+      const { data, error } = await supabase.rpc('get_booking_counts', {
+        _dates: dates
+      });
 
       if (error) throw error;
 
-      // Count bookings by class_id/manual_schedule_id and booking_date
-      const counts: BookingCount[] = [];
-      const countMap = new Map<string, number>();
-
-      (data || []).forEach((booking) => {
-        const id = booking.class_id || booking.manual_schedule_id;
-        if (!id) return;
-        const key = `${id}|${booking.booking_date}`;
-        countMap.set(key, (countMap.get(key) || 0) + 1);
-      });
-
-      countMap.forEach((count, key) => {
-        const [class_id, booking_date] = key.split('|');
-        counts.push({ class_id, booking_date, count });
-      });
+      const counts: BookingCount[] = (data || []).map((row: any) => ({
+        class_id: row.class_key,
+        booking_date: row.booking_date,
+        count: row.count
+      }));
 
       setBookingCounts(counts);
     } catch (error) {
