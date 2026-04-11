@@ -765,11 +765,7 @@ export type Database = {
       }
       book_manual_schedule:
         | {
-            Args: {
-              p_booking_date: string
-              p_manual_schedule_id: string
-              p_user_id: string
-            }
+            Args: { p_manual_schedule_id: string; p_user_id: string }
             Returns: {
               attended: boolean | null
               booking_date: string
@@ -793,7 +789,11 @@ export type Database = {
             }
           }
         | {
-            Args: { p_manual_schedule_id: string; p_user_id: string }
+            Args: {
+              p_booking_date: string
+              p_manual_schedule_id: string
+              p_user_id: string
+            }
             Returns: {
               attended: boolean | null
               booking_date: string
