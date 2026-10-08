@@ -738,7 +738,7 @@ const Horarios = () => {
                 {/* Aviso aclaratorio */}
                 <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                   <p className="font-inter text-sm text-center text-yellow-900 dark:text-yellow-100">
-                    ⚠️ El horario de mañana varía según el día: 11:30–12:30 (lunes y miércoles) o 9:30–10:30 (martes y jueves).
+                    ⚠️ El horario varía según el día. Mañana: 11:30–12:30 (lunes y miércoles) o 9:30–10:30 (martes y jueves). Tarde: 18:00–19:00 (lunes y miércoles) o 19:00–20:00 (martes y jueves).
                   </p>
                 </div>
 
@@ -774,8 +774,8 @@ const Horarios = () => {
                         <CardContent className="p-4 text-center">
                           <h4 className="font-oswald font-bold text-lg mb-2">{dia}</h4>
                           <div className="flex items-center justify-center gap-1 mb-2">
-                            <Clock className="h-4 w-4 text-boxing-black" />
-                            <span className="font-inter font-semibold text-boxing-black">{hora}</span>
+                            <Clock className="h-4 w-4 text-boxing-red" />
+                            <span className="font-inter font-semibold text-boxing-red">{hora}</span>
                           </div>
                           <p className="font-inter text-sm text-muted-foreground">Técnica tarde</p>
                         </CardContent>
