@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Calendar, Plus, Trash2, Clock, Repeat, CalendarDays, Eye, EyeOff, Users } from 'lucide-react';
 import { ClassEnrollmentList } from './ClassEnrollmentList';
 import { ClassExceptionsManagement } from './ClassExceptionsManagement';
+import { EditClassDialog } from './EditClassDialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -615,6 +616,7 @@ export const UnifiedScheduleManagement = () => {
                             </TableCell>
                               <TableCell>
                                 <div className="flex gap-2">
+                                  <EditClassDialog kind="periodic" item={cls} onSaved={fetchData} />
                                   <Button
                                     variant={cls.is_active ? "outline" : "default"}
                                     size="sm"
@@ -762,6 +764,8 @@ export const UnifiedScheduleManagement = () => {
                                 </div>
                               </TableCell>
                               <TableCell>
+                                <div className="flex gap-2">
+                                <EditClassDialog kind="sporadic" item={schedule} onSaved={fetchData} />
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="destructive" size="sm">
@@ -787,6 +791,7 @@ export const UnifiedScheduleManagement = () => {
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
+                                </div>
                               </TableCell>
                             </TableRow>
                           );
