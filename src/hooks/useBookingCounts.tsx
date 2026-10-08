@@ -11,7 +11,7 @@ export const useBookingCounts = (dates: string[]) => {
   const [bookingCounts, setBookingCounts] = useState<BookingCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const fetchBookingCounts = useCallback(async () => {
     if (dates.length === 0) {

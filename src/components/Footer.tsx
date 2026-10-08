@@ -28,8 +28,8 @@ const Footer = memo(() => {
               </div>
               <div className="flex items-center text-sm">
                 <Phone className="h-4 w-4 text-boxing-red mr-2 flex-shrink-0" aria-hidden="true" />
-                <a href="tel:+34697420021" className="font-inter hover:text-boxing-red transition-colors">
-                  +34 697 420 021
+                <a href="tel:+34669339812" className="font-inter hover:text-boxing-red transition-colors">
+                  669 339 812
                 </a>
               </div>
               <div className="flex items-center text-sm">
