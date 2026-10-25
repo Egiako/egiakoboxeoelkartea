@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ApprovalGuard from "@/components/ApprovalGuard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -30,6 +30,8 @@ export const AppRoutes = () => (
   <Routes>
     {/* Rutas públicas */}
     <Route path="/" element={<Index />} />
+    <Route path="/index" element={<Navigate to="/" replace />} />
+    <Route path="/index.html" element={<Navigate to="/" replace />} />
     <Route path="/sobre-nosotros" element={<SobreNosotros />} />
     <Route path="/precios" element={<Precios />} />
     <Route path="/registrate" element={<Registrate />} />
