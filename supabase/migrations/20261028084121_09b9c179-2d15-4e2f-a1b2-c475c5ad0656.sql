@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_booking_two_hour_limit() FROM PUBLIC, anon, authenticated;
